@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Turnos — Dra. Clementi{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-calendar3"></i> Calendario de Turnos</h2>
+    {% if not user.is_authenticated %}
+    <a href="{% url 'account_login' %}" class="btn btn-primary">
+        <i class="bi bi-box-arrow-in-right"></i> Ingresá para reservar
+    </a>
+    {% endif %}
+</div>
+
+<!-- Leyenda -->
+<div class="d-flex gap-3 mb-3 flex-wrap small">
+    <span><span class="badge bg-success">&nbsp;&nbsp;</span> Disponible</span>
+    <span><span class="badge bg-danger">&nbsp;&nbsp;</span> Reservado</span>
+    {% if user.is_authenticated %}
+    <span><span class="badge bg-primary">&nbsp;&nbsp;</span> Tu turno</span>
+    {% endif %}
+</div>
+
+<!-- Calendar -->
+<div id="calendar"></div>
+
+<!-- Modal: Confirmar Reserva -->
+<div class="modal fade" id="bookModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modal-confirm">
+                <h5 class="modal-title"><i class="bi bi-calendar-check"></i> Confirmar Turno</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Fecha:</strong> <span id="bookDate"></span></p>
+                <p><strong>Horario:</strong> <span id="bookTime"></span></p>
+                <div class="mb-3">
+                    <label for="bookNotes" class="form-label">Notas (opcional)</label>
+                    <textarea class="form-control" id="bookNotes" rows="2"
+                              placeholder="Motivo de consulta, observaciones..."></textarea>
+                </div>
+                <div id="bookError" class="alert alert-danger d-none"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmBookBtn">
+                    <i class="bi bi-check-lg"></i> Confirmar Reserva
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Detalle del turno propio -->
+<div class="modal fade" id="ownModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-info-circle"></i> Tu Turno</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Fecha:</strong> <span id="ownDate"></span></p>
+                <p><strong>Horario:</strong> <span id="ownTime"></span></p>
+                <div id="ownMeetLink" class="mb-3 d-none">
+                    <a href="#" id="ownMeetUrl" target="_blank" class="btn btn-success w-100">
+                        <i class="bi bi-camera-video"></i> Unirse a Google Meet
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-danger" id="cancelBookBtn">
+                    <i class="bi bi-x-lg"></i> Cancelar Turno
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+    const csrfToken = '{{ csrf_token }}';
+    let selectedEventId = null;
+
+    // ── Calendar init ────────────────────────────────────────────
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        locale: 'es',
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek',
+        },
+        slotMinTime: '07:00:00',
+        slotMaxTime: '21:00:00',
+        allDaySlot: false,
+        nowIndicator: true,
+        selectable: false,
+        editable: false,
+        height: 'auto',
+
+        events: {
+            url: '/api/appointments/slots/calendar/',
+            failure: function() {
+                alert('Error al cargar los turnos.');
+            },
+            success: function(events) {
+                // Filtrar: solo mostrar turnos que NO son pasados
+                return events.filter(function(ev) {
+                    return !(ev.extendedProps && ev.extendedProps.past);
+                });
+            }
+        },
+
+        eventClick: function(info) {
+            const event = info.event;
+            const props = event.extendedProps || {};
+
+            // Si es pasado, no hacer nada
+            if (props.past) {
+                return;
+            }
+
+            // Slot disponible → abrir modal de reserva
+            if (props.bookable && isAuthenticated) {
+                selectedEventId = event.id;
+                document.getElementById('bookDate').textContent = formatDate(event.start);
+                document.getElementById('bookTime').textContent = formatTime(event.start, event.end);
+                document.getElementById('bookNotes').value = '';
+                document.getElementById('bookError').classList.add('d-none');
+                new bootstrap.Modal(document.getElementById('bookModal')).show();
+                return;
+            }
+
+            // Slot disponible pero no autenticado
+            if (props.bookable && !isAuthenticated) {
+                window.location.href = '{% url "account_login" %}';
+                return;
+            }
+
+            // Slot propio → ver detalle
+            if (props.meet_link !== undefined && props.meet_link !== '') {
+                selectedEventId = event.id;
+                document.getElementById('ownDate').textContent = formatDate(event.start);
+                document.getElementById('ownTime').textContent = formatTime(event.start, event.end);
+
+                const meetDiv = document.getElementById('ownMeetLink');
+                const meetUrl = document.getElementById('ownMeetUrl');
+                if (props.meet_link) {
+                    meetUrl.href = props.meet_link;
+                    meetDiv.classList.remove('d-none');
+                } else {
+                    meetDiv.classList.add('d-none');
+                }
+                new bootstrap.Modal(document.getElementById('ownModal')).show();
+            }
+        },
+    });
+    calendar.render();
+
+    // ── Confirmar reserva ────────────────────────────────────────
+    document.getElementById('confirmBookBtn').addEventListener('click', function() {
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Reservando...';
+
+        fetch('/api/appointments/slots/book/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify({
+                appointment_id: selectedEventId,
+                notes: document.getElementById('bookNotes').value,
+            }),
+        })
+        .then(r => r.json().then(data => ({status: r.status, data})))
+        .then(({status, data}) => {
+            if (status === 200) {
+                bootstrap.Modal.getInstance(document.getElementById('bookModal')).hide();
+                calendar.refetchEvents();
+                showToast('Turno reservado correctamente. Revisá tu email para el enlace de Meet.');
+            } else {
+                const errEl = document.getElementById('bookError');
+                errEl.textContent = data.error || 'Error al reservar.';
+                errEl.classList.remove('d-none');
+            }
+        })
+        .catch(() => {
+            document.getElementById('bookError').textContent = 'Error de conexión.';
+            document.getElementById('bookError').classList.remove('d-none');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-lg"></i> Confirmar Reserva';
+        });
+    });
+
+    // ── Cancelar turno ───────────────────────────────────────────
+    document.getElementById('cancelBookBtn').addEventListener('click', function() {
+        if (!confirm('¿Estás seguro/a de que querés cancelar este turno?')) return;
+
+        const btn = this;
+        btn.disabled = true;
+
+        fetch(`/api/appointments/slots/${selectedEventId}/cancel/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+        })
+        .then(r => r.json().then(data => ({status: r.status, data})))
+        .then(({status, data}) => {
+            bootstrap.Modal.getInstance(document.getElementById('ownModal')).hide();
+            if (status === 200) {
+                calendar.refetchEvents();
+                showToast('Turno cancelado.');
+            } else {
+                alert(data.error || 'Error al cancelar.');
+            }
+        })
+        .finally(() => { btn.disabled = false; });
+    });
+
+    // ── Helpers ──────────────────────────────────────────────────
+    function formatDate(d) {
+        return d.toLocaleDateString('es-AR', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'});
+    }
+    function formatTime(start, end) {
+        const s = start.toLocaleTimeString('es-AR', {hour: '2-digit', minute: '2-digit'});
+        const e = end ? end.toLocaleTimeString('es-AR', {hour: '2-digit', minute: '2-digit'}) : '';
+        return e ? `${s} — ${e}` : s;
+    }
+    function showToast(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'alert alert-success alert-dismissible fade show position-fixed bottom-0 end-0 m-3';
+        toast.style.zIndex = '9999';
+        toast.innerHTML = msg + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    }
+});
+</script>
+{% endblock %}

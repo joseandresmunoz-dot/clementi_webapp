@@ -1,0 +1,40 @@
+# Archivos y directorios a ignorar en Git
+
+# Entorno virtual
+venv/
+
+# Variables de entorno
+.env
+
+# Base de datos SQLite
+db.sqlite3
+
+# Archivos privados (información médica)
+private_media/
+
+# Media uploads
+media/
+
+# Static files compilados
+staticfiles/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Google credentials
+*.json
+!package.json

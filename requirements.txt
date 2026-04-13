@@ -1,0 +1,28 @@
+# Core
+Django>=5.1,<5.2
+django-environ>=0.11
+
+# Authentication (Google OAuth2)
+django-allauth>=65.0
+PyJWT[crypto]>=2.8
+
+# Google APIs (Calendar + Meet)
+google-api-python-client>=2.140
+google-auth-httplib2>=0.2
+google-auth-oauthlib>=1.2
+
+# Private file serving
+django-private-storage>=3.1
+
+# REST API (para FullCalendar.js)
+djangorestframework>=3.15
+
+# Base de datos (producción usará PostgreSQL)
+psycopg2-binary>=2.9
+
+# Seguridad
+django-cors-headers>=4.4
+
+# Utilidades
+Pillow>=10.4
+python-dateutil>=2.9

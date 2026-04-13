@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Cerrar sesión — Dra. Clementi{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4">
+        <div class="card mt-5">
+            <div class="card-body p-4 text-center">
+                <h4 class="mb-3">¿Cerrar sesión?</h4>
+                <p class="text-muted">Estás por salir de tu cuenta.</p>
+                <form method="post" action="{% url 'account_logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger px-4">Sí, cerrar sesión</button>
+                    <a href="{% url 'patients:home' %}" class="btn btn-secondary px-4 ms-2">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dra. Clementi — Bioquímica{% endblock %}
+
+{% block main_class %}{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero text-center">
+    <div class="container">
+        <h1><i class="bi bi-heart-pulse"></i> Dra. Clementi</h1>
+        <p class="lead mb-4">Bioquímica — Atención profesional y personalizada</p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{% url 'patients:calendar' %}" class="btn btn-light btn-lg px-4">
+                <i class="bi bi-calendar3"></i> Ver Turnos Disponibles
+            </a>
+            {% if not user.is_authenticated %}
+            <a href="{% url 'account_login' %}" class="btn btn-outline-light btn-lg px-4">
+                <i class="bi bi-box-arrow-in-right"></i> Ingresar
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="container mb-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4">
+                <div class="card-body">
+                    <i class="bi bi-calendar-check display-4 text-primary mb-3"></i>
+                    <h5 class="card-title">Turnos Online</h5>
+                    <p class="card-text text-muted">
+                        Reservá tu turno de forma rápida y sencilla desde el calendario interactivo.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4">
+                <div class="card-body">
+                    <i class="bi bi-camera-video display-4 text-primary mb-3"></i>
+                    <h5 class="card-title">Consultas por Videollamada</h5>
+                    <p class="card-text text-muted">
+                        Al reservar, se genera automáticamente un enlace de Google Meet para tu consulta.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4">
+                <div class="card-body">
+                    <i class="bi bi-file-earmark-pdf display-4 text-primary mb-3"></i>
+                    <h5 class="card-title">Resultados Seguros</h5>
+                    <p class="card-text text-muted">
+                        Accedé a tus resultados y documentos de forma privada y segura.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+{% if not user.is_authenticated %}
+<section class="container mb-5">
+    <div class="card bg-primary text-white text-center p-5">
+        <h3>¿Primera vez?</h3>
+        <p class="mb-3">Ingresá con tu cuenta de Google para reservar turnos y acceder a tus resultados.</p>
+        <div>
+            <a href="{% url 'account_login' %}" class="btn btn-light btn-lg px-4">
+                <i class="bi bi-google"></i> Ingresar con Google
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

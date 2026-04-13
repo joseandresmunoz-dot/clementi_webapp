@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Mi Panel — Dra. Clementi{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-speedometer2"></i> Mi Panel</h2>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <span class="stat-number">{{ upcoming_count }}</span>
+            <span class="stat-label">Próximos turnos</span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <span class="stat-number">{{ past_count }}</span>
+            <span class="stat-label">Consultas realizadas</span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <span class="stat-number">{{ files_count }}</span>
+            <span class="stat-label">Documentos disponibles</span>
+        </div>
+    </div>
+</div>
+
+<!-- Próximos turnos -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-calendar-event"></i> Mis Próximos Turnos</h5>
+    </div>
+    <div class="card-body">
+        {% if upcoming_appointments %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Horario</th>
+                        <th>Estado</th>
+                        <th>Google Meet</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for apt in upcoming_appointments %}
+                    <tr>
+                        <td>{{ apt.date|date:"l d/m/Y" }}</td>
+                        <td>{{ apt.start_time|time:"H:i" }} — {{ apt.end_time|time:"H:i" }}</td>
+                        <td><span class="badge bg-primary">Reservado</span></td>
+                        <td>
+                            {% if apt.google_meet_link %}
+                            <a href="{{ apt.google_meet_link }}" target="_blank"
+                               class="btn btn-sm btn-success">
+                                <i class="bi bi-camera-video"></i> Unirse
+                            </a>
+                            {% else %}
+                            <span class="text-muted small">Pendiente</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger cancel-apt-btn"
+                                    data-id="{{ apt.id }}">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No tenés turnos próximos.
+            <a href="{% url 'patients:calendar' %}">Reservar uno →</a>
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Archivos -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-folder2-open"></i> Mis Documentos</h5>
+    </div>
+    <div class="card-body">
+        {% if files %}
+        <div class="list-group list-group-flush">
+            {% for file in files %}
+            <a href="{{ file.file.url }}" class="list-group-item list-group-item-action d-flex align-items-center">
+                {% if file.file_type == "PDF" %}
+                <i class="bi bi-file-earmark-pdf text-danger me-3 fs-4"></i>
+                {% elif file.file_type == "VIDEO" %}
+                <i class="bi bi-play-circle text-primary me-3 fs-4"></i>
+                {% elif file.file_type == "IMAGE" %}
+                <i class="bi bi-image text-success me-3 fs-4"></i>
+                {% else %}
+                <i class="bi bi-file-earmark me-3 fs-4"></i>
+                {% endif %}
+                <div>
+                    <strong>{{ file.title }}</strong>
+                    {% if file.description %}
+                    <br><small class="text-muted">{{ file.description }}</small>
+                    {% endif %}
+                </div>
+                <small class="ms-auto text-muted">{{ file.created_at|date:"d/m/Y" }}</small>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No tenés documentos disponibles todavía.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.cancel-apt-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        if (!confirm('¿Cancelar este turno?')) return;
+        const id = this.dataset.id;
+        fetch(`/api/appointments/slots/${id}/cancel/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+        })
+        .then(r => {
+            if (r.ok) { location.reload(); }
+            else { r.json().then(d => alert(d.error || 'Error al cancelar.')); }
+        });
+    });
+});
+</script>
+{% endblock %}

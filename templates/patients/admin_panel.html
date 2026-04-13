@@ -1,0 +1,563 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Panel Administración — Dra. Clementi{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-gear"></i> Panel de Administración</h2>
+    <a href="{% url 'admin:index' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-box-arrow-up-right"></i> Admin Django
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Sidebar: Crear slots -->
+    <div class="col-lg-4">
+        <!-- Stats rápidas -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="stat-number">{{ total_patients }}</div>
+                        <small class="text-muted">Pacientes</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-number">{{ today_appointments }}</div>
+                        <small class="text-muted">Hoy</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-number">{{ week_booked }}</div>
+                        <small class="text-muted">Semana</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario crear slots -->
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="bi bi-plus-circle"></i> Crear Turnos</h6>
+            </div>
+            <div class="card-body slot-form">
+                <form id="createSlotForm">
+                    <div class="mb-2">
+                        <label class="form-label">Fecha</label>
+                        <input type="date" class="form-control" id="slotDate" required>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col">
+                            <label class="form-label">Inicio</label>
+                            <input type="time" class="form-control" id="slotStart" value="09:00" required>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">Fin</label>
+                            <input type="time" class="form-control" id="slotEnd" value="09:30" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-plus-lg"></i> Crear Turno
+                    </button>
+                </form>
+
+                <hr>
+
+                <!-- Quick: crear rango de slots -->
+                <h6 class="small text-muted">Crear varios turnos de una vez</h6>
+                <form id="bulkSlotForm">
+                    <div class="mb-2">
+                        <label class="form-label">Fecha</label>
+                        <input type="date" class="form-control" id="bulkDate" required>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col">
+                            <label class="form-label">Desde</label>
+                            <input type="time" class="form-control" id="bulkStart" value="08:00" required>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">Hasta</label>
+                            <input type="time" class="form-control" id="bulkEnd" value="13:00" required>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Duración (min)</label>
+                        <select class="form-select" id="bulkDuration">
+                            <option value="15">15 min</option>
+                            <option value="30" selected>30 min</option>
+                            <option value="45">45 min</option>
+                            <option value="60">60 min</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-collection"></i> Crear en Lote
+                    </button>
+                </form>
+                <div id="slotFeedback" class="mt-2"></div>
+            </div>
+        </div>
+
+        <!-- Próximas citas con detalle -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="bi bi-list-check"></i> Próximas Citas</h6>
+            </div>
+            <div class="card-body p-0">
+                {% if upcoming_appointments %}
+                <div class="list-group list-group-flush">
+                    {% for apt in upcoming_appointments %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ apt.date|date:"d/m" }} {{ apt.start_time|time:"H:i" }}</strong>
+                            <span class="badge bg-{% if apt.status == 'BOOKED' %}danger{% else %}success{% endif %}">
+                                {{ apt.get_status_display }}
+                            </span>
+                        </div>
+                        {% if apt.patient %}
+                        <small>
+                            <i class="bi bi-person"></i> {{ apt.patient.get_full_name|default:apt.patient.email }}
+                        </small>
+                        {% if apt.google_meet_link %}
+                        <br><a href="{{ apt.google_meet_link }}" target="_blank" class="small">
+                            <i class="bi bi-camera-video"></i> Meet
+                        </a>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted p-3 mb-0">No hay citas próximas.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Main: Calendar admin -->
+    <div class="col-lg-8">
+        <div id="adminCalendar"></div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     GESTIÓN DE ARCHIVOS
+     ═══════════════════════════════════════════════════════════════ -->
+<hr class="my-4">
+<h3 class="mb-3"><i class="bi bi-folder2-open"></i> Gestión de Archivos</h3>
+
+<div class="row g-4">
+    <!-- Subir archivo -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="bi bi-cloud-upload"></i> Subir Archivo</h6>
+            </div>
+            <div class="card-body">
+                <form id="uploadFileForm" enctype="multipart/form-data">
+                    <div class="mb-2">
+                        <label class="form-label">Título</label>
+                        <input type="text" class="form-control" id="fileTitle" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" id="fileDescription" rows="2"></textarea>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Archivo</label>
+                        <input type="file" class="form-control" id="fileInput" required>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col">
+                            <label class="form-label">Tipo</label>
+                            <select class="form-select" id="fileType">
+                                <option value="PDF">PDF</option>
+                                <option value="IMAGE">Imagen</option>
+                                <option value="VIDEO">Video</option>
+                                <option value="OTHER">Otro</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">Visibilidad</label>
+                            <select class="form-select" id="fileVisibility">
+                                <option value="PUBLIC">Público</option>
+                                <option value="REGISTERED" selected>Registrados</option>
+                                <option value="PRIVATE">Privado</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-upload"></i> Subir
+                    </button>
+                </form>
+                <div id="fileFeedback" class="mt-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de archivos -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-files"></i> Archivos Subidos</h6>
+                <div>
+                    <select class="form-select form-select-sm d-inline-block w-auto" id="filterVisibility">
+                        <option value="">Todos</option>
+                        <option value="PUBLIC">Públicos</option>
+                        <option value="REGISTERED">Registrados</option>
+                        <option value="PRIVATE">Privados</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Título</th>
+                                <th>Tipo</th>
+                                <th>Visibilidad</th>
+                                <th>Fecha</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="filesTableBody">
+                            <tr><td colspan="5" class="text-center text-muted py-3">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Asignar permiso a paciente -->
+<div class="modal fade" id="assignModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Asignar acceso privado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-2">Archivo: <strong id="assignFileName"></strong></p>
+                <div class="mb-3">
+                    <label class="form-label">Paciente</label>
+                    <select class="form-select" id="assignPatientSelect">
+                        <option value="">Cargando pacientes...</option>
+                    </select>
+                </div>
+                <div id="currentPermissions"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="assignBtn">
+                    <i class="bi bi-person-plus"></i> Asignar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = '{{ csrf_token }}';
+
+    // ── Admin Calendar ───────────────────────────────────────────
+    const calEl = document.getElementById('adminCalendar');
+    const calendar = new FullCalendar.Calendar(calEl, {
+        locale: 'es',
+        initialView: 'timeGridWeek',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay',
+        },
+        slotMinTime: '07:00:00',
+        slotMaxTime: '21:00:00',
+        allDaySlot: false,
+        nowIndicator: true,
+        height: 'auto',
+        events: {
+            url: '/api/appointments/slots/calendar/',
+        },
+        eventClick: function(info) {
+            const p = info.event.extendedProps;
+            let msg = `${info.event.title}\n`;
+            if (p.patient_email) msg += `Email: ${p.patient_email}\n`;
+            if (p.meet_link) msg += `Meet: ${p.meet_link}\n`;
+            alert(msg);
+        },
+    });
+    calendar.render();
+
+    // ── Crear slot individual ────────────────────────────────────
+    document.getElementById('createSlotForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const data = {
+            date: document.getElementById('slotDate').value,
+            start_time: document.getElementById('slotStart').value,
+            end_time: document.getElementById('slotEnd').value,
+            status: 'AVAILABLE',
+        };
+
+        fetch('/api/appointments/slots/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify(data),
+        })
+        .then(r => r.json().then(d => ({status: r.status, data: d})))
+        .then(({status, data}) => {
+            if (status === 201) {
+                calendar.refetchEvents();
+                showFeedback('Turno creado.', 'success');
+            } else {
+                showFeedback(JSON.stringify(data), 'danger');
+            }
+        });
+    });
+
+    // ── Crear slots en lote ──────────────────────────────────────
+    document.getElementById('bulkSlotForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const date = document.getElementById('bulkDate').value;
+        const startStr = document.getElementById('bulkStart').value;
+        const endStr = document.getElementById('bulkEnd').value;
+        const duration = parseInt(document.getElementById('bulkDuration').value);
+
+        const slots = [];
+        let [sh, sm] = startStr.split(':').map(Number);
+        const [eh, em] = endStr.split(':').map(Number);
+        const endMinutes = eh * 60 + em;
+
+        while (sh * 60 + sm + duration <= endMinutes) {
+            const start = `${String(sh).padStart(2,'0')}:${String(sm).padStart(2,'0')}`;
+            sm += duration;
+            if (sm >= 60) { sh += Math.floor(sm / 60); sm = sm % 60; }
+            const end = `${String(sh).padStart(2,'0')}:${String(sm).padStart(2,'0')}`;
+            slots.push({ date, start_time: start, end_time: end, status: 'AVAILABLE' });
+        }
+
+        if (!slots.length) {
+            showFeedback('El rango no genera turnos.', 'warning');
+            return;
+        }
+
+        fetch('/api/appointments/slots/bulk-create/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify({ slots }),
+        })
+        .then(r => r.json().then(d => ({status: r.status, data: d})))
+        .then(({status, data}) => {
+            calendar.refetchEvents();
+            if (data.created_count) {
+                showFeedback(`${data.created_count} turnos creados.`, 'success');
+            }
+            if (data.errors && data.errors.length) {
+                showFeedback(`${data.errors.length} errores (duplicados?).`, 'warning');
+            }
+        });
+    });
+
+    function showFeedback(msg, type) {
+        const el = document.getElementById('slotFeedback');
+        el.innerHTML = `<div class="alert alert-${type} py-1 small">${msg}</div>`;
+        setTimeout(() => el.innerHTML = '', 4000);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  GESTIÓN DE ARCHIVOS
+    // ══════════════════════════════════════════════════════════════
+
+    function showFileFeedback(msg, type) {
+        const el = document.getElementById('fileFeedback');
+        el.innerHTML = `<div class="alert alert-${type} py-1 small">${msg}</div>`;
+        setTimeout(() => el.innerHTML = '', 4000);
+    }
+
+    const visibilityBadge = {
+        PUBLIC: '<span class="badge bg-success">Público</span>',
+        REGISTERED: '<span class="badge bg-info">Registrados</span>',
+        PRIVATE: '<span class="badge bg-warning text-dark">Privado</span>',
+    };
+
+    const typeIcon = {
+        PDF: '<i class="bi bi-file-earmark-pdf text-danger"></i>',
+        VIDEO: '<i class="bi bi-play-circle text-primary"></i>',
+        IMAGE: '<i class="bi bi-image text-success"></i>',
+        OTHER: '<i class="bi bi-file-earmark"></i>',
+    };
+
+    function loadFiles(filterVis) {
+        let url = '/api/files/';
+        if (filterVis) url += `?visibility=${filterVis}`;
+
+        fetch(url, { headers: { 'X-CSRFToken': csrfToken } })
+        .then(r => r.json())
+        .then(data => {
+            const files = data.results || data;
+            const tbody = document.getElementById('filesTableBody');
+
+            if (!files.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No hay archivos.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = files.map(f => `
+                <tr>
+                    <td>
+                        ${typeIcon[f.file_type] || typeIcon.OTHER}
+                        <a href="${f.download_url}" target="_blank" class="ms-1">${escapeHtml(f.title)}</a>
+                        ${f.description ? '<br><small class="text-muted">' + escapeHtml(f.description) + '</small>' : ''}
+                    </td>
+                    <td><small>${f.file_type}</small></td>
+                    <td>${visibilityBadge[f.visibility] || f.visibility}</td>
+                    <td><small>${new Date(f.created_at).toLocaleDateString('es-AR')}</small></td>
+                    <td class="text-end">
+                        ${f.visibility === 'PRIVATE' ? `<button class="btn btn-sm btn-outline-primary assign-btn" data-id="${f.id}" data-title="${escapeHtml(f.title)}"><i class="bi bi-person-plus"></i></button>` : ''}
+                        <button class="btn btn-sm btn-outline-danger delete-file-btn" data-id="${f.id}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Asignar permisos
+            tbody.querySelectorAll('.assign-btn').forEach(btn => {
+                btn.addEventListener('click', () => openAssignModal(btn.dataset.id, btn.dataset.title));
+            });
+
+            // Eliminar archivo
+            tbody.querySelectorAll('.delete-file-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (!confirm('¿Eliminar este archivo?')) return;
+                    fetch(`/api/files/${btn.dataset.id}/`, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRFToken': csrfToken },
+                    }).then(r => {
+                        if (r.ok) loadFiles(document.getElementById('filterVisibility').value);
+                        else alert('Error al eliminar.');
+                    });
+                });
+            });
+        });
+    }
+
+    function escapeHtml(text) {
+        const d = document.createElement('div');
+        d.textContent = text;
+        return d.innerHTML;
+    }
+
+    // Subir archivo
+    document.getElementById('uploadFileForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append('title', document.getElementById('fileTitle').value);
+        formData.append('description', document.getElementById('fileDescription').value);
+        formData.append('file', document.getElementById('fileInput').files[0]);
+        formData.append('file_type', document.getElementById('fileType').value);
+        formData.append('visibility', document.getElementById('fileVisibility').value);
+
+        fetch('/api/files/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrfToken },
+            body: formData,
+        })
+        .then(r => r.json().then(d => ({ status: r.status, data: d })))
+        .then(({ status, data }) => {
+            if (status === 201) {
+                showFileFeedback('Archivo subido correctamente.', 'success');
+                document.getElementById('uploadFileForm').reset();
+                loadFiles(document.getElementById('filterVisibility').value);
+            } else {
+                showFileFeedback(JSON.stringify(data), 'danger');
+            }
+        });
+    });
+
+    // Filtrar por visibilidad
+    document.getElementById('filterVisibility').addEventListener('change', function() {
+        loadFiles(this.value);
+    });
+
+    // Modal asignar permiso
+    let currentAssignFileId = null;
+
+    function openAssignModal(fileId, fileTitle) {
+        currentAssignFileId = fileId;
+        document.getElementById('assignFileName').textContent = fileTitle;
+
+        // Cargar pacientes
+        fetch('/api/files/patients/', { headers: { 'X-CSRFToken': csrfToken } })
+        .then(r => r.json())
+        .then(patients => {
+            const sel = document.getElementById('assignPatientSelect');
+            sel.innerHTML = '<option value="">Seleccionar paciente...</option>' +
+                patients.map(p => `<option value="${p.id}">${p.first_name ? p.first_name + ' ' + p.last_name + ' — ' : ''}${p.email}</option>`).join('');
+        });
+
+        // Cargar permisos actuales
+        fetch(`/api/files/${fileId}/`, { headers: { 'X-CSRFToken': csrfToken } })
+        .then(r => r.json())
+        .then(data => {
+            const permsDiv = document.getElementById('currentPermissions');
+            if (!data.permissions || !data.permissions.length) {
+                permsDiv.innerHTML = '<p class="text-muted small">Sin permisos asignados.</p>';
+                return;
+            }
+            permsDiv.innerHTML = '<p class="small mb-1"><strong>Acceso actual:</strong></p>' +
+                data.permissions.map(p =>
+                    `<div class="d-flex justify-content-between align-items-center mb-1">
+                        <small>${p.patient_name || p.patient_email}</small>
+                        <button class="btn btn-sm btn-outline-danger revoke-btn" data-patient="${p.patient}">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>`
+                ).join('');
+
+            permsDiv.querySelectorAll('.revoke-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    fetch(`/api/files/${fileId}/revoke/`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                        body: JSON.stringify({ patient_id: btn.dataset.patient }),
+                    }).then(() => openAssignModal(fileId, fileTitle));
+                });
+            });
+        });
+
+        new bootstrap.Modal(document.getElementById('assignModal')).show();
+    }
+
+    document.getElementById('assignBtn').addEventListener('click', function() {
+        const patientId = document.getElementById('assignPatientSelect').value;
+        if (!patientId) { alert('Seleccioná un paciente.'); return; }
+
+        fetch(`/api/files/${currentAssignFileId}/assign/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify({ patient_id: patientId }),
+        })
+        .then(r => r.json().then(d => ({ status: r.status, data: d })))
+        .then(({ status, data }) => {
+            if (status === 201 || status === 200) {
+                const title = document.getElementById('assignFileName').textContent;
+                openAssignModal(currentAssignFileId, title);
+            } else {
+                alert(data.error || 'Error al asignar.');
+            }
+        });
+    });
+
+    // Cargar archivos al inicio
+    loadFiles('');
+});
+</script>
+{% endblock %}

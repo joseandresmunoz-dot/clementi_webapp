@@ -1,0 +1,128 @@
+/* ===================================================
+   Clementi WebApp — Estilos principales
+   =================================================== */
+
+:root {
+    --primary: #3a7ca5;
+    --primary-dark: #2c5f7c;
+    --accent: #81c3d7;
+    --success-green: #28a745;
+    --booked-red: #dc3545;
+    --own-blue: #007bff;
+    --muted-gray: #6c757d;
+    --bg-light: #f0f4f8;
+    --card-shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+
+/* Override Bootstrap primary */
+.bg-primary { background-color: var(--primary) !important; }
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+/* General */
+html { min-height: 100%; }
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--bg-light);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+main { flex: 1; }
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: .75rem;
+    box-shadow: var(--card-shadow);
+}
+.card-header {
+    border-radius: .75rem .75rem 0 0 !important;
+}
+
+/* Hero section */
+.hero {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    color: #fff;
+    padding: 5rem 0;
+    margin-bottom: 2rem;
+}
+.hero h1 { font-weight: 700; }
+.hero .lead { font-size: 1.25rem; opacity: .9; }
+
+/* Calendar */
+#calendar {
+    background: #fff;
+    border-radius: .75rem;
+    padding: 1rem;
+    box-shadow: var(--card-shadow);
+}
+.fc .fc-toolbar-title { font-size: 1.3rem; font-weight: 600; }
+.fc .fc-button-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+.fc .fc-button-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+.fc .fc-daygrid-day.fc-day-today {
+    background-color: rgba(58,124,165,.08);
+}
+
+/* Slot colors */
+.slot-available { background-color: var(--success-green) !important; border: none !important; }
+.slot-booked    { background-color: var(--booked-red) !important; border: none !important; }
+.slot-own       { background-color: var(--own-blue) !important; border: none !important; }
+.slot-past      { background-color: var(--muted-gray) !important; border: none !important; }
+
+/* Booking modal */
+.modal-confirm .modal-header { background-color: var(--primary); color: #fff; }
+
+/* Dashboard stats */
+.stat-card {
+    text-align: center;
+    padding: 1.5rem;
+}
+.stat-card .stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+.stat-card .stat-label {
+    color: var(--muted-gray);
+    font-size: .9rem;
+}
+
+/* Admin panel */
+.admin-sidebar { min-height: calc(100vh - 56px); }
+.slot-form .form-control { font-size: .9rem; }
+
+/* Google btn */
+.btn-google {
+    background-color: #fff;
+    border: 1px solid #dadce0;
+    color: #3c4043;
+    font-weight: 500;
+    padding: .5rem 1.25rem;
+    border-radius: .375rem;
+    transition: box-shadow .2s;
+}
+.btn-google:hover {
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    background-color: #f8f9fa;
+}
+.btn-google img { width: 20px; margin-right: .5rem; }
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+    .hero { padding: 3rem 0; }
+    .hero h1 { font-size: 1.8rem; }
+    .fc .fc-toolbar { flex-direction: column; gap: .5rem; }
+}
