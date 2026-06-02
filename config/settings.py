@@ -110,6 +110,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # django-allauth
+ALLAUTH_TRUSTED_PROXY_COUNT = 1
 ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_EMAIL_VERIFICATION = "optional"
