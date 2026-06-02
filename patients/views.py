@@ -50,6 +50,9 @@ def debug_login(request):
         data["DJANGO_ALLOWED_HOSTS"] = dj_settings.ALLOWED_HOSTS
         data["SOCIALACCOUNT_ONLY"] = getattr(dj_settings, "SOCIALACCOUNT_ONLY", "NOT SET")
         data["ALLAUTH_SOCIALACCOUNT_ONLY"] = allauth_settings.SOCIALACCOUNT_ONLY
+        data["REMOTE_ADDR"] = request.META.get("REMOTE_ADDR", "NOT SET")
+        data["HTTP_X_FORWARDED_FOR"] = request.META.get("HTTP_X_FORWARDED_FOR", "NOT SET")
+        data["X_FORWARDED_FOR_hdr"] = request.headers.get("x-forwarded-for", "NOT SET")
 
         email = request.POST.get("login", "")
         password = request.POST.get("password", "")
