@@ -22,6 +22,7 @@ def debug_login(request):
     from django.conf import settings as dj_settings
     from django.contrib.auth import authenticate, login
     from django.http import JsonResponse, HttpResponse
+    from allauth import app_settings as allauth_settings
 
     if request.method == "POST":
         data = {}
@@ -44,6 +45,8 @@ def debug_login(request):
         data["CSRF_COOKIE_NAME"] = dj_settings.CSRF_COOKIE_NAME
         data["SESSION_COOKIE_DOMAIN"] = dj_settings.SESSION_COOKIE_DOMAIN
         data["DJANGO_ALLOWED_HOSTS"] = dj_settings.ALLOWED_HOSTS
+        data["SOCIALACCOUNT_ONLY"] = getattr(dj_settings, "SOCIALACCOUNT_ONLY", "NOT SET")
+        data["ALLAUTH_SOCIALACCOUNT_ONLY"] = allauth_settings.SOCIALACCOUNT_ONLY
 
         email = request.POST.get("login", "")
         password = request.POST.get("password", "")
