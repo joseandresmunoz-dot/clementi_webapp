@@ -217,6 +217,9 @@ GOOGLE_CALENDAR_CREDENTIALS_FILE = env(
 if os.getenv("PLATFORM_APPLICATION_NAME") is not None:
     DEBUG = False
 
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = False
+
     if os.getenv("PLATFORM_APP_DIR") is not None:
         STATIC_ROOT = os.path.join(os.getenv("PLATFORM_APP_DIR"), "staticfiles")
 
