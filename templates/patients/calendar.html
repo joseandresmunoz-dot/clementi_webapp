@@ -21,6 +21,7 @@
 <div class="d-flex gap-3 mb-3 flex-wrap small">
     <span><span class="badge bg-success">&nbsp;&nbsp;</span> Disponible</span>
     <span><span class="badge bg-danger">&nbsp;&nbsp;</span> Reservado</span>
+    <span><span class="badge bg-secondary">&nbsp;&nbsp;</span> Pasado</span>
     {% if user.is_authenticated %}
     <span><span class="badge bg-primary">&nbsp;&nbsp;</span> Tu turno</span>
     {% endif %}
@@ -110,6 +111,16 @@ document.addEventListener('DOMContentLoaded', function() {
         selectable: false,
         editable: false,
         height: 'auto',
+        dayCellClassNames: function(arg) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const cellDate = new Date(arg.date);
+            cellDate.setHours(0, 0, 0, 0);
+            if (cellDate < today) {
+                return ['calendar-day-past'];
+            }
+            return [];
+        },
 
         events: {
             url: '/api/appointments/slots/calendar/',
@@ -117,19 +128,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Error al cargar los turnos.');
             },
             success: function(events) {
-                // Filtrar: solo mostrar turnos que NO son pasados
-                return events.filter(function(ev) {
-                    return !(ev.extendedProps && ev.extendedProps.past);
-                });
+                return events;
             }
+        },
+        datesSet: function() {
+            updatePastTimeOverlay();
         },
 
         eventClick: function(info) {
             const event = info.event;
             const props = event.extendedProps || {};
 
-            // Si es pasado, no hacer nada
             if (props.past) {
+                showToast('Ese turno ya pasó y no se puede reservar.', 'warning');
                 return;
             }
 
@@ -169,6 +180,33 @@ document.addEventListener('DOMContentLoaded', function() {
         },
     });
     calendar.render();
+    updatePastTimeOverlay();
+
+    function updatePastTimeOverlay() {
+        document.querySelectorAll('.fc-timegrid-col-past-hours').forEach(el => el.remove());
+        const viewType = calendar.view ? calendar.view.type : '';
+        if (viewType !== 'timeGridWeek' && viewType !== 'timeGridDay') {
+            return;
+        }
+        const now = new Date();
+        const currentDateKey = now.toISOString().slice(0, 10);
+        const currentHour = now.getHours();
+        const currentMinutes = now.getMinutes();
+        const pastHeight = ((currentHour * 60) + currentMinutes) / (24 * 60) * 100;
+
+        const cols = calendarEl.querySelectorAll('.fc-timegrid-col[data-date]');
+        cols.forEach(col => {
+            if (col.getAttribute('data-date') !== currentDateKey) {
+                return;
+            }
+            const overlay = document.createElement('div');
+            overlay.className = 'fc-timegrid-col-past-hours';
+            overlay.style.height = `${pastHeight}%`;
+            col.appendChild(overlay);
+        });
+    }
+
+    setInterval(updatePastTimeOverlay, 60000);
 
     // ── Confirmar reserva ────────────────────────────────────────
     document.getElementById('confirmBookBtn').addEventListener('click', function() {
@@ -245,9 +283,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const e = end ? end.toLocaleTimeString('es-AR', {hour: '2-digit', minute: '2-digit'}) : '';
         return e ? `${s} — ${e}` : s;
     }
-    function showToast(msg) {
+    function showToast(msg, type = 'success') {
         const toast = document.createElement('div');
-        toast.className = 'alert alert-success alert-dismissible fade show position-fixed bottom-0 end-0 m-3';
+        toast.className = `alert alert-${type} alert-dismissible fade show position-fixed bottom-0 end-0 m-3`;
         toast.style.zIndex = '9999';
         toast.innerHTML = msg + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
         document.body.appendChild(toast);

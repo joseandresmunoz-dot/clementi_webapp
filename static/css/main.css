@@ -76,11 +76,31 @@ main { flex: 1; }
     background-color: rgba(58,124,165,.08);
 }
 
+.fc .fc-daygrid-day.calendar-day-past {
+    background-color: rgba(108,117,125,.12);
+}
+.fc .fc-daygrid-day.calendar-day-past .fc-daygrid-day-number {
+    color: var(--muted-gray);
+}
+
+.fc .fc-timegrid-col {
+    position: relative;
+}
+.fc .fc-timegrid-col-past-hours {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(108,117,125,.14);
+    pointer-events: none;
+    z-index: 2;
+}
+
 /* Slot colors */
 .slot-available { background-color: var(--success-green) !important; border: none !important; }
 .slot-booked    { background-color: var(--booked-red) !important; border: none !important; }
 .slot-own       { background-color: var(--own-blue) !important; border: none !important; }
-.slot-past      { background-color: var(--muted-gray) !important; border: none !important; }
+.slot-past      { background-color: var(--muted-gray) !important; border: none !important; opacity: .75; cursor: not-allowed; }
 
 /* Booking modal */
 .modal-confirm .modal-header { background-color: var(--primary); color: #fff; }

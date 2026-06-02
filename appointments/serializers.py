@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import serializers
 
 from appointments.models import Appointment
@@ -28,18 +29,20 @@ class AppointmentPublicSerializer(serializers.ModelSerializer):
             "display_status",
             "is_own",
             "meet_link",
+            "past",
             "extendedProps",
         ]
         read_only_fields = fields
     def get_past(self, obj):
-        from datetime import date, datetime
-        today = date.today()
-        if obj.date < today:
+        now = timezone.localtime()
+        if obj.date < now.date():
             return True
-        if obj.date == today and obj.end_time:
-            now = datetime.now().time()
-            return obj.end_time < now
-        return False
+        if obj.date > now.date():
+            return False
+        end_time = obj.end_time or obj.start_time
+        if not end_time:
+            return False
+        return end_time <= now.time()
 
     def get_extendedProps(self, obj):
         # Devuelve todos los props extra que FullCalendar necesita

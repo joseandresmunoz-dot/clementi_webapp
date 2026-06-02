@@ -117,7 +117,7 @@ SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 SOCIALACCOUNT_STORE_TOKENS = True
-LOGIN_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "/mi-panel/"
 LOGOUT_REDIRECT_URL = "/"
 
 # Google OAuth2 — las credenciales se leen desde .env
@@ -161,7 +161,10 @@ USE_TZ = True
 # STATIC & MEDIA
 # ---------------------------------------------------------------------------
 STATIC_URL = "static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = [
+    ("images", BASE_DIR / "images"),
+    BASE_DIR / "static",
+]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "media/"

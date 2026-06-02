@@ -1,0 +1,499 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Pacientes — Administración{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-title {
+        font-weight: 700;
+        color: #222;
+        font-size: 1.5rem;
+    }
+    .page-title i {
+        color: var(--brand);
+        margin-right: 8px;
+    }
+
+    .btn-create {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 22px;
+        border-radius: 12px;
+        border: none;
+        background: var(--brand);
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+    .btn-create:hover {
+        background: var(--brand-dark);
+        transform: translateY(-2px);
+        color: #fff;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 20px;
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+        background: #fff;
+        color: #555;
+        font-weight: 500;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+    .btn-back:hover {
+        border-color: var(--brand);
+        color: var(--brand);
+        background: rgba(153,153,255,0.04);
+    }
+
+    /* Section cards */
+    .admin-section {
+        background: #fff;
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(153, 153, 255, 0.15);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    .admin-section .section-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .admin-section .section-header h5 {
+        font-weight: 600;
+        color: #222;
+        margin: 0;
+        font-size: 0.95rem;
+    }
+    .admin-section .section-header .pending-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #f59e0b;
+        display: inline-block;
+    }
+    .admin-section .section-header .approved-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #22c55e;
+        display: inline-block;
+    }
+    .admin-section .section-body {
+        padding: 0;
+    }
+
+    /* Table */
+    .admin-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    .admin-table thead th {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 0.85rem 1.25rem;
+        border-bottom: 2px solid #f0f0f0;
+        background: transparent;
+    }
+    .admin-table tbody td {
+        padding: 0.85rem 1.25rem;
+        border-bottom: 1px solid #f5f5f5;
+        font-size: 0.88rem;
+        color: #333333;
+        vertical-align: middle;
+    }
+    .admin-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    .admin-table tbody tr:hover {
+        background: rgba(153, 153, 255, 0.04);
+    }
+    .admin-table .patient-name {
+        font-weight: 600;
+        color: #222;
+    }
+    .admin-table .patient-email {
+        color: #888;
+        font-size: 0.82rem;
+    }
+    .admin-table .date-cell {
+        font-size: 0.82rem;
+        color: #666;
+    }
+    .admin-table .approved-by {
+        font-size: 0.75rem;
+        color: #999;
+        display: block;
+    }
+
+    /* Action buttons */
+    .action-group {
+        display: flex;
+        gap: 6px;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+    .btn-approve {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 14px;
+        border-radius: 10px;
+        border: none;
+        background: rgba(34,197,94,0.12);
+        color: #16a34a;
+        font-weight: 600;
+        font-size: 0.78rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .btn-approve:hover {
+        background: #16a34a;
+        color: #fff;
+        transform: translateY(-1px);
+    }
+    .btn-reject {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 14px;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        background: #fff;
+        color: #ef4444;
+        font-weight: 500;
+        font-size: 0.78rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .btn-reject:hover {
+        border-color: #ef4444;
+        background: rgba(239,68,68,0.06);
+        color: #dc2626;
+    }
+    .btn-view {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 14px;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        background: #fff;
+        color: #555;
+        font-weight: 500;
+        font-size: 0.78rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    .btn-view:hover {
+        border-color: var(--brand);
+        color: var(--brand);
+        background: rgba(153,153,255,0.04);
+    }
+    .btn-revoke {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 14px;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        background: #fff;
+        color: #f59e0b;
+        font-weight: 500;
+        font-size: 0.78rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .btn-revoke:hover {
+        border-color: #f59e0b;
+        background: rgba(245,158,11,0.06);
+        color: #d97706;
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 2rem 1.5rem;
+        color: #999;
+    }
+    .empty-state i {
+        font-size: 1.8rem;
+        color: #ddd;
+        display: block;
+        margin-bottom: 8px;
+    }
+    .empty-state p {
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    /* Modal */
+    .modal-brand .modal-content {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    .modal-brand .modal-header {
+        border-bottom: 1px solid #f0f0f0;
+        padding: 1.25rem 1.5rem;
+    }
+    .modal-brand .modal-title {
+        font-weight: 700;
+        color: #222;
+        font-size: 1.1rem;
+    }
+    .modal-brand .modal-body {
+        padding: 1.25rem 1.5rem;
+    }
+    .modal-brand .modal-footer {
+        border-top: 1px solid #f0f0f0;
+        padding: 1rem 1.5rem;
+    }
+    .modal-brand .form-label {
+        font-weight: 500;
+        color: #333;
+        font-size: 0.85rem;
+        margin-bottom: 6px;
+    }
+    .modal-brand .form-control {
+        border-radius: 12px;
+        border: 1px solid #dadce0;
+        padding: 10px 14px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+    .modal-brand .form-control:focus {
+        border-color: var(--brand);
+        box-shadow: 0 0 0 3px rgba(153,153,255,0.2);
+        outline: none;
+    }
+    .modal-brand .form-text {
+        font-size: 0.78rem;
+        color: #999;
+        margin-top: 4px;
+    }
+    .modal-brand .btn-cancel-modal {
+        padding: 10px 22px;
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+        background: #fff;
+        color: #555;
+        font-weight: 500;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+    .modal-brand .btn-cancel-modal:hover {
+        border-color: #ccc;
+        background: #f5f5f5;
+    }
+    .modal-brand .btn-submit-modal {
+        padding: 10px 22px;
+        border-radius: 12px;
+        border: none;
+        background: var(--brand);
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+    .modal-brand .btn-submit-modal:hover {
+        background: var(--brand-dark);
+        transform: translateY(-1px);
+    }
+
+    @media (max-width: 768px) {
+        .admin-table thead th,
+        .admin-table tbody td {
+            padding: 0.7rem 0.8rem;
+            font-size: 0.8rem;
+        }
+        .action-group {
+            gap: 4px;
+        }
+        .btn-approve, .btn-reject, .btn-view, .btn-revoke {
+            padding: 5px 10px;
+            font-size: 0.72rem;
+        }
+        .page-title {
+            font-size: 1.2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title mb-0"><i class="bi bi-people"></i> Pacientes</h2>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#createPatientModal">
+            <i class="bi bi-person-plus"></i> Crear paciente
+        </button>
+        <a href="{% url 'patients:admin_panel' %}" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+
+<!-- Pendientes -->
+<div class="admin-section">
+    <div class="section-header">
+        <span class="pending-dot"></span>
+        <h5>Pendientes de aprobación</h5>
+    </div>
+    <div class="section-body">
+        {% if pending_profiles %}
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Paciente</th>
+                        <th>Email</th>
+                        <th>Alta</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for profile in pending_profiles %}
+                    <tr>
+                        <td><span class="patient-name">{{ profile.user.get_full_name|default:"Sin nombre" }}</span></td>
+                        <td><span class="patient-email">{{ profile.user.email }}</span></td>
+                        <td><span class="date-cell">{{ profile.created_at|date:"d/m/Y H:i" }}</span></td>
+                        <td>
+                            <div class="action-group">
+                                <form method="post" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="profile_id" value="{{ profile.id }}">
+                                    <input type="hidden" name="action" value="approve">
+                                    <button type="submit" class="btn-approve"><i class="bi bi-check-lg"></i> Aprobar</button>
+                                </form>
+                                <form method="post" class="d-inline" onsubmit="return confirm('¿Rechazar y eliminar este paciente pendiente?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="profile_id" value="{{ profile.id }}">
+                                    <input type="hidden" name="action" value="reject">
+                                    <button type="submit" class="btn-reject"><i class="bi bi-x-lg"></i> Rechazar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <p>No hay pacientes pendientes.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Aprobados -->
+<div class="admin-section">
+    <div class="section-header">
+        <span class="approved-dot"></span>
+        <h5>Pacientes aprobados</h5>
+    </div>
+    <div class="section-body">
+        {% if approved_profiles %}
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Paciente</th>
+                        <th>Email</th>
+                        <th>Aprobado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for profile in approved_profiles %}
+                    <tr>
+                        <td><span class="patient-name">{{ profile.user.get_full_name|default:"Sin nombre" }}</span></td>
+                        <td><span class="patient-email">{{ profile.user.email }}</span></td>
+                        <td>
+                            <span class="date-cell">{{ profile.approved_at|date:"d/m/Y H:i" }}</span>
+                            {% if profile.approved_by %}
+                            <span class="approved-by">por {{ profile.approved_by.get_full_name|default:profile.approved_by.email }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-group">
+                                <a href="{% url 'patients:patient_admin_detail' profile.id %}" class="btn-view"><i class="bi bi-eye"></i> Ver</a>
+                                <form method="post" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="profile_id" value="{{ profile.id }}">
+                                    <input type="hidden" name="action" value="revoke">
+                                    <button type="submit" class="btn-revoke"><i class="bi bi-arrow-counterclockwise"></i> Revocar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-people"></i>
+            <p>Todavía no hay pacientes aprobados.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal Crear Paciente -->
+<div class="modal fade modal-brand" id="createPatientModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="create_patient">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-person-plus" style="color:var(--brand);margin-right:8px;"></i> Crear paciente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Correo electrónico <span style="color:#ef4444;">*</span></label>
+                        <input type="email" class="form-control" id="email" name="email" required placeholder="paciente@email.com">
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label for="first_name" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" placeholder="Nombre">
+                        </div>
+                        <div class="col">
+                            <label for="last_name" class="form-label">Apellido</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Apellido">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Contraseña temporal <span style="color:#ef4444;">*</span></label>
+                        <input type="password" class="form-control" id="password" name="password" required minlength="6" placeholder="Mínimo 6 caracteres">
+                        <div class="form-text">El paciente puede cambiarla después de su primer ingreso.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel-modal" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn-submit-modal"><i class="bi bi-check-lg"></i> Crear paciente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

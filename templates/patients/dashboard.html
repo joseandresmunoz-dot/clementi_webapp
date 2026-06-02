@@ -1,42 +1,339 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Mi Panel — Dra. Clementi{% endblock %}
+{% block title %}Mi Panel — Microbiota y Salud{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dash-title {
+        font-weight: 700;
+        color: #222;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+    }
+    .dash-title i {
+        color: var(--brand);
+        margin-right: 8px;
+    }
+
+    /* Stats cards */
+    .stat-card-modern {
+        background: #fff;
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(153, 153, 255, 0.15);
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    .stat-card-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 16px 40px rgba(153, 153, 255, 0.25);
+    }
+    .stat-card-modern .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        font-size: 1.4rem;
+        color: #fff;
+    }
+    .stat-card-modern .stat-icon.blue { background: linear-gradient(135deg, #9999FF, #7A7ACC); }
+    .stat-card-modern .stat-icon.green { background: linear-gradient(135deg, #4ade80, #22c55e); }
+    .stat-card-modern .stat-icon.purple { background: linear-gradient(135deg, #c084fc, #a855f7); }
+    .stat-card-modern .stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #222;
+        line-height: 1.2;
+    }
+    .stat-card-modern .stat-label {
+        font-size: 0.85rem;
+        color: #666;
+        font-weight: 500;
+    }
+
+    /* Section cards */
+    .section-card {
+        background: #fff;
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(153, 153, 255, 0.15);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    .section-card .section-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .section-card .section-header h5 {
+        font-weight: 600;
+        color: #222;
+        margin: 0;
+        font-size: 1rem;
+    }
+    .section-card .section-header h5 i {
+        color: var(--brand);
+        margin-right: 8px;
+    }
+    .section-card .section-body {
+        padding: 1.25rem 1.5rem;
+    }
+
+    /* Table styling */
+    .dash-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    .dash-table thead th {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 0.75rem 0.5rem 0.5rem;
+        border-bottom: 2px solid #f0f0f0;
+        background: transparent;
+    }
+    .dash-table tbody td {
+        padding: 0.85rem 0.5rem;
+        border-bottom: 1px solid #f5f5f5;
+        font-size: 0.9rem;
+        color: #333333;
+        vertical-align: middle;
+    }
+    .dash-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    .dash-table tbody tr:hover {
+        background: rgba(153, 153, 255, 0.04);
+    }
+    .badge-status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: rgba(153, 153, 255, 0.12);
+        color: var(--brand);
+    }
+    .btn-meet {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: rgba(74, 222, 128, 0.15);
+        color: #16a34a;
+        transition: all 0.3s ease;
+    }
+    .btn-meet:hover {
+        background: #16a34a;
+        color: #fff;
+        transform: translateY(-1px);
+    }
+    .btn-cancel {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        background: transparent;
+        color: #999;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .btn-cancel:hover {
+        border-color: #ef4444;
+        color: #ef4444;
+        background: rgba(239, 68, 68, 0.06);
+    }
+
+    /* Files list */
+    .file-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 0.85rem 0;
+        border-bottom: 1px solid #f5f5f5;
+        transition: all 0.3s ease;
+    }
+    .file-item:last-child {
+        border-bottom: none;
+    }
+    .file-item:hover {
+        padding-left: 6px;
+    }
+    .file-item .file-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    .file-item .file-icon.pdf { background: rgba(239,68,68,0.1); color: #dc2626; }
+    .file-item .file-icon.video { background: rgba(59,130,246,0.1); color: #3b82f6; }
+    .file-item .file-icon.image { background: rgba(34,197,94,0.1); color: #16a34a; }
+    .file-item .file-icon.default { background: rgba(153,153,255,0.1); color: var(--brand); }
+    .file-item .file-info {
+        flex: 1;
+        min-width: 0;
+    }
+    .file-item .file-info strong {
+        font-size: 0.9rem;
+        color: #222;
+        display: block;
+    }
+    .file-item .file-info small {
+        font-size: 0.78rem;
+        color: #999;
+    }
+    .file-item .file-date {
+        font-size: 0.78rem;
+        color: #999;
+        flex-shrink: 0;
+    }
+
+    /* Timeline accordion */
+    .timeline-accordion .accordion-item {
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+        background: transparent;
+    }
+    .timeline-accordion .accordion-item:last-child {
+        border-bottom: none;
+    }
+    .timeline-accordion .accordion-button {
+        padding: 1rem 0;
+        font-weight: 600;
+        color: #333;
+        background: transparent;
+        box-shadow: none;
+        font-size: 0.9rem;
+    }
+    .timeline-accordion .accordion-button:not(.collapsed) {
+        color: var(--brand);
+        background: transparent;
+        box-shadow: none;
+    }
+    .timeline-accordion .accordion-button::after {
+        background-size: 14px;
+        opacity: 0.4;
+    }
+    .timeline-accordion .accordion-button:not(.collapsed)::after {
+        opacity: 0.7;
+    }
+    .timeline-accordion .accordion-body {
+        padding: 0 0 1rem;
+        font-size: 0.9rem;
+        color: #555;
+        line-height: 1.6;
+    }
+    .timeline-accordion .entry-meta {
+        font-size: 0.78rem;
+        color: #999;
+        margin-top: 8px;
+    }
+
+    /* Empty states */
+    .empty-state {
+        text-align: center;
+        padding: 1.5rem 0;
+        color: #999;
+    }
+    .empty-state i {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 8px;
+        color: #ddd;
+    }
+    .empty-state a {
+        color: var(--brand);
+        font-weight: 600;
+    }
+    .empty-state a:hover {
+        color: var(--brand-dark);
+    }
+
+    @media (max-width: 768px) {
+        .dash-title {
+            font-size: 1.25rem;
+        }
+        .stat-card-modern .stat-number {
+            font-size: 1.5rem;
+        }
+        .section-card .section-header {
+            padding: 0.85rem 1.2rem;
+        }
+        .section-card .section-body {
+            padding: 1rem 1.2rem;
+        }
+        .dash-table tbody td {
+            font-size: 0.82rem;
+            padding: 0.7rem 0.4rem;
+        }
+        .file-item .file-date {
+            display: none;
+        }
+        .iframe-container iframe {
+            min-height: 500px;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<h2 class="mb-4"><i class="bi bi-speedometer2"></i> Mi Panel</h2>
+<h2 class="dash-title"><i class="bi bi-speedometer2"></i> Mi Panel</h2>
 
 <!-- Stats -->
 <div class="row g-3 mb-4">
     <div class="col-md-4">
-        <div class="card stat-card">
-            <span class="stat-number">{{ upcoming_count }}</span>
-            <span class="stat-label">Próximos turnos</span>
+        <div class="stat-card-modern">
+            <div class="stat-icon blue"><i class="bi bi-calendar-check"></i></div>
+            <div class="stat-number">{{ upcoming_count }}</div>
+            <div class="stat-label">Próximos turnos</div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card stat-card">
-            <span class="stat-number">{{ past_count }}</span>
-            <span class="stat-label">Consultas realizadas</span>
+        <div class="stat-card-modern">
+            <div class="stat-icon green"><i class="bi bi-check-circle"></i></div>
+            <div class="stat-number">{{ past_count }}</div>
+            <div class="stat-label">Consultas realizadas</div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card stat-card">
-            <span class="stat-number">{{ files_count }}</span>
-            <span class="stat-label">Documentos disponibles</span>
+        <div class="stat-card-modern">
+            <div class="stat-icon purple"><i class="bi bi-folder2-open"></i></div>
+            <div class="stat-number">{{ files_count }}</div>
+            <div class="stat-label">Documentos disponibles</div>
         </div>
     </div>
 </div>
 
 <!-- Próximos turnos -->
-<div class="card mb-4">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0"><i class="bi bi-calendar-event"></i> Mis Próximos Turnos</h5>
+<div class="section-card">
+    <div class="section-header">
+        <h5><i class="bi bi-calendar-event"></i> Mis Próximos Turnos</h5>
     </div>
-    <div class="card-body">
+    <div class="section-body">
         {% if upcoming_appointments %}
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+            <table class="dash-table">
+                <thead>
                     <tr>
                         <th>Fecha</th>
                         <th>Horario</th>
@@ -50,11 +347,10 @@
                     <tr>
                         <td>{{ apt.date|date:"l d/m/Y" }}</td>
                         <td>{{ apt.start_time|time:"H:i" }} — {{ apt.end_time|time:"H:i" }}</td>
-                        <td><span class="badge bg-primary">Reservado</span></td>
+                        <td><span class="badge-status">Reservado</span></td>
                         <td>
                             {% if apt.google_meet_link %}
-                            <a href="{{ apt.google_meet_link }}" target="_blank"
-                               class="btn btn-sm btn-success">
+                            <a href="{{ apt.google_meet_link }}" target="_blank" class="btn-meet">
                                 <i class="bi bi-camera-video"></i> Unirse
                             </a>
                             {% else %}
@@ -62,8 +358,7 @@
                             {% endif %}
                         </td>
                         <td>
-                            <button class="btn btn-sm btn-outline-danger cancel-apt-btn"
-                                    data-id="{{ apt.id }}">
+                            <button class="btn-cancel cancel-apt-btn" data-id="{{ apt.id }}" title="Cancelar turno">
                                 <i class="bi bi-x-lg"></i>
                             </button>
                         </td>
@@ -73,47 +368,96 @@
             </table>
         </div>
         {% else %}
-        <p class="text-muted mb-0">No tenés turnos próximos.
-            <a href="{% url 'patients:calendar' %}">Reservar uno →</a>
-        </p>
+        <div class="empty-state">
+            <i class="bi bi-calendar-plus"></i>
+            <p>No tenés turnos próximos. <a href="{% url 'patients:calendar' %}">Reservar uno →</a></p>
+        </div>
         {% endif %}
     </div>
 </div>
 
-<!-- Archivos -->
-<div class="card mb-4">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0"><i class="bi bi-folder2-open"></i> Mis Documentos</h5>
+<!-- Mis Documentos -->
+<div class="section-card">
+    <div class="section-header">
+        <h5><i class="bi bi-folder2-open"></i> Mis Documentos</h5>
     </div>
-    <div class="card-body">
+    <div class="section-body">
         {% if files %}
-        <div class="list-group list-group-flush">
+        <div>
             {% for file in files %}
-            <a href="{{ file.file.url }}" class="list-group-item list-group-item-action d-flex align-items-center">
+            <a href="{{ file.file.url }}" class="file-item" style="text-decoration:none;color:inherit;display:flex;">
                 {% if file.file_type == "PDF" %}
-                <i class="bi bi-file-earmark-pdf text-danger me-3 fs-4"></i>
+                <div class="file-icon pdf"><i class="bi bi-file-earmark-pdf"></i></div>
                 {% elif file.file_type == "VIDEO" %}
-                <i class="bi bi-play-circle text-primary me-3 fs-4"></i>
+                <div class="file-icon video"><i class="bi bi-play-circle"></i></div>
                 {% elif file.file_type == "IMAGE" %}
-                <i class="bi bi-image text-success me-3 fs-4"></i>
+                <div class="file-icon image"><i class="bi bi-image"></i></div>
                 {% else %}
-                <i class="bi bi-file-earmark me-3 fs-4"></i>
+                <div class="file-icon default"><i class="bi bi-file-earmark"></i></div>
                 {% endif %}
-                <div>
+                <div class="file-info">
                     <strong>{{ file.title }}</strong>
                     {% if file.description %}
-                    <br><small class="text-muted">{{ file.description }}</small>
+                    <small>{{ file.description }}</small>
                     {% endif %}
                 </div>
-                <small class="ms-auto text-muted">{{ file.created_at|date:"d/m/Y" }}</small>
+                <span class="file-date">{{ file.created_at|date:"d/m/Y" }}</span>
             </a>
             {% endfor %}
         </div>
         {% else %}
-        <p class="text-muted mb-0">No tenés documentos disponibles todavía.</p>
+        <div class="empty-state">
+            <i class="bi bi-file-earmark"></i>
+            <p>No tenés documentos disponibles todavía.</p>
+        </div>
         {% endif %}
     </div>
 </div>
+
+<!-- Mi Historial Clínico -->
+<div class="section-card">
+    <div class="section-header">
+        <h5><i class="bi bi-journal-medical"></i> Mi Historial Clínico</h5>
+    </div>
+    <div class="section-body">
+        {% if timeline_entries %}
+        <div class="timeline-accordion accordion" id="timelineAccordion">
+            {% for entry in timeline_entries %}
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="timelineHeading{{ forloop.counter }}">
+                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#timelineCollapse{{ forloop.counter }}"
+                            aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}">
+                        <div class="w-100 d-flex justify-content-between align-items-center me-3">
+                            <span>{{ entry.subject }}</span>
+                            <small class="text-muted" style="font-weight:400;font-size:0.78rem;">{{ entry.created_at|date:"d/m/Y H:i" }}</small>
+                        </div>
+                    </button>
+                </h2>
+                <div id="timelineCollapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                     data-bs-parent="#timelineAccordion">
+                    <div class="accordion-body">
+                        <p class="mb-2">{{ entry.details|linebreaksbr }}</p>
+                        <div class="entry-meta">
+                            Registrado por {{ entry.created_by.get_full_name|default:entry.created_by.email|default:"Administrador" }}
+                            {% if entry.appointment %}
+                            · Turno {{ entry.appointment.date|date:"d/m/Y" }} {{ entry.appointment.start_time|time:"H:i" }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-journal-text"></i>
+            <p>Todavía no hay registros en tu historial clínico.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}

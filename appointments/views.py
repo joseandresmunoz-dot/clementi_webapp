@@ -1,7 +1,9 @@
 import logging
-from datetime import date
+
+from django.utils import timezone
 
 from django.db import transaction
+from django.db.models import Q
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -16,6 +18,7 @@ from appointments.services.google_calendar import (
     create_calendar_event,
     delete_calendar_event,
 )
+from patients.models import PatientProfile
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +88,13 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         serializer = BookAppointmentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        profile = PatientProfile.objects.filter(user=request.user).first()
+        if not profile or not profile.is_approved:
+            return Response(
+                {"error": "Tu cuenta aún no fue aprobada por administración."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         appointment_id = serializer.validated_data["appointment_id"]
         notes = serializer.validated_data.get("notes", "")
 
@@ -106,7 +116,10 @@ class AppointmentViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_409_CONFLICT,
                 )
 
-            if appointment.date < date.today():
+            now = timezone.localtime()
+            if appointment.date < now.date() or (
+                appointment.date == now.date() and appointment.start_time <= now.time()
+            ):
                 return Response(
                     {"error": "No se puede reservar un turno en el pasado."},
                     status=status.HTTP_400_BAD_REQUEST,
@@ -224,7 +237,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     @action(
         detail=False,
         methods=["get"],
-        permission_classes=[permissions.AllowAny],
+        permission_classes=[permissions.IsAuthenticated],
         url_path="calendar",
     )
     def calendar_events(self, request):
@@ -234,6 +247,10 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         No muestra datos del paciente a usuarios no autorizados.
         """
         qs = self.get_queryset().exclude(status=Appointment.Status.CANCELLED)
+        now = timezone.localtime()
+        qs = qs.filter(
+            Q(date__gt=now.date()) | Q(date=now.date(), end_time__gt=now.time())
+        )
 
         events = []
         for apt in qs:

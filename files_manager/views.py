@@ -12,6 +12,7 @@ from files_manager.serializers import (
     SharedFileListSerializer,
     SharedFileUploadSerializer,
 )
+from patients.models import PatientProfile
 
 User = get_user_model()
 
@@ -49,6 +50,10 @@ class SharedFileViewSet(viewsets.ModelViewSet):
 
         if user.is_staff:
             return SharedFile.objects.all()
+
+        profile = PatientProfile.objects.filter(user=user).first()
+        if not profile or not profile.is_approved:
+            return SharedFile.objects.none()
 
         # Pacientes: PUBLIC + REGISTERED + PRIVATE con permiso
         private_ids = FilePermission.objects.filter(
@@ -144,7 +149,10 @@ class SharedFileViewSet(viewsets.ModelViewSet):
         if not request.user.is_staff:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        patients = User.objects.filter(is_staff=False).values(
+        patients = User.objects.filter(
+            is_staff=False,
+            patient_profile__is_approved=True,
+        ).values(
             "id", "email", "first_name", "last_name"
         )
         return Response(list(patients))

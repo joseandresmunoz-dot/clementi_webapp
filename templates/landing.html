@@ -1,0 +1,952 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microbiota y Salud</title>
+    <link rel="icon" href="{% static 'images/favicon/favicon.ico' %}" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            color: #333333;
+            line-height: 1.6;
+            background: #F4F4FD;
+        }
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.3s;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* ===== BRAND COLOR ===== */
+        :root {
+            --brand: #9999FF;
+            --brand-dark: #7A7ACC;
+            --brand-light: #b3b3ff;
+            --brand-bg: #F4F4FD;
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 24px;
+            background: #fff;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+        .navbar .logo img {
+            height: 48px;
+            width: auto;
+        }
+        .navbar .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            list-style: none;
+        }
+        .navbar .nav-links a {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #444;
+            padding: 6px 0;
+            position: relative;
+        }
+        .navbar .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--brand);
+            transition: width 0.3s;
+        }
+        .navbar .nav-links a:hover::after {
+            width: 100%;
+        }
+        .navbar .nav-links a:hover,
+        .navbar .nav-links .btn-logout:hover {
+            color: var(--brand);
+        }
+        .navbar .nav-links .btn-logout {
+            background: none;
+            border: none;
+            color: #333333;
+            font: inherit;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 6px 0;
+            position: relative;
+            transition: color 0.3s;
+        }
+        .navbar .nav-links .btn-ingresar {
+            background: var(--brand);
+            color: #fff !important;
+            padding: 8px 22px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background 0.3s, transform 0.2s;
+        }
+        .navbar .nav-links .btn-ingresar:hover {
+            background: var(--brand-dark);
+            transform: translateY(-1px);
+        }
+        .navbar .nav-links .btn-ingresar::after {
+            display: none;
+        }
+
+        /* Hamburger (mobile) */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+            padding: 4px;
+        }
+        .hamburger span {
+            width: 26px;
+            height: 3px;
+            background: #444;
+            border-radius: 3px;
+            transition: 0.3s;
+        }
+        #nav-toggle {
+            display: none;
+        }
+        .overlay {
+            display: none;
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            padding: 60px 0;
+            background: var(--brand-bg);
+        }
+        .hero .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+        }
+        .hero-text h1 {
+            font-size: 2.6rem;
+            font-weight: 800;
+            color: #222;
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+        .hero-text .subtitle {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--brand);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            white-space: pre-line;
+        }
+        .hero-text .subtitle i {
+            font-style: italic;
+        }
+        .hero-text p {
+            font-size: 0.95rem;
+            color: #333333;
+            margin-bottom: 16px;
+            line-height: 1.7;
+        }
+        .hero-text .cta-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 24px;
+            align-items: center;
+        }
+        .hero-text .cta-group .btn-primary {
+            background: var(--brand);
+            color: #fff;
+            padding: 14px 32px;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        .hero-text .cta-group .btn-primary:hover {
+            background: #7A7ACC;
+            transform: translateY(-3px);
+        }
+        .hero-text .cta-group .btn-secondary {
+            background: transparent;
+            color: var(--brand);
+            border: 2px solid var(--brand);
+            padding: 12px 30px;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        .hero-text .cta-group .btn-secondary:hover {
+            background: #7A7ACC;
+            border-color: #7A7ACC;
+            color: #fff;
+            transform: translateY(-3px);
+        }
+        .hero-text .cta-group .link-evalua {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--brand);
+            border-bottom: 1px dashed var(--brand);
+            padding-bottom: 2px;
+        }
+        .hero-text .cta-group .link-evalua:hover {
+            color: var(--brand-dark);
+            border-color: var(--brand-dark);
+        }
+        .hero-image {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .hero-image img {
+            max-height: 520px;
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.10);
+        }
+
+        /* ===== MI ESPECIALIDAD ===== */
+        .mi-especialidad {
+            padding: 70px 0;
+            text-align: center;
+        }
+        .mi-especialidad h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 8px;
+        }
+        .mi-especialidad .subheading {
+            font-size: 1rem;
+            color: #333333;
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+        .flip-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+
+        /* Flip Box */
+        .flip-box {
+            perspective: 1000px;
+            height: 220px;
+        }
+        .flip-box-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s ease;
+            transform-style: preserve-3d;
+        }
+        .flip-box:hover .flip-box-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-box-front, .flip-box-back {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 18px 14px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(153, 153, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+        .flip-box-front {
+            background: #fff;
+            border: 1px solid #eee;
+            overflow: hidden;
+            padding: 0;
+        }
+        .flip-box-front img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .flip-box-front h4 {
+            display: none;
+        }
+        .flip-box-back {
+            background: var(--brand);
+            color: #fff;
+            transform: rotateY(180deg);
+            border: none;
+        }
+        .flip-box-back p {
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: #fff;
+        }
+
+        /* ===== TESTIMONIOS ===== */
+        .testimonios {
+            padding: 70px 0;
+            background: var(--brand-bg);
+        }
+        .testimonios h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #222;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .testimonios-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+        }
+        .testimonio-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px 24px;
+            box-shadow: 0 10px 25px rgba(153, 153, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+        .testimonio-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 16px 40px rgba(153, 153, 255, 0.25);
+        }
+        .testimonio-card .quote {
+            font-size: 0.9rem;
+            color: #333333;
+            line-height: 1.7;
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+        .testimonio-card .quote::before {
+            content: '\201C';
+            font-size: 2rem;
+            color: var(--brand);
+            font-weight: 700;
+            line-height: 1;
+        }
+        .testimonio-card .author {
+            font-weight: 600;
+            color: #333;
+        }
+        .testimonio-card .role {
+            font-size: 0.8rem;
+            color: #999;
+        }
+
+        /* ===== SERVICIOS ===== */
+        .servicios {
+            padding: 70px 0;
+            text-align: center;
+        }
+        .servicios h3 {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--brand);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+        .servicios h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 40px;
+        }
+        .servicios-grid {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 28px;
+        }
+        .servicio-item {
+            flex: 0 0 220px;
+            text-align: center;
+        }
+        .servicio-item img {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 14px;
+            object-fit: contain;
+        }
+        .servicio-item p {
+            font-size: 0.9rem;
+            color: #333333;
+            line-height: 1.5;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            background: #1e1e2a;
+            color: #ccc;
+            padding: 40px 0 24px;
+            text-align: center;
+        }
+        .footer .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .footer .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            color: #ccc;
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: background 0.3s, color 0.3s, transform 0.2s;
+        }
+        .footer .social-links a:hover {
+            background: var(--brand);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+        .footer .social-links a span {
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        .footer p {
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+        }
+        .footer a {
+            color: var(--brand-light);
+        }
+        .footer a:hover {
+            color: #fff;
+        }
+        .footer .divider {
+            width: 40px;
+            height: 2px;
+            background: var(--brand);
+            margin: 16px auto;
+            border: none;
+        }
+
+        /* ===== WHATSAPP FLOATING BUTTON ===== */
+        .whatsapp-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #25D366;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(37,211,102,0.35);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .whatsapp-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 24px rgba(37,211,102,0.45);
+        }
+        .whatsapp-btn svg {
+            width: 28px;
+            height: 28px;
+            fill: #fff;
+        }
+
+        /* ===== RESPONSIVE ===== */
+
+        /* Tablet */
+        @media (max-width: 992px) {
+            .flip-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .testimonios-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .hero .container {
+                gap: 30px;
+            }
+            .hero-text h1 {
+                font-size: 2.2rem;
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .navbar .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: #fff;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+                padding: 20px 24px;
+                gap: 16px;
+                align-items: flex-start;
+            }
+            .navbar .nav-links a {
+                font-size: 1rem;
+            }
+            .hamburger {
+                display: flex;
+            }
+
+            #nav-toggle:checked ~ .nav-links {
+                display: flex;
+            }
+
+            .hero .container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            .hero-text .cta-group {
+                justify-content: center;
+            }
+            .hero-image {
+                grid-row: 1;
+            }
+            .hero-image img {
+                max-height: 340px;
+            }
+            .hero-text h1 {
+                font-size: 1.8rem;
+            }
+
+            .flip-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+            .flip-box {
+                height: 240px;
+            }
+            .flip-box-back p {
+                font-size: 0.85rem;
+                line-height: 1.5;
+                padding: 4px;
+            }
+
+            .testimonios-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .servicios-grid {
+                gap: 24px;
+            }
+            .servicio-item {
+                flex: 0 0 160px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .flip-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            .flip-box {
+                height: 220px;
+            }
+            .flip-box-back p {
+                font-size: 0.8rem;
+                line-height: 1.4;
+                padding: 6px;
+            }
+            .hero-text h1 {
+                font-size: 1.5rem;
+            }
+            .hero-text .cta-group .btn-primary,
+            .hero-text .cta-group .btn-secondary {
+                padding: 12px 22px;
+                font-size: 0.85rem;
+            }
+            .servicio-item {
+                flex: 0 0 140px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar">
+        <a href="#" class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Microbiota y Salud">
+        </a>
+        <label for="nav-toggle" class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </label>
+        <input type="checkbox" id="nav-toggle" hidden>
+        <ul class="nav-links">
+            <li><a href="{% url 'patients:home' %}">Inicio</a></li>
+            <li><a href="{% url 'patients:microbiota_quiz' %}">Evalúa tu microbiota</a></li>
+            <li><a href="{% url 'patients:calendar' %}">Turnos</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'patients:dashboard' %}">Mi Panel</a></li>
+            <li>
+                <form method="post" action="{% url 'account_logout' %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-logout">Salir</button>
+                </form>
+            </li>
+            {% else %}
+            <li><a href="{% url 'account_login' %}" class="btn-ingresar">Ingresar</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-text">
+                <h1>Microbiota y Salud Integral</h1>
+                <p class="subtitle">MICROBIOTA INTESTINAL:<br><i>«El Sorprendente Segundo Cerebro de Tu Cuerpo.»</i></p>
+                <p>Soy Licenciada en Bioquímica Clínica especialista en Microbiología, durante mi carrera profesional he trabajado en hospitales y clínicas de relevancia, como también en investigación donde adquirí una amplia experiencia en laboratorios de mediana y alta complejidad, por lo tanto una correcta interpretación de los resultados tanto en el aspecto clínico y microbiológico.</p>
+                <p>A lo largo de estos años, observé un uso y un abuso de los antimicrobianos que llevaban al paciente a desequilibrios importantes de su microbiota intestinal y de su salud en general, por este motivo me llevó a introducirme al apasionante mundo microbiano e investigar el gran impacto sobre el cuerpo mental, emocional y físico.</p>
+                <p>Por lo tanto decidí encaminar mi actividad asistencial, ayudando a los pacientes a recuperar su homeostasis intestinal a través de la medicina integrativa y recuperar su vitalidad plena.</p>
+                <div class="cta-group">
+                    <a href="{% url 'patients:calendar' %}" class="btn-primary">Ver turnos disponibles</a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'patients:dashboard' %}" class="btn-secondary">Mi Panel</a>
+                    {% else %}
+                    <a href="{% url 'account_login' %}" class="btn-secondary">Ingresar</a>
+                    {% endif %}
+                    <a href="{% url 'patients:microbiota_quiz' %}" class="link-evalua">Evalúa tu microbiota</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="{% static 'images/rc_frente.png' %}" alt="Dra. Clementi - Bioquímica">
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== MI ESPECIALIDAD ===== -->
+    <section class="mi-especialidad">
+        <div class="container">
+            <h2>Mi especialidad</h2>
+            <p class="subheading">Brindo asesoramiento personalizado en patologías gastrointestinales relacionada con la microbiota</p>
+            <div class="flip-grid">
+
+                <div class="flip-box">
+                    <div class="flip-box-inner">
+                        <div class="flip-box-front">
+                            <img src="{% static 'images/gastritis.svg' %}" alt="Gastritis">
+                            <h4>Gastritis Crónica</h4>
+                        </div>
+                        <div class="flip-box-back">
+                            <p>La gastritis crónica es una inflamación persistente de la mucosa del estómago que se desarrolla lentamente y puede durar meses o incluso años.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-box">
+                    <div class="flip-box-inner">
+                        <div class="flip-box-front">
+                            <img src="{% static 'images/diarrea.svg' %}" alt="Diarrea">
+                            <h4>Diarrea / Estreñimiento</h4>
+                        </div>
+                        <div class="flip-box-back">
+                            <p>La diarrea y el estreñimiento son trastornos comunes del tránsito intestinal. La diarrea se caracteriza por evacuaciones frecuentes, acuosas y urgentes, mientras que el estreñimiento implica dificultad para evacuar, heces duras y una frecuencia reducida.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-box">
+                    <div class="flip-box-inner">
+                        <div class="flip-box-front">
+                            <img src="{% static 'images/digestionpesada.svg' %}" alt="Digestión Pesada">
+                            <h4>Digestiones Pesadas</h4>
+                        </div>
+                        <div class="flip-box-back">
+                            <p>Sensación de llenura, ardor o malestar después de comer. Suelen estar relacionadas con comidas abundantes, grasas o muy condimentadas. También pueden acompañarse de gases, náuseas o somnolencia.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-box">
+                    <div class="flip-box-inner">
+                        <div class="flip-box-front">
+                            <img src="{% static 'images/chron.svg' %}" alt="Crohn">
+                            <h4>Crohn / Colitis</h4>
+                        </div>
+                        <div class="flip-box-back">
+                            <p>Incluyen la enfermedad de Crohn y la colitis ulcerosa. Son trastornos crónicos que inflaman el tubo digestivo, causando dolor abdominal, diarrea, fatiga y pérdida de peso. Su origen es autoinmune y requieren tratamiento médico continuo.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-box">
+                    <div class="flip-box-inner">
+                        <div class="flip-box-front">
+                            <img src="{% static 'images/intestino.svg' %}" alt="SII">
+                            <h4>SII / Intestino Permeable</h4>
+                        </div>
+                        <div class="flip-box-back">
+                            <p>El SII causa dolor abdominal y alteraciones intestinales. El intestino permeable permite el paso de toxinas, generando inflamación y posibles trastornos autoinmunes.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-box">
+                    <div class="flip-box-inner">
+                        <div class="flip-box-front">
+                            <img src="{% static 'images/disbiosis.svg' %}" alt="Disbiosis">
+                            <h4>Disbiosis Intestinal</h4>
+                        </div>
+                        <div class="flip-box-back">
+                            <p>Desequilibrio en la microbiota con aumento de patógenos, vinculado a inflamación, alergias y enfermedades metabólicas. Factores como dieta pobre en fibra y antibióticos la favorecen.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-box">
+                    <div class="flip-box-inner">
+                        <div class="flip-box-front">
+                            <img src="{% static 'images/candiasis.svg' %}" alt="Candidiasis">
+                            <h4>Candidiasis</h4>
+                        </div>
+                        <div class="flip-box-back">
+                            <p>Sobrecrecimiento de Candida que provoca distensión, fatiga y antojos de azúcar. Común tras antibióticos o dietas altas en carbohidratos.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-box">
+                    <div class="flip-box-inner">
+                        <div class="flip-box-front">
+                            <img src="{% static 'images/parasitosis.svg' %}" alt="Parasitosis">
+                            <h4>Parasitosis intestinal</h4>
+                        </div>
+                        <div class="flip-box-back">
+                            <p>Infección por parásitos como Giardia, causando diarrea, dolor abdominal y deficiencias nutricionales. Requiere diagnóstico específico y tratamiento antiparasitario.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-box">
+                    <div class="flip-box-inner">
+                        <div class="flip-box-front">
+                            <img src="{% static 'images/migrana.svg' %}" alt="Migraña">
+                            <h4>Migraña / Alergias</h4>
+                        </div>
+                        <div class="flip-box-back">
+                            <p>Alergias alimentarias pueden desencadenar migrañas por inflamación e histamina. Eliminar desencadenantes reduce su frecuencia.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-box">
+                    <div class="flip-box-inner">
+                        <div class="flip-box-front">
+                            <img src="{% static 'images/piel.svg' %}" alt="Piel">
+                            <h4>Eczema / Dermatitis</h4>
+                        </div>
+                        <div class="flip-box-back">
+                            <p>Eczema y dermatitis atópica se relacionan con disbiosis, inflamación y alteraciones inmunes. Estrés y alergenos empeoran los síntomas.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-box">
+                    <div class="flip-box-inner">
+                        <div class="flip-box-front">
+                            <img src="{% static 'images/fatiga.svg' %}" alt="Fatiga">
+                            <h4>Fibromialgia / Fatiga</h4>
+                        </div>
+                        <div class="flip-box-back">
+                            <p>Fatiga extrema, dolor muscular generalizado y alteraciones del sueño. Se relacionan con desequilibrios inflamatorios, disfunción mitocondrial y, en muchos casos, con infecciones crónicas o estrés oxidativo.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-box">
+                    <div class="flip-box-inner">
+                        <div class="flip-box-front">
+                            <img src="{% static 'images/tdh.svg' %}" alt="TDAH">
+                            <h4>Autismo / TDAH</h4>
+                        </div>
+                        <div class="flip-box-back">
+                            <p>Autismo y TDAH pueden vincularse a disbiosis, inflamación y toxinas ambientales. La salud intestinal influye en la función cerebral.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-box">
+                    <div class="flip-box-inner">
+                        <div class="flip-box-front">
+                            <img src="{% static 'images/obesidad.svg' %}" alt="Obesidad">
+                            <h4>Obesidad / Diabetes</h4>
+                        </div>
+                        <div class="flip-box-back">
+                            <p>Trastornos interconectados por resistencia a la insulina, inflamación crónica y alteraciones en la microbiota intestinal.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-box">
+                    <div class="flip-box-inner">
+                        <div class="flip-box-front">
+                            <img src="{% static 'images/ansiedad.svg' %}" alt="Ansiedad">
+                            <h4>Ansiedad / Depresión</h4>
+                        </div>
+                        <div class="flip-box-back">
+                            <p>La disbiosis intestinal afecta la producción de neurotransmisores como la serotonina, influyendo en el estado de ánimo.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-box">
+                    <div class="flip-box-inner">
+                        <div class="flip-box-front">
+                            <img src="{% static 'images/vaginitis.svg' %}" alt="Vaginitis">
+                            <h4>Vaginitis / Vaginosis</h4>
+                        </div>
+                        <div class="flip-box-back">
+                            <p>Infecciones vaginales frecuentes por desequilibrios inmunes o microbiota alterada, muchas veces ligadas a la salud intestinal.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-box">
+                    <div class="flip-box-inner">
+                        <div class="flip-box-front">
+                            <img src="{% static 'images/onicomicosis.svg' %}" alt="Onicomicosis">
+                            <h4>Onicomicosis</h4>
+                        </div>
+                        <div class="flip-box-back">
+                            <p>Infección por hongos en uñas, relacionada con inmunidad débil o diabetes. Requiere antifúngicos y fortalecimiento inmunológico.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== TESTIMONIOS ===== -->
+    <section class="testimonios">
+        <div class="container">
+            <h2>Testimonios</h2>
+            <div class="testimonios-grid">
+
+                <div class="testimonio-card">
+                    <p class="quote">Después de años de lidiar con fatiga constante, ansiedad y problemas digestivos, descubrí que mi microbiota intestinal estaba profundamente desequilibrada. La Dra. Clementi no solo me explicó con claridad la conexión entre el intestino y el cerebro, sino que diseñó un plan personalizado para restaurar mi salud. En pocas semanas, empecé a notar cambios increíbles: más energía, mejor digestión y hasta un estado de ánimo más estable. Hoy entiendo por qué llaman a la microbiota el 'segundo cerebro' y estoy agradecida por el enfoque integral y científico de la Dra. Romina. ¡Recomiendo su consulta a cualquiera que busque sanar desde la raíz!</p>
+                    <p class="author">Lilia Marquez</p>
+                    <p class="role">Secretaria</p>
+                </div>
+
+                <div class="testimonio-card">
+                    <p class="quote">Mi vida era una montaña rusa de malestar: digestiones pesadas, niebla mental y altibajos emocionales que ningún tratamiento convencional aliviaba. Pero todo cambió cuando descubrí el poder de la microbiota. La Dra. Clementi me enseñó que mi intestino era mucho más que un órgano digestivo y que estaba pidiendo ayuda a gritos. Con sus pautas personalizadas, alimentación y probióticos específicos logré lo que parecía imposible: recuperar mi vitalidad, claridad mental y hasta mi alegría. Hoy entiendo mi cuerpo y vivo en armonía con él.</p>
+                    <p class="author">Pedro Torres</p>
+                    <p class="role">Abogado</p>
+                </div>
+
+                <div class="testimonio-card">
+                    <p class="quote">Siempre tuve problemas digestivos, hinchazón y fatiga constante. Probé muchas dietas, pero nada parecía funcionar hasta que entendí la importancia de mi microbiota. Gracias a este enfoque integral, aprendí qué alimentos me benefician, incorporé hábitos saludables y en pocas semanas noté un cambio increíble: más energía, mejor ánimo y una digestión sin molestias. ¡Me siento renovada!</p>
+                    <p class="author">Vanessa Johnson</p>
+                    <p class="role">Community Manager</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SERVICIOS ===== -->
+    <section class="servicios">
+        <div class="container">
+            <h3>Empieza tu transformación hoy</h3>
+            <h2>Servicios Generales</h2>
+            <div class="servicios-grid">
+
+                <div class="servicio-item">
+                    <img src="{% static 'images/consultas.png' %}" alt="Consultas online">
+                    <p>Consultas online y seguimiento del paciente</p>
+                </div>
+
+                <div class="servicio-item">
+                    <img src="{% static 'images/programa.png' %}" alt="Programas integrales">
+                    <p>Programas integrales: protocolo base, alimentación funcional, aceites y tinturas medicinales, prebióticos y probióticos</p>
+                </div>
+
+                <div class="servicio-item">
+                    <img src="{% static 'images/meditacion.png' %}" alt="Meditación">
+                    <p>Técnicas de meditación y plan de actividad física saludable</p>
+                </div>
+
+                <div class="servicio-item">
+                    <img src="{% static 'images/test.png' %}" alt="Test epigenético">
+                    <p>Test epigenético de Epixlife</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="social-links">
+                <a href="https://facebook.com/microbiotaysalud" target="_blank" rel="noopener" aria-label="Facebook">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </a>
+                <a href="https://instagram.com/microbiota.y.salud.integral" target="_blank" rel="noopener" aria-label="Instagram">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                </a>
+            </div>
+            <hr class="divider">
+            <p>Todos los derechos reservados</p>
+            <p>Desarrollado por <a href="https://creandosoluciones.ar" target="_blank" rel="noopener">Creando Soluciones</a></p>
+        </div>
+    </footer>
+
+    <!-- ===== WHATSAPP FLOATING BUTTON ===== -->
+    <a href="https://wa.me/5493512535160" target="_blank" rel="noopener" class="whatsapp-btn" aria-label="WhatsApp">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </a>
+
+</body>
+</html>

@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Paciente — {{ profile.user.get_full_name|default:profile.user.email }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="bi bi-person-vcard"></i> {{ profile.user.get_full_name|default:profile.user.email }}</h2>
+    <a href="{% url 'patients:patients_admin_list' %}" class="btn btn-outline-secondary btn-sm">Volver a pacientes</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Datos del paciente</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong>Email:</strong> {{ profile.user.email }}</p>
+                <p class="mb-1"><strong>Teléfono:</strong> {{ profile.phone|default:"-" }}</p>
+                <p class="mb-1"><strong>Nacimiento:</strong> {{ profile.date_of_birth|date:"d/m/Y"|default:"-" }}</p>
+                <p class="mb-1"><strong>Edad:</strong> {% if patient_age is not None %}{{ patient_age }}{% else %}-{% endif %}</p>
+                <p class="mb-1"><strong>Localidad:</strong> {{ profile.locality|default:"-" }}</p>
+                <p class="mb-1"><strong>Estado:</strong>
+                    {% if profile.is_approved %}
+                    <span class="badge bg-success">Aprobado</span>
+                    {% else %}
+                    <span class="badge bg-warning text-dark">Pendiente</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Historia clínica general</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_profile_note">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Teléfono</label>
+                            <input type="text" name="phone" class="form-control" value="{{ profile.phone }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Fecha de nacimiento</label>
+                            <input id="dateOfBirthInput" type="date" name="date_of_birth" class="form-control" value="{{ profile.date_of_birth|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Edad</label>
+                            <input id="agePreviewInput" type="text" class="form-control" value="{% if patient_age is not None %}{{ patient_age }}{% endif %}" readonly>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Localidad</label>
+                            <input type="text" name="locality" class="form-control" value="{{ profile.locality }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Resumen clínico del paciente</label>
+                        <textarea name="profile_note" class="form-control" rows="5">{{ profile.notes }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary">Guardar historia general</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Nueva entrada clínica</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Asunto</label>
+                        <input type="text" name="subject" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Vincular a turno (opcional)</label>
+                        <select name="appointment_id" class="form-select">
+                            <option value="">Sin turno específico</option>
+                            {% for apt in appointments %}
+                            <option value="{{ apt.id }}">{{ apt.date|date:"d/m/Y" }} {{ apt.start_time|time:"H:i" }} — {{ apt.get_status_display }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Detalle</label>
+                        <textarea name="details" class="form-control" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Guardar entrada</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Línea de tiempo clínica</h5>
+            </div>
+            <div class="card-body">
+                {% if timeline_entries %}
+                <div class="accordion" id="adminTimelineAccordion">
+                    {% for entry in timeline_entries %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="adminTimelineHeading{{ forloop.counter }}">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#adminTimelineCollapse{{ forloop.counter }}"
+                                    aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                                    aria-controls="adminTimelineCollapse{{ forloop.counter }}">
+                                <div class="w-100 d-flex justify-content-between align-items-center me-3">
+                                    <span>{{ entry.subject }}</span>
+                                    <small class="text-muted">{{ entry.created_at|date:"d/m/Y H:i" }}</small>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="adminTimelineCollapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                             aria-labelledby="adminTimelineHeading{{ forloop.counter }}" data-bs-parent="#adminTimelineAccordion">
+                            <div class="accordion-body">
+                                <p class="mb-2">{{ entry.details|linebreaksbr }}</p>
+                                <small class="text-muted d-block">
+                                    Registrado por {% if entry.created_by %}{{ entry.created_by.get_full_name|default:entry.created_by.email }}{% else %}Administrador{% endif %}
+                                    {% if entry.appointment %}
+                                    · Turno {{ entry.appointment.date|date:"d/m/Y" }} {{ entry.appointment.start_time|time:"H:i" }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No hay entradas clínicas todavía.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const dobInput = document.getElementById('dateOfBirthInput');
+    const ageInput = document.getElementById('agePreviewInput');
+    if (!dobInput || !ageInput) return;
+
+    function updateAge() {
+        const value = dobInput.value;
+        if (!value) {
+            ageInput.value = '';
+            return;
+        }
+
+        const birth = new Date(value + 'T00:00:00');
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+            age -= 1;
+        }
+        ageInput.value = age >= 0 ? String(age) : '';
+    }
+
+    dobInput.addEventListener('change', updateAge);
+    dobInput.addEventListener('input', updateAge);
+    updateAge();
+})();
+</script>
+{% endblock %}

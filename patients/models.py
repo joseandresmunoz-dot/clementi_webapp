@@ -17,7 +17,17 @@ class PatientProfile(models.Model):
     )
     phone = models.CharField("Teléfono", max_length=20, blank=True)
     date_of_birth = models.DateField("Fecha de nacimiento", null=True, blank=True)
+    locality = models.CharField("Localidad", max_length=120, blank=True)
     notes = models.TextField("Notas clínicas (solo visibles para la Dra.)", blank=True)
+    is_approved = models.BooleanField("Aprobado por administración", default=False)
+    approved_at = models.DateTimeField("Fecha de aprobación", null=True, blank=True)
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="approved_patient_profiles",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -28,3 +38,37 @@ class PatientProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.get_full_name() or self.user.email}"
+
+
+class ClinicalTimelineEntry(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    patient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="clinical_timeline_entries",
+    )
+    appointment = models.ForeignKey(
+        "appointments.Appointment",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="clinical_timeline_entries",
+    )
+    subject = models.CharField("Asunto", max_length=200)
+    details = models.TextField("Detalle clínico")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_clinical_timeline_entries",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Entrada de historial clínico"
+        verbose_name_plural = "Entradas de historial clínico"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.patient.email} — {self.subject}"
