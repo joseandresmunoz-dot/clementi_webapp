@@ -16,6 +16,9 @@ from patients.models import ClinicalTimelineEntry, PatientProfile
 from django.views.decorators.csrf import csrf_exempt
 
 
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
+
+
 @csrf_exempt
 def debug_login(request):
     import traceback
