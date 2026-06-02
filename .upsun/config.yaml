@@ -12,6 +12,12 @@ applications:
         pip install -r requirements.txt
       deploy: |
         set -eux
+
+        if [ -n "${GOOGLE_CALENDAR_CREDENTIALS_JSON:-}" ]; then
+          mkdir -p private_media
+          echo "$GOOGLE_CALENDAR_CREDENTIALS_JSON" > "$GOOGLE_CALENDAR_CREDENTIALS_FILE"
+        fi
+
         python manage.py collectstatic --noinput
         python manage.py migrate
 
