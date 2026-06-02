@@ -218,7 +218,7 @@ if os.getenv("PLATFORM_APPLICATION_NAME") is not None:
     DEBUG = False
 
     if os.getenv("PLATFORM_APP_DIR") is not None:
-        STATIC_ROOT = os.path.join(os.getenv("PLATFORM_APP_DIR"), "static")
+        STATIC_ROOT = os.path.join(os.getenv("PLATFORM_APP_DIR"), "staticfiles")
 
     if os.getenv("PLATFORM_PROJECT_ENTROPY") is not None:
         SECRET_KEY = os.getenv("PLATFORM_PROJECT_ENTROPY")

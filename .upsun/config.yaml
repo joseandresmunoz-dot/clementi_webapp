@@ -26,7 +26,7 @@ applications:
         "/static":
           allow: true
           expires: 1h
-          root: "static"
+          root: "staticfiles"
 
     mounts:
       "/staticfiles":
