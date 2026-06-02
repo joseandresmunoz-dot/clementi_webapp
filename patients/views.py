@@ -19,6 +19,7 @@ from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
 def debug_login(request):
     import traceback
+    from django.conf import settings as dj_settings
     from django.contrib.auth import authenticate, login
     from django.http import JsonResponse, HttpResponse
 
@@ -37,6 +38,12 @@ def debug_login(request):
         data["POST_keys"] = list(request.POST.keys())
         data["login"] = request.POST.get("login", "")
         data["has_pw"] = bool(request.POST.get("password", ""))
+        data["ALLOWED_HOSTS"] = dj_settings.ALLOWED_HOSTS
+        data["CSRF_TRUSTED_ORIGINS"] = dj_settings.CSRF_TRUSTED_ORIGINS
+        data["CSRF_COOKIE_DOMAIN"] = dj_settings.CSRF_COOKIE_DOMAIN
+        data["CSRF_COOKIE_NAME"] = dj_settings.CSRF_COOKIE_NAME
+        data["SESSION_COOKIE_DOMAIN"] = dj_settings.SESSION_COOKIE_DOMAIN
+        data["DJANGO_ALLOWED_HOSTS"] = dj_settings.ALLOWED_HOSTS
 
         email = request.POST.get("login", "")
         password = request.POST.get("password", "")
