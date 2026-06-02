@@ -36,6 +36,10 @@ build/
 .DS_Store
 Thumbs.db
 
+# Documentos varios
+promtp.odt
+Cotizacion*.pdf
+
 # Google credentials
 *.json
 !package.json

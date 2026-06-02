@@ -23,6 +23,9 @@ psycopg2-binary>=2.9
 # Seguridad
 django-cors-headers>=4.4
 
+# WSGI server (producción)
+gunicorn>=23.0
+
 # Utilidades
 Pillow>=10.4
 python-dateutil>=2.9

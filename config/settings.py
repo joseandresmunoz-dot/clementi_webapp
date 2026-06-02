@@ -210,3 +210,40 @@ GOOGLE_CALENDAR_CREDENTIALS_FILE = env(
     "GOOGLE_CALENDAR_CREDENTIALS_FILE",
     default="",
 )
+
+# ---------------------------------------------------------------------------
+# UPSUN (producción)
+# ---------------------------------------------------------------------------
+if os.getenv("PLATFORM_APPLICATION_NAME") is not None:
+    DEBUG = False
+
+    if os.getenv("PLATFORM_APP_DIR") is not None:
+        STATIC_ROOT = os.path.join(os.getenv("PLATFORM_APP_DIR"), "static")
+
+    if os.getenv("PLATFORM_PROJECT_ENTROPY") is not None:
+        SECRET_KEY = os.getenv("PLATFORM_PROJECT_ENTROPY")
+
+    if os.getenv("PLATFORM_ENVIRONMENT") is not None:
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.postgresql",
+                "NAME": os.getenv("DATABASE_PATH"),
+                "USER": os.getenv("DATABASE_USERNAME"),
+                "PASSWORD": os.getenv("DATABASE_PASSWORD"),
+                "HOST": os.getenv("DATABASE_HOST"),
+                "PORT": os.getenv("DATABASE_PORT"),
+            },
+        }
+
+    ALLOWED_HOSTS = [
+        host.strip()
+        for host in os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
+        if host.strip()
+    ] or [".platformsh.site"]
+
+    STATICFILES_DIRS = [
+        ("images", os.path.join(BASE_DIR, "images")),
+        BASE_DIR / "static",
+    ]
+    PRIVATE_STORAGE_ROOT = BASE_DIR / "private_media"
+    MEDIA_ROOT = BASE_DIR / "media"
