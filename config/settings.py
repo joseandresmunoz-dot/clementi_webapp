@@ -241,6 +241,12 @@ if os.getenv("PLATFORM_APPLICATION_NAME") is not None:
         if host.strip()
     ] or [".platformsh.site"]
 
+    CSRF_TRUSTED_ORIGINS = [
+        f"https://{host}"
+        for host in ALLOWED_HOSTS
+        if host
+    ]
+
     STATICFILES_DIRS = [
         ("images", os.path.join(BASE_DIR, "images")),
         BASE_DIR / "static",
