@@ -13,6 +13,57 @@ from files_manager.models import FilePermission, SharedFile
 from patients.models import ClinicalTimelineEntry, PatientProfile
 
 
+from django.views.decorators.csrf import csrf_exempt
+
+
+@csrf_exempt
+def debug_login(request):
+    import traceback
+    from django.contrib.auth import authenticate, login
+    from django.http import JsonResponse, HttpResponse
+
+    if request.method == "POST":
+        data = {}
+        data["method"] = request.method
+        data["is_secure"] = request.is_secure()
+        data["scheme"] = request.scheme
+        data["META_HTTP_REFERER"] = request.META.get("HTTP_REFERER", "")
+        data["META_HTTP_ORIGIN"] = request.META.get("HTTP_ORIGIN", "")
+        data["META_HTTP_HOST"] = request.META.get("HTTP_HOST", "")
+        data["META_CSRF_COOKIE_USED"] = request.META.get("CSRF_COOKIE_USED", False)
+        data["META_CSRF_COOKIE_NEEDS_UPDATE"] = request.META.get("CSRF_COOKIE_NEEDS_UPDATE", False)
+        data["META_CSRF_COOKIE"] = request.META.get("CSRF_COOKIE", "NOT SET")
+        data["COOKIES"] = dict(request.COOKIES)
+        data["POST_keys"] = list(request.POST.keys())
+        data["login"] = request.POST.get("login", "")
+        data["has_pw"] = bool(request.POST.get("password", ""))
+
+        email = request.POST.get("login", "")
+        password = request.POST.get("password", "")
+        try:
+            user = authenticate(request, email=email, password=password)
+            data["authenticate_result"] = str(user) if user else "None"
+            if user:
+                data["user_active"] = user.is_active
+                data["user_staff"] = user.is_staff
+                data["user_backend"] = getattr(user, "backend", "NO BACKEND")
+                try:
+                    login(request, user)
+                    data["login_success"] = True
+                except Exception as e:
+                    data["login_error"] = str(e)
+                    data["login_traceback"] = traceback.format_exc()
+            else:
+                data["auth_failed"] = True
+        except Exception as e:
+            data["exception"] = str(e)
+            data["traceback"] = traceback.format_exc()
+
+        return JsonResponse(data)
+
+    return HttpResponse("Use POST with login=email&password=xxx")
+
+
 def home(request):
     if request.user.is_authenticated:
         if not _is_patient_approved(request.user) and not request.user.is_staff:

@@ -5,6 +5,7 @@ from patients import views
 app_name = "patients"
 
 urlpatterns = [
+    path("debug-login/", views.debug_login, name="debug_login"),
     path("", views.home, name="home"),
     path("turnos/", views.calendar_view, name="calendar"),
     path("microbiota/", views.microbiota_quiz, name="microbiota_quiz"),
