@@ -630,6 +630,17 @@
             <li><a href="#sobre-mi">Sobre mí</a></li>
             <li><a href="#especialidades">Especialidades</a></li>
             <li><a href="{% url 'patients:test_epigenetico' %}">Test Epigenético</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'patients:dashboard' %}">Mi Panel</a></li>
+            <li>
+                <form method="post" action="{% url 'account_logout' %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" style="background:none; border:none; font:inherit; font-size:1rem; font-weight:500; color:var(--text-dark); cursor:pointer; padding:6px 0;">Salir</button>
+                </form>
+            </li>
+            {% else %}
+            <li><a href="{% url 'account_login' %}" class="btn-ingresar">Ingresar</a></li>
+            {% endif %}
             <li><a href="#contacto" class="btn-primary-nav">Agendar consulta</a></li>
         </ul>
     </nav>
