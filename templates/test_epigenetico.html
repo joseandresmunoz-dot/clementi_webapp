@@ -1,0 +1,506 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Epigenético — Microbiota y Salud Integral</title>
+    <link rel="icon" href="{% static 'images/favicon/favicon.ico' %}" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; color: #1a1a2e; line-height: 1.6; background: #fff; }
+        a { text-decoration: none; color: inherit; transition: all 0.3s; }
+        img { max-width: 100%; height: auto; display: block; }
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+        :root {
+            --brand: #7c6fff;
+            --brand-dark: #5a4fd8;
+            --brand-light: #a99eff;
+            --brand-bg: #f8f7ff;
+            --brand-gradient: linear-gradient(135deg, #7c6fff 0%, #b8a9ff 100%);
+            --accent: #ff6b9d;
+            --text-dark: #1a1a2e;
+            --text-muted: #6b6b80;
+            --card-shadow: 0 8px 30px rgba(124, 111, 255, 0.10);
+        }
+
+        /* ===== NAVBAR (same as landing) ===== */
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(124,111,255,0.08);
+        }
+        .navbar .logo img { height: 36px; width: auto; }
+        .navbar .nav-links {
+            display: none; flex-direction: column;
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: rgba(255,255,255,0.98);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            padding: 20px 24px; gap: 16px;
+            list-style: none;
+        }
+        .navbar .nav-links a { font-size: 1rem; font-weight: 500; color: var(--text-dark); }
+        .navbar .nav-links .btn-primary-nav {
+            background: var(--brand); color: #fff !important;
+            padding: 12px 20px; border-radius: 10px; font-weight: 600;
+            text-align: center;
+        }
+        .hamburger { display: flex; flex-direction: column; cursor: pointer; gap: 5px; padding: 4px; }
+        .hamburger span { width: 26px; height: 3px; background: var(--text-dark); border-radius: 3px; }
+        #nav-toggle { display: none; }
+        #nav-toggle:checked ~ .nav-links { display: flex; }
+
+        /* ===== HERO ===== */
+        .hero {
+            padding: 100px 0 50px;
+            background: var(--brand-gradient);
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute;
+            top: -30%; right: -30%; width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(255,255,255,0.10) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero .container { position: relative; z-index: 1; text-align: center; }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,0.15); color: #fff;
+            padding: 4px 14px; border-radius: 50px;
+            font-size: 0.75rem; font-weight: 600;
+            margin-bottom: 14px;
+        }
+        .hero h1 {
+            font-size: 1.8rem; font-weight: 800;
+            line-height: 1.15; margin-bottom: 12px;
+        }
+        .hero p {
+            font-size: 0.9rem; opacity: 0.9;
+            max-width: 650px; margin: 0 auto 20px; line-height: 1.6;
+        }
+        .hero .btn-primary {
+            display: inline-block;
+            background: #fff; color: var(--brand);
+            padding: 14px 32px; border-radius: 12px;
+            font-weight: 600; font-size: 0.95rem;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        /* ===== SECTION ===== */
+        section { padding: 50px 0; }
+        .section-tag {
+            display: inline-block; font-size: 0.7rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 2px; color: var(--brand);
+            margin-bottom: 6px;
+        }
+        .section-title {
+            font-size: 1.6rem; font-weight: 700; color: var(--text-dark);
+            margin-bottom: 10px; line-height: 1.2;
+        }
+        .section-subtitle {
+            font-size: 0.9rem; color: var(--text-muted);
+            margin-bottom: 32px;
+        }
+        .text-center { text-align: center; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+
+        /* ===== CONTENT SECTIONS ===== */
+        .content-block {
+            padding: 50px 0;
+        }
+        .content-block:nth-child(even) { background: var(--brand-bg); }
+
+        .content-grid {
+            display: flex; flex-direction: column; gap: 28px;
+        }
+        .content-text p {
+            color: var(--text-muted); margin-bottom: 14px; font-size: 0.9rem; line-height: 1.7;
+        }
+        .content-text strong { color: var(--text-dark); }
+
+        .steps-list {
+            display: flex; flex-direction: column; gap: 16px; margin: 20px 0;
+        }
+        .step-item {
+            display: flex; gap: 14px; align-items: flex-start;
+        }
+        .step-number {
+            flex-shrink: 0;
+            width: 36px; height: 36px; line-height: 36px;
+            border-radius: 50%;
+            background: var(--brand-gradient); color: #fff;
+            font-size: 0.9rem; font-weight: 700;
+            text-align: center;
+        }
+        .step-item h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
+        .step-item p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0; }
+
+        .moduladores { margin: 20px 0; }
+        .moduladores li {
+            list-style: none; padding: 8px 0 8px 28px;
+            font-size: 0.9rem; color: var(--text-muted);
+            position: relative;
+        }
+        .moduladores li::before {
+            content: '📌';
+            position: absolute; left: 0;
+        }
+
+        .resultados-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0;
+        }
+        .resultado-item {
+            background: #fff; padding: 20px 16px; border-radius: 14px;
+            box-shadow: var(--card-shadow);
+            font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;
+        }
+        .resultado-item strong { color: var(--text-dark); display: block; margin-bottom: 4px; font-size: 0.9rem; }
+
+        .valor-card {
+            background: var(--brand-gradient); color: #fff;
+            border-radius: 20px; padding: 36px 28px; text-align: center;
+            margin-top: 28px;
+        }
+        .valor-card h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
+        .valor-card .precio {
+            font-size: 2rem; font-weight: 800; margin-bottom: 8px;
+        }
+        .valor-card p { font-size: 0.9rem; opacity: 0.9; }
+        .valor-card .btn-cta {
+            display: inline-block; margin-top: 20px;
+            background: #fff; color: var(--brand);
+            padding: 14px 36px; border-radius: 12px;
+            font-weight: 600; font-size: 1rem;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            background: #1a1a2e; color: rgba(255,255,255,0.7);
+            padding: 36px 0 24px; text-align: center;
+        }
+        .footer img { height: 30px; margin: 0 auto 16px; }
+        .footer .social-links {
+            display: flex; justify-content: center; gap: 14px; margin-bottom: 20px;
+        }
+        .footer .social-links a {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+        }
+        .footer .social-links a svg { width: 18px; height: 18px; fill: currentColor; color: rgba(255,255,255,0.6); }
+        .footer .social-links a:hover { background: var(--brand); }
+        .footer .social-links a:hover svg { color: #fff; }
+        .footer .divider { width: 36px; height: 2px; background: var(--brand); margin: 16px auto; border: none; }
+        .footer p { font-size: 0.75rem; margin-bottom: 4px; }
+        .footer a { color: var(--brand-light); }
+
+        .whatsapp-btn {
+            position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+            width: 52px; height: 52px; border-radius: 50%;
+            background: #25D366;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 16px rgba(37,211,102,0.35);
+        }
+        .whatsapp-btn svg { width: 26px; height: 26px; fill: #fff; }
+
+        .messages-toast {
+            position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; width: 90%; max-width: 440px;
+        }
+        .messages-toast .msg {
+            padding: 12px 16px; border-radius: 12px; margin-bottom: 6px;
+            font-size: 0.85rem; font-weight: 500; text-align: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+            animation: slideDown 0.3s ease;
+        }
+        .messages-toast .msg.success { background: #d4edda; color: #155724; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ===== RESPONSIVE ===== */
+        @media (min-width: 768px) {
+            .container { padding: 0 32px; }
+            section { padding: 64px 0; }
+            .content-block { padding: 64px 0; }
+
+            .navbar { padding: 14px 32px; }
+            .navbar .logo img { height: 42px; }
+            .navbar .nav-links {
+                display: flex !important; flex-direction: row; position: static;
+                background: none; backdrop-filter: none; box-shadow: none;
+                padding: 0; gap: 28px; align-items: center;
+            }
+            .navbar .nav-links a {
+                font-size: 0.9rem; color: var(--text-muted);
+                padding: 6px 0; position: relative;
+            }
+            .navbar .nav-links a::after {
+                content: ''; position: absolute; bottom: 0; left: 0;
+                width: 0; height: 2px; background: var(--brand);
+                transition: width 0.3s;
+            }
+            .navbar .nav-links a:hover { color: var(--brand); }
+            .navbar .nav-links a:hover::after { width: 100%; }
+            .navbar .nav-links .btn-primary-nav {
+                padding: 10px 22px; font-size: 0.9rem;
+                box-shadow: 0 4px 14px rgba(124,111,255,0.30);
+            }
+            .navbar .nav-links .btn-primary-nav:hover { background: var(--brand-dark); transform: translateY(-2px); }
+            .navbar .nav-links .btn-primary-nav::after { display: none; }
+            .hamburger { display: none !important; }
+
+            .hero { padding: 120px 0 60px; }
+            .hero h1 { font-size: 2.4rem; }
+            .hero p { font-size: 1rem; }
+
+            .section-title { font-size: 1.8rem; }
+            .content-grid { gap: 32px; }
+            .steps-list { gap: 20px; }
+            .resultados-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        }
+
+        @media (min-width: 992px) {
+            .container { padding: 0 40px; }
+            section { padding: 80px 0; }
+            .content-block { padding: 80px 0; }
+            .hero { padding: 140px 0 80px; }
+            .hero h1 { font-size: 2.8rem; }
+            .section-title { font-size: 2.2rem; }
+            .content-text p { font-size: 0.95rem; }
+            .resultados-grid { grid-template-columns: repeat(4, 1fr); }
+            .valor-card { padding: 48px 40px; }
+            .valor-card .precio { font-size: 2.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="messages-toast">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="msg {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar">
+        <a href="{% url 'patients:home' %}" class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Microbiota y Salud">
+        </a>
+        <label for="nav-toggle" class="hamburger">
+            <span></span><span></span><span></span>
+        </label>
+        <input type="checkbox" id="nav-toggle" hidden>
+        <ul class="nav-links">
+            <li><a href="{% url 'patients:home' %}">Inicio</a></li>
+            <li><a href="{% url 'patients:home' %}#especialidades">Especialidades</a></li>
+            <li><a href="{% url 'patients:test_epigenetico' %}">Test Epigenético</a></li>
+            <li><a href="{% url 'patients:home' %}#contacto" class="btn-primary-nav">Agendar consulta</a></li>
+        </ul>
+    </nav>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">Conocé tu cuerpo desde adentro</div>
+            <h1>Test Epigenético</h1>
+            <p>
+                Optimización de la salud gastrointestinal. Tu bienestar no solo depende de la genética, 
+                sino de cómo interactúa con tu entorno. Con el Test Epigenético, obtené un análisis 
+                profundo de tu salud y descubrí cómo optimizar tu alimentación, energía y vitalidad 
+                en solo 90 días.
+            </p>
+            <a href="#procedimiento" class="btn-primary">Cómo funciona</a>
+        </div>
+    </section>
+
+    <!-- ===== QUÉ ES LA EPIGENÉTICA ===== -->
+    <div class="content-block">
+        <div class="container">
+            <div class="content-grid">
+                <div class="content-text text-center">
+                    <span class="section-tag">Ciencia</span>
+                    <h2 class="section-title">¿Qué es la Epigenética?</h2>
+                    <p>
+                        Tu salud no está determinada solo por la genética, sino por cómo interactúa con el entorno.
+                    </p>
+                    <p>
+                        La epigenética estudia cómo la alimentación, el estrés y el estilo de vida influyen 
+                        en tu bienestar. Conociendo esta información, puedes tomar decisiones para optimizar 
+                        tu salud y rendimiento.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CÓMO FUNCIONA ===== -->
+    <div class="content-block" id="procedimiento" style="background: var(--brand-bg);">
+        <div class="container">
+            <div class="content-grid">
+                <div class="content-text">
+                    <span class="section-tag">Metodología</span>
+                    <h2 class="section-title">¿Cómo funciona el Test de Epigenética?</h2>
+                    <p>
+                        El test epigenético ofrece un análisis detallado de diversos factores del organismo 
+                        que influyen en la salud digestiva. Permite conocer 96 indicadores epigenéticos para 
+                        identificar necesidades nutricionales y el nivel de carga o exposición.
+                    </p>
+                    <p><strong>Estos moduladores son:</strong></p>
+                    <ul class="moduladores">
+                        <li>Minerales y vitaminas</li>
+                        <li>Aminoácidos</li>
+                        <li>Antioxidantes y ácidos grasos esenciales</li>
+                        <li>Exposición tóxica y carga electromagnética</li>
+                        <li>Indicadores específicos del microbioma</li>
+                    </ul>
+                    <p>
+                        Este conjunto de datos ofrece un perfil detallado de los componentes presentes en 
+                        el organismo y cómo estos influyen en el funcionamiento digestivo. Con esta 
+                        información, se puede determinar la mejor estrategia para corregir desajustes en 
+                        el microbioma y ayudarte a corregir posibles trastornos digestivos.
+                    </p>
+
+                    <h3 style="font-size: 1.1rem; font-weight: 600; margin: 28px 0 12px;">¿Por qué se analiza el cabello?</h3>
+                    <p>
+                        El cabello es un biomarcador confiable, ya que almacena información de los últimos 
+                        90 días sobre tu estado nutricional y exposición a factores ambientales. A través de 
+                        una muestra digitalizada con tecnología S-Drive, enviamos los datos a un laboratorio 
+                        en Alemania (Cell-Wellbeing) para un análisis detallado.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PROCEDIMIENTO ===== -->
+    <div class="content-block">
+        <div class="container">
+            <div class="content-text text-center">
+                <span class="section-tag">Procedimiento</span>
+                <h2 class="section-title">¿Cómo es el procedimiento para realizar el Test?</h2>
+                <p>Realizar el test es un proceso rápido, sencillo y no invasivo</p>
+            </div>
+            <div class="steps-list">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div>
+                        <h4>Toma de muestra</h4>
+                        <p>Se extraen de 4 a 6 hebras de cabello de la nuca.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div>
+                        <h4>Digitalización</h4>
+                        <p>La muestra se escanea con el dispositivo S-Drive, el cual recoge información bioenergética.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div>
+                        <h4>Envío al laboratorio</h4>
+                        <p>Los datos digitalizados son enviados de forma segura a Cell-Wellbeing en Hamburgo, Alemania.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">4</div>
+                    <div>
+                        <h4>Análisis epigenético</h4>
+                        <p>Se procesan más de 800 indicadores relacionados con tu bienestar.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">5</div>
+                    <div>
+                        <h4>Entrega de resultados</h4>
+                        <p>En solo 5 días hábiles, recibirás un informe completo con recomendaciones personalizadas.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== RESULTADOS ===== -->
+    <div class="content-block" style="background: var(--brand-bg);">
+        <div class="container">
+            <div class="content-text text-center">
+                <span class="section-tag">Resultados</span>
+                <h2 class="section-title">¿Qué resultados obtendrás?</h2>
+                <p>En tu informe epigenético encontrarás información clave sobre:</p>
+            </div>
+            <div class="resultados-grid">
+                <div class="resultado-item">
+                    <strong>Alimentación precisa</strong>
+                    Alimentos ideales para tu organismo según tu perfil epigenético
+                </div>
+                <div class="resultado-item">
+                    <strong>Suplementación específica</strong>
+                    Cobertura de carencias nutricionales personalizadas
+                </div>
+                <div class="resultado-item">
+                    <strong>Factores ambientales</strong>
+                    Identificación de factores que pueden estar afectándote
+                </div>
+                <div class="resultado-item">
+                    <strong>Plan de acción</strong>
+                    Estrategias para optimizar tu bienestar y rendimiento
+                </div>
+            </div>
+
+            <div class="valor-card">
+                <h3>Valor del Test</h3>
+                <div class="precio">$450.000</div>
+                <p>Incluye protocolo de optimización y plan alimenticio de precisión</p>
+                <a href="https://wa.me/5493512535160" target="_blank" rel="noopener" class="btn-cta">Consultar por WhatsApp</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="container">
+            <img src="{% static 'images/logo.png' %}" alt="Microbiota y Salud">
+            <div class="social-links">
+                <a href="https://facebook.com/microbiotaysalud" target="_blank" rel="noopener" aria-label="Facebook">
+                    <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </a>
+                <a href="https://instagram.com/microbiota.y.salud.integral" target="_blank" rel="noopener" aria-label="Instagram">
+                    <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                </a>
+            </div>
+            <hr class="divider">
+            <p>Todos los derechos reservados</p>
+            <p>Desarrollado por <a href="https://creandosoluciones.ar" target="_blank" rel="noopener">Creando Soluciones</a></p>
+        </div>
+    </footer>
+
+    <a href="https://wa.me/5493512535160" target="_blank" rel="noopener" class="whatsapp-btn" aria-label="WhatsApp">
+        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </a>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            document.querySelectorAll('.messages-toast .msg').forEach(function(el) {
+                el.style.transition = 'opacity 0.5s';
+                el.style.opacity = '0';
+                setTimeout(function() { el.remove(); }, 500);
+            });
+        }, 5000);
+    });
+    </script>
+
+</body>
+</html>

@@ -19,6 +19,10 @@ from django.http import JsonResponse, HttpResponseRedirect
 from patients.models import Lead
 
 
+def test_epigenetico(request):
+    return render(request, "test_epigenetico.html")
+
+
 @require_POST
 def capture_lead(request):
     name = request.POST.get("name", "").strip()
