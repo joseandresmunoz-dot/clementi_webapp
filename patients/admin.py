@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from patients.models import ClinicalTimelineEntry, PatientProfile
+from patients.models import ClinicalTimelineEntry, Lead, PatientProfile
 
 
 @admin.register(PatientProfile)
@@ -26,3 +26,11 @@ class ClinicalTimelineEntryAdmin(admin.ModelAdmin):
     search_fields = ("patient__email", "patient__first_name", "patient__last_name", "subject")
     list_filter = ("created_at",)
     readonly_fields = ("id", "created_at")
+
+
+@admin.register(Lead)
+class LeadAdmin(admin.ModelAdmin):
+    list_display = ("name", "email", "phone", "source", "is_subscribed", "created_at")
+    search_fields = ("name", "email", "phone")
+    list_filter = ("source", "is_subscribed", "created_at")
+    readonly_fields = ("created_at",)

@@ -14,9 +14,34 @@ from patients.models import ClinicalTimelineEntry, PatientProfile
 
 
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse, HttpResponseRedirect
+from patients.models import Lead
 
 
-from django.views.decorators.csrf import csrf_exempt
+@require_POST
+def capture_lead(request):
+    name = request.POST.get("name", "").strip()
+    email = request.POST.get("email", "").strip()
+    phone = request.POST.get("phone", "").strip()
+    message = request.POST.get("message", "").strip()
+    source = request.POST.get("source", "landing")
+    is_subscribed = request.POST.get("is_subscribed", "1") == "1"
+
+    if not name or not email:
+        messages.error(request, "Nombre y email son obligatorios.")
+        return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/") + "#contacto")
+
+    Lead.objects.create(
+        name=name,
+        email=email,
+        phone=phone,
+        message=message,
+        source=source,
+        is_subscribed=is_subscribed,
+    )
+    messages.success(request, "¡Gracias! Te contactaremos pronto.")
+    return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/") + "#contacto")
 
 
 @csrf_exempt

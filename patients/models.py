@@ -72,3 +72,22 @@ class ClinicalTimelineEntry(models.Model):
 
     def __str__(self):
         return f"{self.patient.email} — {self.subject}"
+
+
+class Lead(models.Model):
+    """Lead capturado desde el formulario de la landing page (embudo de ventas)."""
+    name = models.CharField("Nombre", max_length=200)
+    email = models.EmailField("Email")
+    phone = models.CharField("Teléfono", max_length=20, blank=True)
+    message = models.TextField("Mensaje", blank=True)
+    source = models.CharField("Origen", max_length=100, default="landing")
+    is_subscribed = models.BooleanField("Suscrito a newsletter", default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Lead"
+        verbose_name_plural = "Leads"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.name} — {self.email}"
