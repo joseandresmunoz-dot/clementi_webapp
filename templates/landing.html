@@ -343,12 +343,18 @@
             box-shadow: var(--card-shadow);
             position: relative; overflow: hidden;
         }
-        .curso-card::before {
+        .curso-card .ribbon {
+            position: absolute; top: 0; right: 0;
+            width: 140px; height: 140px;
+            overflow: hidden; z-index: 1;
+        }
+        .curso-card .ribbon::before {
             content: 'PRÓXIMAMENTE';
-            position: absolute; top: 12px; right: -32px;
+            position: absolute; top: 24px; right: -32px;
             background: var(--accent); color: #fff;
             font-size: 0.6rem; font-weight: 700; letter-spacing: 1px;
-            padding: 3px 36px; transform: rotate(45deg);
+            padding: 3px 40px; transform: rotate(45deg);
+            white-space: nowrap;
         }
         .curso-card .icon {
             width: 56px; height: 56px; margin: 0 auto 12px;
@@ -991,6 +997,7 @@
             <div class="cursos-teaser">
 
                 <div class="curso-card">
+                    <div class="ribbon"></div>
                     <div class="icon">🧠</div>
                     <h3>Microbiota y Salud Mental</h3>
                     <p>Aprendé cómo tu intestino influye en tu estado de ánimo, ansiedad y bienestar emocional.</p>
@@ -998,6 +1005,7 @@
                 </div>
 
                 <div class="curso-card">
+                    <div class="ribbon"></div>
                     <div class="icon">🥗</div>
                     <h3>Alimentación Integrativa</h3>
                     <p>Descubrí los principios de la alimentación funcional para equilibrar tu microbiota.</p>
@@ -1005,6 +1013,7 @@
                 </div>
 
                 <div class="curso-card">
+                    <div class="ribbon"></div>
                     <div class="icon">🧬</div>
                     <h3>Epigenética y Prevención</h3>
                     <p>Conocé cómo tus hábitos influyen en la expresión de tus genes para prevenir enfermedades.</p>
