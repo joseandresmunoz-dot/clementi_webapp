@@ -320,8 +320,8 @@
                         <input type="tel" class="form-control" id="dTelefono">
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control" id="dEmail" value="{{ user.email|default:'' }}">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-control" id="dEmail" value="{{ user.email|default:'' }}" required>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Profesión</label>
@@ -688,10 +688,14 @@
             <button class="btn btn-outline-primary me-2" onclick="window.print()">
                 <i class="bi bi-printer"></i> Imprimir
             </button>
+            <button class="btn btn-primary me-2" id="btnSendResults" onclick="sendResults()">
+                <i class="bi bi-envelope"></i> Enviar resultados por email
+            </button>
             <a href="{% url 'patients:microbiota_quiz' %}" class="btn btn-primary">
                 <i class="bi bi-arrow-repeat"></i> Repetir cuestionario
             </a>
         </div>
+        <div id="sendResultMsg" class="text-center mt-3" style="display:none;"></div>
     </div>
 </div>
 {% endblock %}
@@ -810,8 +814,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const nombre = document.getElementById('dNombre').value.trim();
             const sexo = document.getElementById('dSexo').value;
             const edad = document.getElementById('dEdad').value;
+            const email = document.getElementById('dEmail').value.trim();
             if (!nombre || !sexo || !edad) {
                 alert('Completá los campos obligatorios: Nombre, Sexo biológico y Edad.');
+                return;
+            }
+            if (!email) {
+                alert('Completá tu correo electrónico para recibir los resultados.');
                 return;
             }
         }
@@ -903,6 +912,74 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSteps(4);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
+
+    window.sendResults = function() {
+        const btn = document.getElementById('btnSendResults');
+        const msg = document.getElementById('sendResultMsg');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando...';
+
+        const nombre = document.getElementById('dNombre').value.trim();
+        const email = document.getElementById('dEmail').value.trim();
+        if (!nombre) {
+            msg.innerHTML = '<div class="alert alert-warning">Completá tu nombre en la secci&oacute;n de datos primero.</div>';
+            msg.style.display = '';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-envelope"></i> Enviar resultados por email';
+            return;
+        }
+        if (!email) {
+            msg.innerHTML = '<div class="alert alert-warning">Completá tu email en la secci&oacute;n de datos primero.</div>';
+            msg.style.display = '';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-envelope"></i> Enviar resultados por email';
+            return;
+        }
+
+        const data = new URLSearchParams();
+        data.append('nombre', nombre);
+        data.append('email', document.getElementById('dEmail').value.trim());
+        data.append('telefono', document.getElementById('dTelefono').value.trim());
+        data.append('score_a', calcSecA());
+        data.append('score_b', calcRadioSum('secB'));
+        data.append('score_c', calcRadioSum('secC'));
+        data.append('total', document.getElementById('resTotal').textContent);
+        data.append('mensaje', document.getElementById('resMessage').textContent);
+
+        fetch('{% url "patients:submit_quiz_results" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: data,
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(resp) {
+            if (resp.ok) {
+                msg.innerHTML = '<div class="alert alert-success">Resultados enviados correctamente. Te contactaremos pronto.</div>';
+                msg.style.display = '';
+                btn.style.display = 'none';
+            } else {
+                msg.innerHTML = '<div class="alert alert-danger">' + (resp.error || 'Error al enviar.') + '</div>';
+                msg.style.display = '';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-envelope"></i> Enviar resultados por email';
+            }
+        })
+        .catch(function() {
+            msg.innerHTML = '<div class="alert alert-danger">Error de conexi&oacute;n. Intent&aacute; de nuevo.</div>';
+            msg.style.display = '';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-envelope"></i> Enviar resultados por email';
+        });
+    };
+
+    function getCookie(name) {
+        var value = '; ' + document.cookie;
+        var parts = value.split('; ' + name + '=');
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
 });
 </script>
 {% endblock %}

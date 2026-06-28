@@ -121,6 +121,10 @@ SOCIALACCOUNT_STORE_TOKENS = True
 LOGIN_REDIRECT_URL = "/mi-panel/"
 LOGOUT_REDIRECT_URL = "/"
 
+# Email
+DEFAULT_FROM_EMAIL = "Microbiota y Salud Integral <noreply@microbiotaysaludintegral.com>"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
 # Google OAuth2 — las credenciales se leen desde .env
 SOCIALACCOUNT_PROVIDERS = {
     "google": {

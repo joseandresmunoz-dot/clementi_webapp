@@ -1,26 +1,215 @@
 from datetime import date, timedelta
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
 from django.db.models import Q
+from django.db.models import Count, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_date
+from django.views.decorators.http import require_POST
 
 from appointments.models import Appointment
 from files_manager.models import FilePermission, SharedFile
-from patients.models import ClinicalTimelineEntry, PatientProfile
+from patients.forms import CategoryForm, ProductForm
+from patients.models import Category, ClinicalTimelineEntry, Lead, Order, PatientProfile, Product, ProductImage
 
 
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.http import require_POST
-from django.http import JsonResponse, HttpResponseRedirect
-from patients.models import Lead
+from django.http import FileResponse, JsonResponse, HttpResponseRedirect
 
 
 def test_epigenetico(request):
     return render(request, "test_epigenetico.html")
+
+
+def shop(request):
+    categories = Category.objects.filter(is_active=True)
+    featured = Product.objects.filter(is_active=True, is_featured=True).select_related("category").prefetch_related("images")
+
+    cat_slug = request.GET.get("categoria")
+    if cat_slug:
+        products = Product.objects.filter(is_active=True, category__slug=cat_slug).select_related("category").prefetch_related("images")
+        selected_category = cat_slug
+    else:
+        products = Product.objects.filter(is_active=True).select_related("category").prefetch_related("images")
+        selected_category = None
+
+    return render(request, "shop.html", {
+        "categories": categories,
+        "featured": featured,
+        "products": products,
+        "selected_category": selected_category,
+        "cart_count": _cart_count(request),
+    })
+
+
+def product_detail(request, slug):
+    product = get_object_or_404(Product.objects.select_related("category").prefetch_related("images"), slug=slug, is_active=True)
+    return render(request, "product_detail.html", {
+        "product": product,
+        "cart_count": _cart_count(request),
+    })
+
+
+def _cart_count(request):
+    cart = request.session.get("cart", {})
+    return sum(cart.get("items", {}).values())
+
+
+def add_to_cart(request, product_id):
+    if request.method != "POST":
+        return redirect("patients:shop")
+    product = get_object_or_404(Product, id=product_id, is_active=True)
+    cart = request.session.get("cart", {"items": {}})
+    try:
+        qty = int(request.POST.get("quantity", 1))
+    except (ValueError, TypeError):
+        qty = 1
+    current = cart["items"].get(str(product_id), 0)
+    cart["items"][str(product_id)] = current + qty
+    request.session["cart"] = cart
+    messages.success(request, f'"{product.name}" agregado al carrito.')
+    return redirect(request.POST.get("next", "patients:shop"))
+
+
+def remove_from_cart(request, product_id):
+    if request.method != "POST":
+        return redirect("patients:shop")
+    cart = request.session.get("cart", {"items": {}})
+    cart["items"].pop(str(product_id), None)
+    request.session["cart"] = cart
+    messages.success(request, "Producto eliminado del carrito.")
+    return redirect("patients:cart")
+
+
+def cart(request):
+    cart_data = request.session.get("cart", {"items": {}})
+    items = []
+    total = 0
+    for pid, qty in cart_data.get("items", {}).items():
+        try:
+            product = Product.objects.get(id=pid, is_active=True)
+        except Product.DoesNotExist:
+            continue
+        unit_price = float(product.discount_price) if product.is_on_sale and product.discount_price else float(product.price)
+        subtotal = unit_price * qty
+        items.append({
+            "product": product,
+            "quantity": qty,
+            "unit_price": unit_price,
+            "subtotal": subtotal,
+        })
+        total += subtotal
+    lines = []
+    for i, item in enumerate(items, 1):
+        lines.append(f"{i}. {item['product'].name} x{item['quantity']} — ${item['subtotal']:.2f}")
+    lines.append(f"Total: ${total:.2f}")
+    whatsapp_message = "Hola, quiero consultar por los productos de mi carrito:%0A%0A" + "%0A".join(lines)
+    return render(request, "cart.html", {
+        "items": items,
+        "total": total,
+        "cart_count": _cart_count(request),
+        "whatsapp_message": whatsapp_message,
+    })
+
+
+@user_passes_test(lambda u: u.is_staff)
+def shop_admin(request):
+    categories = Category.objects.all().order_by("order", "name")
+    products = Product.objects.all().select_related("category").order_by("category__order", "order")
+
+    # Stats
+    total_orders = Order.objects.count()
+    total_revenue = Order.objects.aggregate(t=Sum("total_price"))["t"] or 0
+    best_sellers = (
+        Order.objects.values("product__name", "product_id")
+        .annotate(total_qty=Sum("quantity"), total_rev=Sum("total_price"))
+        .order_by("-total_qty")[:10]
+    )
+    orders_by_status = {
+        s: Order.objects.filter(status=s).count()
+        for s in ["completed", "pending", "cancelled"]
+    }
+
+    cat_form = CategoryForm(prefix="cat")
+    prod_form = ProductForm(prefix="prod")
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "add_category":
+            cat_form = CategoryForm(request.POST, prefix="cat")
+            if cat_form.is_valid():
+                cat_form.save()
+                messages.success(request, "Categoría creada correctamente.")
+                return redirect("patients:shop_admin")
+            else:
+                messages.error(request, "Corregí los errores del formulario de categoría.")
+
+        elif action == "edit_category":
+            cat_id = request.POST.get("cat_id")
+            cat = get_object_or_404(Category, id=cat_id)
+            cat_form = CategoryForm(request.POST, instance=cat, prefix="cat")
+            if cat_form.is_valid():
+                cat_form.save()
+                messages.success(request, "Categoría actualizada.")
+                return redirect("patients:shop_admin")
+            else:
+                messages.error(request, "Corregí los errores.")
+
+        elif action == "delete_category":
+            cat_id = request.POST.get("cat_id")
+            cat = get_object_or_404(Category, id=cat_id)
+            cat.delete()
+            messages.success(request, "Categoría eliminada.")
+            return redirect("patients:shop_admin")
+
+        elif action == "add_product":
+            prod_form = ProductForm(request.POST, request.FILES, prefix="prod")
+            if prod_form.is_valid():
+                product = prod_form.save()
+                _save_product_images(request, product)
+                messages.success(request, "Producto creado correctamente.")
+                return redirect("patients:shop_admin")
+            else:
+                messages.error(request, "Corregí los errores del formulario de producto.")
+
+        elif action == "edit_product":
+            prod_id = request.POST.get("prod_id")
+            prod = get_object_or_404(Product, id=prod_id)
+            prod_form = ProductForm(request.POST, request.FILES, instance=prod, prefix="prod")
+            if prod_form.is_valid():
+                product = prod_form.save()
+                _save_product_images(request, product)
+                messages.success(request, "Producto actualizado.")
+                return redirect("patients:shop_admin")
+            else:
+                messages.error(request, "Corregí los errores.")
+
+        elif action == "delete_product":
+            prod_id = request.POST.get("prod_id")
+            prod = get_object_or_404(Product, id=prod_id)
+            prod.delete()
+            messages.success(request, "Producto eliminado.")
+            return redirect("patients:shop_admin")
+
+    return render(request, "patients/shop_admin.html", {
+        "categories": categories,
+        "products": products,
+        "products_active": products.filter(is_active=True).count(),
+        "products_inactive": products.filter(is_active=False).count(),
+        "cat_form": cat_form,
+        "prod_form": prod_form,
+        "total_orders": total_orders,
+        "total_revenue": total_revenue,
+        "best_sellers": best_sellers,
+        "orders_by_status": orders_by_status,
+    })
 
 
 @require_POST
@@ -113,16 +302,66 @@ def home(request):
     return render(request, "landing.html")
 
 
-@login_required
+@ensure_csrf_cookie
 def microbiota_quiz(request):
-    if request.user.is_authenticated and not _is_patient_approved(request.user):
-        messages.warning(
-            request,
-            "Tu cuenta aún no fue aprobada por administración."
-            " Te avisaremos cuando se habilite.",
-        )
-        return redirect("patients:pending_approval")
     return render(request, "patients/microbiota_quiz.html")
+
+
+@require_POST
+def submit_quiz_results(request):
+    nombre = request.POST.get("nombre", "").strip()
+    email = request.POST.get("email", "").strip()
+    telefono = request.POST.get("telefono", "").strip()
+    score_a = request.POST.get("score_a", "0")
+    score_b = request.POST.get("score_b", "0")
+    score_c = request.POST.get("score_c", "0")
+    total = request.POST.get("total", "0")
+    mensaje = request.POST.get("mensaje", "")
+
+    if not nombre:
+        return JsonResponse({"ok": False, "error": "El nombre es obligatorio."})
+    if not email:
+        return JsonResponse({"ok": False, "error": "El email es obligatorio."})
+
+    Lead.objects.create(
+        name=nombre,
+        email=email,
+        phone=telefono,
+        message=f"Resultados del cuestionario de microbiota:\n"
+                f"Sección A (Historial): {score_a}\n"
+                f"Sección B (Síntomas): {score_b}\n"
+                f"Sección C (Otros síntomas): {score_c}\n"
+                f"Total: {total}\n"
+                f"Diagnóstico: {mensaje}",
+        source="microbiota_quiz",
+    )
+
+    asunto = f"Resultados del cuestionario de microbiota — {nombre}"
+    cuerpo = (
+        f"Nombre: {nombre}\n"
+        f"Email: {email}\n"
+        f"Teléfono: {telefono}\n\n"
+        f"Sección A (Historial): {score_a}\n"
+        f"Sección B (Síntomas): {score_b}\n"
+        f"Sección C (Otros síntomas): {score_c}\n"
+        f"Total: {total}\n"
+        f"Diagnóstico: {mensaje}\n"
+    )
+    send_mail(
+        asunto,
+        cuerpo,
+        settings.DEFAULT_FROM_EMAIL,
+        [settings.DEFAULT_FROM_EMAIL],
+        fail_silently=True,
+    )
+
+    return JsonResponse({"ok": True})
+
+
+def service_worker(request):
+    from pathlib import Path
+    sw_path = Path(settings.BASE_DIR) / "static" / "sw.js"
+    return FileResponse(open(sw_path, "rb"), content_type="application/javascript")
 
 
 @login_required
@@ -376,3 +615,15 @@ def admin_panel(request):
         "upcoming_appointments": upcoming_appointments,
     }
     return render(request, "patients/admin_panel.html", context)
+
+
+def _save_product_images(request, product):
+    images = request.FILES.getlist("prod-images")
+    cover_index = int(request.POST.get("prod-cover-index", 0))
+    for i, f in enumerate(images):
+        ProductImage.objects.create(
+            product=product,
+            image=f,
+            is_cover=(i == cover_index),
+            order=i,
+        )

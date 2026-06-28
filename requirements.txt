@@ -1,5 +1,5 @@
 # Core
-Django>=5.1,<5.2
+Django>=5.2,<5.3
 django-environ>=0.11
 
 # Authentication (Google OAuth2)

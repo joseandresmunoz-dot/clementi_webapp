@@ -1,0 +1,66 @@
+{% load static %}
+<div class="product-card">
+    <div class="img-wrap">
+        {% with cover=product.images.all|first %}
+        {% if cover %}
+        <img src="{{ cover.image.url }}" alt="{{ product.name }}">
+        {% elif product.image %}
+        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% else %}
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--brand-bg);color:var(--brand-light);font-size:2rem;">
+            {% if product.is_curso %}📚{% else %}💊{% endif %}
+        </div>
+        {% endif %}
+        {% endwith %}
+        {% if product.is_curso %}
+        <span class="badge-curso">Curso</span>
+        {% endif %}
+        {% if product.is_featured %}
+        <span class="badge-featured">⭐ Destacado</span>
+        {% endif %}
+        {% with cover=product.images.all|first %}
+        {% if cover and cover.is_cover %}
+        <span class="star-cover">⭐</span>
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    {% with images=product.images.all %}
+    {% if images|length > 1 %}
+    <div class="gallery-thumbs">
+        {% for img in images %}
+        <img src="{{ img.image.url }}" alt="" class="{% if img.is_cover or forloop.first %}active{% endif %}">
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="info">
+        <div class="cat">{{ product.category.name }}</div>
+        <h4>{{ product.name }}</h4>
+        {% if product.description %}
+        <p>{{ product.description|truncatechars:80 }}</p>
+        {% endif %}
+        <div class="precio-row">
+            {% if product.is_on_sale and product.discount_price %}
+            <span class="precio-old">${{ product.price }}</span>
+            <span class="precio">${{ product.discount_price }}</span>
+            {% else %}
+            <span class="precio">${{ product.price }}</span>
+            {% endif %}
+            {% if product.promo_label %}
+            <span class="promo-tag">{{ product.promo_label }}</span>
+            {% endif %}
+        </div>
+        <div class="card-actions">
+            <a href="{% url 'patients:product_detail' product.slug %}" class="btn-ver">
+                <i class="bi bi-eye"></i> Ver
+            </a>
+            <form method="post" action="{% url 'patients:add_to_cart' product.id %}" class="card-add-form">
+                {% csrf_token %}
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="btn-add-card"><i class="bi bi-cart-plus"></i> Agregar</button>
+            </form>
+        </div>
+    </div>
+</div>

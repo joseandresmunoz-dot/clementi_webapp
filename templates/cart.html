@@ -1,0 +1,290 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito — Microbiota y Salud Integral</title>
+    <link rel="icon" href="{% static 'images/favicon/favicon.ico' %}" type="image/x-icon">
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <meta name="theme-color" content="#7c6fff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="{% static 'images/favicon/apple-touch-icon.png' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; color: #1a1a2e; line-height: 1.6; background: #f8f7ff; }
+        a { text-decoration: none; color: inherit; }
+        img { max-width: 100%; height: auto; display: block; }
+        .container { width: 100%; max-width: 800px; margin: 0 auto; padding: 0 20px; }
+
+        :root {
+            --brand: #7c6fff;
+            --brand-dark: #5a4fd8;
+            --brand-light: #a99eff;
+            --brand-bg: #f8f7ff;
+            --brand-gradient: linear-gradient(135deg, #7c6fff 0%, #b8a9ff 100%);
+            --accent: #ff6b9d;
+            --text-dark: #1a1a2e;
+            --text-muted: #6b6b80;
+        }
+
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(124,111,255,0.08);
+        }
+        .navbar .logo img { height: 36px; width: auto; }
+        .navbar .nav-links {
+            display: none; flex-direction: column;
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: rgba(255,255,255,0.98);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            padding: 20px 24px; gap: 16px;
+            list-style: none;
+        }
+        .navbar .nav-links a { font-size: 1rem; font-weight: 500; color: var(--text-dark); }
+        .navbar .nav-links .btn-primary-nav {
+            background: var(--brand); color: #fff !important;
+            padding: 12px 20px; border-radius: 10px; font-weight: 600;
+            text-align: center;
+        }
+        .hamburger { display: flex; flex-direction: column; cursor: pointer; gap: 5px; padding: 4px; }
+        .hamburger span { width: 26px; height: 3px; background: var(--text-dark); border-radius: 3px; }
+        #nav-toggle { display: none; }
+        #nav-toggle:checked ~ .nav-links { display: flex; }
+
+        .page-hero {
+            padding: 100px 0 40px;
+            background: var(--brand-gradient);
+            color: #fff; text-align: center;
+        }
+        .page-hero h1 { font-size: 1.6rem; font-weight: 800; }
+        .page-hero p { font-size: 0.85rem; opacity: 0.9; }
+
+        .cart-list { padding: 30px 0; }
+        .cart-item {
+            display: flex; gap: 16px; align-items: center;
+            background: #fff; border-radius: 16px; padding: 16px 20px;
+            margin-bottom: 12px; box-shadow: 0 4px 16px rgba(124,111,255,0.06);
+        }
+        .cart-item img { width: 70px; height: 70px; border-radius: 10px; object-fit: cover; }
+        .cart-item .info { flex: 1; }
+        .cart-item .info h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 2px; }
+        .cart-item .info .price { font-size: 0.85rem; color: var(--brand); font-weight: 600; }
+        .cart-item .info .qty { font-size: 0.8rem; color: var(--text-muted); }
+        .cart-item .subtotal { font-size: 1rem; font-weight: 700; color: var(--text-dark); }
+
+        .cart-summary {
+            background: #fff; border-radius: 16px; padding: 20px;
+            box-shadow: 0 4px 16px rgba(124,111,255,0.06); margin-bottom: 30px;
+        }
+        .cart-summary .total-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .cart-summary .total-row .label { font-size: 1rem; font-weight: 600; }
+        .cart-summary .total-row .value { font-size: 1.4rem; font-weight: 800; color: var(--brand); }
+
+        .btn-whatsapp-checkout {
+            display: block; text-align: center; width: 100%;
+            background: #25D366; color: #fff; padding: 14px; border-radius: 12px;
+            font-size: 0.95rem; font-weight: 600; border: none; cursor: pointer;
+        }
+        .btn-whatsapp-checkout:hover { background: #1da851; }
+
+        .btn-remove {
+            background: none; border: none; color: #e74c3c;
+            font-size: 0.75rem; cursor: pointer; padding: 4px 0;
+        }
+        .btn-remove:hover { text-decoration: underline; }
+
+        .empty-cart {
+            text-align: center; padding: 60px 0; color: var(--text-muted);
+        }
+        .empty-cart h3 { font-size: 1.2rem; margin-bottom: 10px; color: var(--text-dark); }
+
+        .footer {
+            background: #1a1a2e; color: rgba(255,255,255,0.7);
+            padding: 36px 0 24px; text-align: center;
+        }
+        .footer img { height: 30px; margin: 0 auto 16px; }
+        .footer .divider { width: 36px; height: 2px; background: var(--brand); margin: 16px auto; border: none; }
+        .footer p { font-size: 0.75rem; margin-bottom: 4px; }
+        .footer a { color: var(--brand-light); }
+
+        @media (min-width: 768px) {
+            .container { padding: 0 32px; }
+            .navbar { padding: 14px 32px; }
+            .navbar .logo img { height: 42px; }
+            .navbar .nav-links {
+                display: flex !important; flex-direction: row; position: static;
+                background: none; backdrop-filter: none; box-shadow: none;
+                padding: 0; gap: 28px; align-items: center;
+            }
+            .navbar .nav-links a { font-size: 0.9rem; color: var(--text-muted); }
+            .navbar .nav-links a:hover { color: var(--brand); }
+            .navbar .nav-links .btn-primary-nav { padding: 10px 22px; }
+            .hamburger { display: none !important; }
+            .page-hero { padding: 120px 0 50px; }
+            .page-hero h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="{% url 'patients:home' %}" class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Microbiota y Salud">
+        </a>
+        <label for="nav-toggle" class="hamburger">
+            <span></span><span></span><span></span>
+        </label>
+        <input type="checkbox" id="nav-toggle" hidden>
+        <ul class="nav-links">
+            <li><a href="{% url 'patients:home' %}">Inicio</a></li>
+            <li><a href="{% url 'patients:shop' %}">Tienda</a></li>
+            <li><a href="{% url 'patients:cart' %}">Carrito {% if cart_count %}({{ cart_count }}){% endif %}</a></li>
+            <li><a href="{% url 'patients:home' %}#contacto" class="btn-primary-nav">Agendar consulta</a></li>
+        </ul>
+    </nav>
+
+    <section class="page-hero">
+        <div class="container">
+            <h1>Carrito</h1>
+            <p>{{ items|length }} producto{{ items|length|pluralize:'s' }} en tu carrito</p>
+        </div>
+    </section>
+
+    <div class="container cart-list">
+        {% if items %}
+            {% for item in items %}
+            <div class="cart-item">
+                {% with first_img=item.product.images.all|first %}
+                {% if first_img %}
+                <img src="{{ first_img.image.url }}" alt="{{ item.product.name }}">
+                {% elif item.product.image %}
+                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                {% else %}
+                <div style="width:70px;height:70px;border-radius:10px;background:var(--brand-bg);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--brand-light);flex-shrink:0;">
+                    {% if item.product.is_curso %}&#x1F4DA;{% else %}&#x1F48A;{% endif %}
+                </div>
+                {% endif %}
+                {% endwith %}
+                <div class="info">
+                    <h4>{{ item.product.name }}</h4>
+                    <div class="price">${{ item.unit_price|floatformat:2 }} c/u</div>
+                    <div class="qty">Cantidad: {{ item.quantity }}</div>
+                    <form method="post" action="{% url 'patients:remove_from_cart' item.product.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-remove">Eliminar</button>
+                    </form>
+                </div>
+                <div class="subtotal">${{ item.subtotal|floatformat:2 }}</div>
+            </div>
+            {% endfor %}
+
+            <div class="cart-summary">
+                <div class="total-row">
+                    <span class="label">Total</span>
+                    <span class="value">${{ total|floatformat:2 }}</span>
+                </div>
+                <a href="https://wa.me/5493512535160?text={{ whatsapp_message }}" target="_blank" rel="noopener" class="btn-whatsapp-checkout">
+                    <i class="bi bi-whatsapp"></i> Consultar por WhatsApp
+                </a>
+            </div>
+        {% else %}
+            <div class="empty-cart">
+                <h3>Tu carrito está vacío</h3>
+                <p>Agrega productos desde la tienda.</p>
+                <a href="{% url 'patients:shop' %}" style="display:inline-block;margin-top:16px;background:var(--brand);color:#fff;padding:12px 28px;border-radius:10px;font-weight:600;">Ver tienda</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <img src="{% static 'images/logorcblanco.png' %}" alt="Microbiota y Salud" style="height:42px;">
+            <hr class="divider">
+            <p>Todos los derechos reservados</p>
+            <p>Desarrollado por <a href="https://creandosoluciones.ar" target="_blank" rel="noopener">Creando Soluciones</a></p>
+        </div>
+    </footer>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('{% url "service_worker" %}')
+            .then(function(registration) {
+                console.log('ServiceWorker registration successful:', registration.scope);
+            })
+            .catch(function(error) {
+                console.log('ServiceWorker registration failed:', error);
+                // Fallback: try to load from static path as well
+                try {
+                    navigator.serviceWorker.register('{% static "sw.js" %}');
+                } catch(e) {
+                    console.log('Additional registration attempt also failed:', e);
+                }
+            });
+    }
+    </script>
+
+    <script>
+    // Add shake animation for form validation styles
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .shake {
+            animation: shake 0.3s;
+        }
+        .loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .image-error {
+            border: 2px solid var(--accent);
+            background: rgba(255, 107, 157, 0.1);
+        }
+    `;
+    document.head.appendChild(style);
+    </script>
+
+    <script>
+    // Enhanced cart functionality
+    function initializeCart() {
+        // Show loading state for form submissions
+        document.querySelectorAll('.cart-item form').forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+                const btn = this.querySelector('button');
+                if (btn) {
+                    btn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Eliminando...';
+                    btn.disabled = true;
+                }
+            });
+        });
+        
+        // Auto-dismiss messages
+        document.querySelectorAll('[style*="position:fixed"][style*="top:70px"]').forEach(function(msg) {
+            setTimeout(() => {
+                msg.style.transition = 'opacity 0.3s';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 300);
+            }, 3000);
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeCart);
+    } else {
+        initializeCart();
+    }
+    </script>
+</body>
+</html>

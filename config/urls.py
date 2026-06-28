@@ -3,6 +3,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 import private_storage.urls
+from patients import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -10,6 +11,7 @@ urlpatterns = [
     path("api/appointments/", include("appointments.urls")),
     path("api/files/", include("files_manager.urls")),
     path("private-media/", include(private_storage.urls)),
+    path("sw.js", views.service_worker, name="service_worker"),
     path("", include("patients.urls")),
 ]
 
