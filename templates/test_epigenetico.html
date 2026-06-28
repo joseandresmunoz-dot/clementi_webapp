@@ -29,7 +29,7 @@
             --card-shadow: 0 8px 30px rgba(124, 111, 255, 0.10);
         }
 
-        /* ===== NAVBAR (same as landing) ===== */
+        /* ===== NAVBAR ===== */
         .navbar {
             position: fixed; top: 0; left: 0; right: 0; z-index: 999;
             display: flex; justify-content: space-between; align-items: center;
@@ -61,7 +61,7 @@
 
         /* ===== HERO ===== */
         .hero {
-            padding: 100px 0 50px;
+            padding: 120px 0 60px;
             background: var(--brand-gradient);
             color: #fff;
             position: relative;
@@ -74,20 +74,16 @@
             border-radius: 50%;
         }
         .hero .container { position: relative; z-index: 1; text-align: center; }
-        .hero-badge {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: rgba(255,255,255,0.15); color: #fff;
-            padding: 4px 14px; border-radius: 50px;
-            font-size: 0.75rem; font-weight: 600;
-            margin-bottom: 14px;
-        }
         .hero h1 {
             font-size: 1.8rem; font-weight: 800;
-            line-height: 1.15; margin-bottom: 12px;
+            line-height: 1.15; margin-bottom: 6px;
+        }
+        .hero .credenciales {
+            font-size: 0.8rem; opacity: 0.85; margin-bottom: 20px;
         }
         .hero p {
             font-size: 0.9rem; opacity: 0.9;
-            max-width: 650px; margin: 0 auto 20px; line-height: 1.6;
+            max-width: 720px; margin: 0 auto 20px; line-height: 1.6;
         }
         .hero .btn-primary {
             display: inline-block;
@@ -115,19 +111,22 @@
         .text-center { text-align: center; }
         .mx-auto { margin-left: auto; margin-right: auto; }
 
-        /* ===== CONTENT SECTIONS ===== */
-        .content-block {
-            padding: 50px 0;
-        }
+        /* ===== CONTENT ===== */
+        .content-block { padding: 50px 0; }
         .content-block:nth-child(even) { background: var(--brand-bg); }
 
-        .content-grid {
-            display: flex; flex-direction: column; gap: 28px;
-        }
         .content-text p {
             color: var(--text-muted); margin-bottom: 14px; font-size: 0.9rem; line-height: 1.7;
         }
         .content-text strong { color: var(--text-dark); }
+
+        .moduladores { margin: 20px 0; display: flex; flex-wrap: wrap; gap: 8px; }
+        .moduladores li {
+            list-style: none;
+            background: #fff; padding: 8px 16px; border-radius: 50px;
+            font-size: 0.8rem; color: var(--text-dark); font-weight: 500;
+            box-shadow: var(--card-shadow);
+        }
 
         .steps-list {
             display: flex; flex-direction: column; gap: 16px; margin: 20px 0;
@@ -145,17 +144,6 @@
         }
         .step-item h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
         .step-item p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0; }
-
-        .moduladores { margin: 20px 0; }
-        .moduladores li {
-            list-style: none; padding: 8px 0 8px 28px;
-            font-size: 0.9rem; color: var(--text-muted);
-            position: relative;
-        }
-        .moduladores li::before {
-            content: '📌';
-            position: absolute; left: 0;
-        }
 
         .resultados-grid {
             display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0;
@@ -182,6 +170,82 @@
             background: #fff; color: var(--brand);
             padding: 14px 36px; border-radius: 12px;
             font-weight: 600; font-size: 1rem;
+        }
+
+        /* ===== PAGO ===== */
+        .pago-grid {
+            display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 20px;
+        }
+        .pago-card {
+            background: #fff; padding: 24px 20px; border-radius: 16px;
+            box-shadow: var(--card-shadow);
+        }
+        .pago-card h4 {
+            font-size: 1rem; font-weight: 700; color: var(--brand); margin-bottom: 10px;
+        }
+        .pago-card p, .pago-card li {
+            font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;
+        }
+        .pago-card ul { list-style: none; }
+        .pago-card ul li { padding: 4px 0; }
+        .pago-card .cbu {
+            display: inline-block;
+            background: var(--brand-bg); color: var(--text-dark);
+            padding: 6px 14px; border-radius: 8px;
+            font-family: monospace; font-size: 0.85rem; font-weight: 600;
+            margin: 4px 0;
+        }
+        .pago-card .alias {
+            display: inline-block;
+            background: var(--brand-bg); color: var(--brand);
+            padding: 6px 14px; border-radius: 8px;
+            font-family: monospace; font-size: 0.85rem; font-weight: 700;
+            margin: 4px 0;
+            letter-spacing: 0.5px;
+        }
+        .pago-nota {
+            background: #fff3cd; color: #856404;
+            padding: 14px 18px; border-radius: 12px;
+            font-size: 0.85rem; line-height: 1.5; margin-top: 16px;
+        }
+
+        /* ===== CONTACTO ===== */
+        .contacto-grid {
+            display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 20px;
+        }
+        .contacto-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 18px; background: #fff; border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+        .contacto-item .icono {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--brand-bg); color: var(--brand);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            font-size: 1rem;
+        }
+        .contacto-item .info { font-size: 0.85rem; color: var(--text-muted); }
+        .contacto-item .info strong { color: var(--text-dark); display: block; font-size: 0.8rem; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* ===== UBICACIÓN ===== */
+        .ubicacion-card {
+            background: #fff; border-radius: 20px; padding: 28px 24px;
+            box-shadow: var(--card-shadow); margin-top: 20px;
+        }
+        .ubicacion-card h4 {
+            font-size: 1rem; font-weight: 700; color: var(--text-dark); margin-bottom: 4px;
+        }
+        .ubicacion-card .sub {
+            font-size: 0.8rem; color: var(--brand); font-weight: 600; margin-bottom: 12px;
+        }
+        .ubicacion-card p {
+            font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;
+        }
+        .ubicacion-card .tel {
+            display: inline-block; margin-top: 10px;
+            background: var(--brand-gradient); color: #fff;
+            padding: 10px 24px; border-radius: 10px; font-weight: 600; font-size: 0.9rem;
         }
 
         /* ===== FOOTER ===== */
@@ -259,27 +323,29 @@
             .navbar .nav-links .btn-primary-nav::after { display: none; }
             .hamburger { display: none !important; }
 
-            .hero { padding: 120px 0 60px; }
+            .hero { padding: 140px 0 70px; }
             .hero h1 { font-size: 2.4rem; }
             .hero p { font-size: 1rem; }
 
             .section-title { font-size: 1.8rem; }
-            .content-grid { gap: 32px; }
-            .steps-list { gap: 20px; }
             .resultados-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+            .pago-grid { grid-template-columns: 1fr 1fr; }
+            .contacto-grid { grid-template-columns: 1fr 1fr; }
         }
 
         @media (min-width: 992px) {
             .container { padding: 0 40px; }
             section { padding: 80px 0; }
             .content-block { padding: 80px 0; }
-            .hero { padding: 140px 0 80px; }
+            .hero { padding: 160px 0 80px; }
             .hero h1 { font-size: 2.8rem; }
             .section-title { font-size: 2.2rem; }
             .content-text p { font-size: 0.95rem; }
+            .moduladores li { font-size: 0.85rem; }
             .resultados-grid { grid-template-columns: repeat(4, 1fr); }
             .valor-card { padding: 48px 40px; }
             .valor-card .precio { font-size: 2.4rem; }
+            .pago-grid { grid-template-columns: repeat(3, 1fr); }
         }
     </style>
 </head>
@@ -324,13 +390,11 @@
     <!-- ===== HERO ===== -->
     <section class="hero">
         <div class="container">
-            <div class="hero-badge">Conocé tu cuerpo desde adentro</div>
-            <h1>Test Epigenético</h1>
+            <h1>MICROBIOTA Y SALUD INTEGRAL</h1>
+            <p class="credenciales">Magister Microbióloga. Bioquímica. Romina Carla Clementi — ME: 412</p>
+            <h2 style="font-size:1.1rem; font-weight:600; opacity:0.95; margin-bottom:12px;">OPTIMIZACIÓN DE LA SALUD GASTROINTESTINAL</h2>
             <p>
-                Optimización de la salud gastrointestinal. Tu bienestar no solo depende de la genética, 
-                sino de cómo interactúa con tu entorno. Con el Test Epigenético, obtené un análisis 
-                profundo de tu salud y descubrí cómo optimizar tu alimentación, energía y vitalidad 
-                en solo 90 días.
+                Tu bienestar no solo depende de la genética, sino de cómo interactúa con tu entorno. Con el Test Epigenético, obtén un análisis profundo de tu salud y descubre cómo optimizar tu alimentación, energía y vitalidad en solo 90 días.
             </p>
             <a href="#procedimiento" class="btn-primary">Cómo funciona</a>
         </div>
@@ -339,19 +403,12 @@
     <!-- ===== QUÉ ES LA EPIGENÉTICA ===== -->
     <div class="content-block">
         <div class="container">
-            <div class="content-grid">
-                <div class="content-text text-center">
-                    <span class="section-tag">Ciencia</span>
-                    <h2 class="section-title">¿Qué es la Epigenética?</h2>
-                    <p>
-                        Tu salud no está determinada solo por la genética, sino por cómo interactúa con el entorno.
-                    </p>
-                    <p>
-                        La epigenética estudia cómo la alimentación, el estrés y el estilo de vida influyen 
-                        en tu bienestar. Conociendo esta información, puedes tomar decisiones para optimizar 
-                        tu salud y rendimiento.
-                    </p>
-                </div>
+            <div class="content-text text-center">
+                <span class="section-tag">Ciencia</span>
+                <h2 class="section-title">¿Qué es la Epigenética?</h2>
+                <p>
+                    Tu salud no está determinada solo por la genética, sino por cómo interactúa con el entorno. La epigenética estudia cómo la alimentación, el estrés y el estilo de vida influyen en tu bienestar. Conociendo esta información, puedes tomar decisiones para optimizar tu salud y rendimiento.
+                </p>
             </div>
         </div>
     </div>
@@ -359,38 +416,31 @@
     <!-- ===== CÓMO FUNCIONA ===== -->
     <div class="content-block" id="procedimiento" style="background: var(--brand-bg);">
         <div class="container">
-            <div class="content-grid">
-                <div class="content-text">
-                    <span class="section-tag">Metodología</span>
-                    <h2 class="section-title">¿Cómo funciona el Test de Epigenética?</h2>
-                    <p>
-                        El test epigenético ofrece un análisis detallado de diversos factores del organismo 
-                        que influyen en la salud digestiva. Permite conocer 96 indicadores epigenéticos para 
-                        identificar necesidades nutricionales y el nivel de carga o exposición.
-                    </p>
-                    <p><strong>Estos moduladores son:</strong></p>
-                    <ul class="moduladores">
-                        <li>Minerales y vitaminas</li>
-                        <li>Aminoácidos</li>
-                        <li>Antioxidantes y ácidos grasos esenciales</li>
-                        <li>Exposición tóxica y carga electromagnética</li>
-                        <li>Indicadores específicos del microbioma</li>
-                    </ul>
-                    <p>
-                        Este conjunto de datos ofrece un perfil detallado de los componentes presentes en 
-                        el organismo y cómo estos influyen en el funcionamiento digestivo. Con esta 
-                        información, se puede determinar la mejor estrategia para corregir desajustes en 
-                        el microbioma y ayudarte a corregir posibles trastornos digestivos.
-                    </p>
+            <div class="content-text">
+                <span class="section-tag">Metodología</span>
+                <h2 class="section-title">¿Cómo funciona el Test de Epigenética?</h2>
+                <p>
+                    A través de un análisis avanzado, identificamos factores que pueden estar afectando tu salud, como:
+                </p>
+                <ul class="moduladores">
+                    <li>Vitaminas</li>
+                    <li>Minerales</li>
+                    <li>Antioxidantes</li>
+                    <li>Aminoácidos</li>
+                    <li>Ácidos grasos</li>
+                    <li>Microbiota</li>
+                    <li>Metabolismo gastrointestinal</li>
+                    <li>Metabolismo inmunológico</li>
+                    <li>Metabolismo cardíaco</li>
+                    <li>Exposición tóxica</li>
+                    <li>Cargas electromagnéticas</li>
+                    <li>Intolerancias alimenticias</li>
+                </ul>
 
-                    <h3 style="font-size: 1.1rem; font-weight: 600; margin: 28px 0 12px;">¿Por qué se analiza el cabello?</h3>
-                    <p>
-                        El cabello es un biomarcador confiable, ya que almacena información de los últimos 
-                        90 días sobre tu estado nutricional y exposición a factores ambientales. A través de 
-                        una muestra digitalizada con tecnología S-Drive, enviamos los datos a un laboratorio 
-                        en Alemania (Cell-Wellbeing) para un análisis detallado.
-                    </p>
-                </div>
+                <h3 style="font-size: 1.1rem; font-weight: 600; margin: 28px 0 12px;">¿Por qué se analiza el cabello?</h3>
+                <p>
+                    El cabello es un biomarcador confiable, ya que almacena información de los últimos 90 días sobre tu estado nutricional y exposición a factores ambientales. A través de una muestra digitalizada con tecnología S-Drive, enviamos los datos a un laboratorio en Alemania (Cell-Wellbeing) para un análisis detallado.
+                </p>
             </div>
         </div>
     </div>
@@ -401,7 +451,7 @@
             <div class="content-text text-center">
                 <span class="section-tag">Procedimiento</span>
                 <h2 class="section-title">¿Cómo es el procedimiento para realizar el Test?</h2>
-                <p>Realizar el test es un proceso rápido, sencillo y no invasivo</p>
+                <p>Realizar el test es un proceso rápido, sencillo y no invasivo:</p>
             </div>
             <div class="steps-list">
                 <div class="step-item">
@@ -465,7 +515,7 @@
                     Identificación de factores que pueden estar afectándote
                 </div>
                 <div class="resultado-item">
-                    <strong>Plan de acción</strong>
+                    <strong>Planes de acción</strong>
                     Estrategias para optimizar tu bienestar y rendimiento
                 </div>
             </div>
@@ -474,7 +524,104 @@
                 <h3>Valor del Test</h3>
                 <div class="precio">$450.000</div>
                 <p>Incluye protocolo de optimización y plan alimenticio de precisión</p>
-                <a href="https://wa.me/5493512535160" target="_blank" rel="noopener" class="btn-cta">Consultar por WhatsApp</a>
+                <a href="https://wa.me/5493512535160?text=Hola%2C%20quiero%20consultar%20por%20el%20Test%20Epigen%C3%A9tico" target="_blank" rel="noopener" class="btn-cta">Consultar por WhatsApp</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MEDIOS DE PAGO ===== -->
+    <div class="content-block" id="pago">
+        <div class="container">
+            <div class="content-text text-center">
+                <span class="section-tag">Pago</span>
+                <h2 class="section-title">Medios de pago</h2>
+            </div>
+            <div class="pago-grid">
+                <div class="pago-card">
+                    <h4>Transferencia bancaria</h4>
+                    <ul>
+                        <li><strong>Bancor</strong><br>
+                            <span class="cbu">CBU: 0200931911000019685694</span></li>
+                        <li style="margin-top:10px;"><strong>Banco Francés</strong><br>
+                            <span class="cbu">CBU: 0170272140000004759845</span></li>
+                        <li style="margin-top:10px;"><strong>ALIAS:</strong><br>
+                            <span class="alias">BM.ROMINA.CLEMENTI</span></li>
+                    </ul>
+                    <p style="margin-top:10px; font-size:0.8rem;">Titular de la cuenta: Romina Carla Clementi</p>
+                </div>
+                <div class="pago-card">
+                    <h4>Mercado Pago</h4>
+                    <p>Aceptamos Mercado Pago. Consultar por cuotas con tarjeta de crédito.</p>
+                </div>
+                <div class="pago-card">
+                    <h4>PayPal / Western Union</h4>
+                    <p>Disponible para pagos desde el exterior.</p>
+                </div>
+            </div>
+            <div class="pago-nota">
+                <strong>Importante:</strong> Se deberá realizar el 50% antes del turno y enviar el comprobante vía mail o WhatsApp.
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CONTACTO ===== -->
+    <div class="content-block" style="background: var(--brand-bg);">
+        <div class="container">
+            <div class="content-text text-center">
+                <span class="section-tag">Contacto</span>
+                <h2 class="section-title">Contactate con nosotros</h2>
+            </div>
+            <div class="contacto-grid">
+                <div class="contacto-item">
+                    <div class="icono">📞</div>
+                    <div class="info">
+                        <strong>Teléfono</strong>
+                        <a href="tel:+5493512535160">+54 9 351 253-5160</a>
+                    </div>
+                </div>
+                <div class="contacto-item">
+                    <div class="icono">✉️</div>
+                    <div class="info">
+                        <strong>Email</strong>
+                        <a href="mailto:microbiotaysaludintegralrc@gmail.com">microbiotaysaludintegralrc@gmail.com</a>
+                    </div>
+                </div>
+                <div class="contacto-item">
+                    <div class="icono">f</div>
+                    <div class="info">
+                        <strong>Facebook</strong>
+                        <a href="https://facebook.com/microbiotaysalud" target="_blank" rel="noopener">@microbiotaysalud</a>
+                    </div>
+                </div>
+                <div class="contacto-item">
+                    <div class="icono">📷</div>
+                    <div class="info">
+                        <strong>Instagram</strong>
+                        <a href="https://instagram.com/microbiota.y.salud.integral" target="_blank" rel="noopener">@microbiota.y.salud.integral</a>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align:center; margin-top:16px;">
+                <a href="https://microbiotaysaludintegralrc.ar" target="_blank" rel="noopener" style="font-size:0.9rem; color:var(--brand); font-weight:600;">
+                    www.microbiotaysaludintegralrc.ar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== DÓNDE SE REALIZA ===== -->
+    <div class="content-block">
+        <div class="container">
+            <div class="content-text text-center">
+                <span class="section-tag">Ubicación</span>
+                <h2 class="section-title">Realización del test epigenético</h2>
+            </div>
+            <div class="ubicacion-card">
+                <h4>BIO RESET epigenética — Estética Consciente</h4>
+                <p class="sub">Lic. Gloria Burdissio</p>
+                <p><strong>Dirección:</strong> Cabo Guanca 3365 esquina José Moretto</p>
+                <p><strong>Horario:</strong> Lunes a viernes de 9 a 21 hs</p>
+                <a href="https://wa.me/5493512060622?text=Hola%2C%20quiero%20sacar%20turno%20para%20el%20Test%20Epigen%C3%A9tico" target="_blank" rel="noopener" class="tel">📲 Turnos: +54 9 351 206-0622</a>
             </div>
         </div>
     </div>

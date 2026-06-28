@@ -75,10 +75,9 @@
         /* --- HERO (mobile: single column, image on top) --- */
         .hero {
             padding: 100px 0 50px;
-            background-image: url("{% static 'images/microbiota.jpg' %}");
-            background-size: contain;
+            background-image: url("{% static 'images/microbiota600x700.png' %}");
+            background-size: cover;
             background-position: center;
-            background-repeat: no-repeat;
             background-attachment: scroll;
             position: relative;
         }
@@ -268,6 +267,14 @@
         .servicio-card .icon img { width: 32px; height: 32px; object-fit: contain; }
         .servicio-card h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
         .servicio-card p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
+        .servicio-card-link {
+            display: block; text-decoration: none; color: inherit;
+            transition: transform 0.3s, box-shadow 0.3s; border-radius: 16px;
+        }
+        .servicio-card-link:hover { transform: translateY(-6px); }
+        .servicio-card-link:hover .servicio-card {
+            box-shadow: var(--card-hover-shadow);
+        }
 
         /* --- CONTACTO / LEAD CAPTURE (mobile: column) --- */
         .contacto {
@@ -556,7 +563,7 @@
             .container { padding: 0 40px; }
             section { padding: 80px 0; }
 
-            .hero { padding: 140px 0 80px; background-image: url("{% static 'images/microbiota_desktop.jpg' %}"); background-size: cover; background-attachment: fixed; background-position: center; }
+            .hero { padding: 140px 0 80px; background-image: url("{% static 'images/microbiota1900.png' %}"); background-size: cover; background-attachment: fixed; background-position: center; }
             .hero-text h1 { font-size: 2.8rem; }
             .hero-text .subtitle { font-size: 1.05rem; }
             .hero-stats { gap: 40px; }
@@ -659,10 +666,9 @@
                 <span class="section-tag">Sobre mí</span>
                 <h2 class="section-title">Dra. Romina Clementi</h2>
                 <p>
-                    Soy Licenciada en Bioquímica Clínica especialista en Microbiología. 
-                    Durante mi carrera profesional he trabajado en hospitales y clínicas de relevancia, 
-                    como también en investigación, adquiriendo una amplia experiencia en laboratorios 
-                    de mediana y alta complejidad.
+                    Soy Licenciada en Bioquímica Clínica especialista en Microbiología, durante mi carrera profesional he trabajado en hospitales y clínicas de relevancia, como también en investigación donde adquirí una amplia experiencia en laboratorios de mediana y alta complejidad, por lo tanto una correcta interpretación de los resultados tanto en el aspecto clínico y microbiológico.
+                    A lo largo de estos años, observé un uso y un abuso de los antimicrobianos que llevaban al paciente a desequilibrios importantes de su microbiota intestinal y de su salud en general, por este motivo me llevó a introducirme al apasionante mundo microbiano e investigar el gran impacto sobre el cuerpo mental, emocional y físico.
+                    Por lo tanto decidí encaminar mi actividad asistencial, ayudando a los pacientes a recuperar su homeostasis intestinal a través de la medicina integrativa y recuperar su vitalidad plena.
                 </p>
                 <p>
                     Observé que el uso y abuso de antimicrobianos llevaba a los pacientes a desequilibrios 
@@ -946,28 +952,32 @@
             </p>
             <div class="servicios-grid">
 
+                <a href="#contacto" class="servicio-card-link">
                 <div class="servicio-card">
                     <div class="icon"><img src="{% static 'images/consultas.png' %}" alt="Consultas online"></div>
                     <h4>Consultas online</h4>
                     <p>Atención virtual personalizada con seguimiento continuo de tu evolución</p>
                 </div>
+                </a>
 
                 <div class="servicio-card">
                     <div class="icon"><img src="{% static 'images/programa.png' %}" alt="Programas integrales"></div>
                     <h4>Programas integrales</h4>
-                    <p>Protocolo base, alimentación funcional, aceites medicinales, prebióticos y probióticos</p>
+                    <p>Protocolo base, alimentación funcional, aceites medicinales, prebióticos,  probióticos y test epigenético epixlife</p>
                 </div>
+
+                <a href="{% url 'patients:test_epigenetico' %}" class="servicio-card-link">
+                <div class="servicio-card">
+                    <div class="icon"><img src="{% static 'images/test.png' %}" alt="Test epigenético"></div>
+                    <h4>Test epigenético</h4>
+                    <p>Diagnóstico in vivo con tecnología Epixlife para optimizar tu salud</p>
+                </div>
+                </a>
 
                 <div class="servicio-card">
                     <div class="icon"><img src="{% static 'images/meditacion.png' %}" alt="Meditación"></div>
                     <h4>Bienestar integral</h4>
                     <p>Técnicas de meditación y plan de actividad física adaptado a tus necesidades</p>
-                </div>
-
-                <div class="servicio-card">
-                    <div class="icon"><img src="{% static 'images/test.png' %}" alt="Test epigenético"></div>
-                    <h4>Test epigenético</h4>
-                    <p>Diagnóstico in vivo con tecnología Epixlife para optimizar tu salud</p>
                 </div>
 
             </div>
