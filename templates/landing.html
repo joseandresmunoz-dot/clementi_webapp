@@ -75,15 +75,17 @@
         /* --- HERO (mobile: single column, image on top) --- */
         .hero {
             padding: 100px 0 50px;
-            background: var(--brand-bg);
+            background-image: url("{% static 'images/microbiota.jpg' %}");
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: scroll;
             position: relative;
-            overflow: hidden;
         }
         .hero::before {
-            content: ''; position: absolute;
-            top: -30%; right: -40%; width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(124,111,255,0.08) 0%, transparent 70%);
-            border-radius: 50%;
+            content: ''; position: absolute; inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 0;
         }
         .hero .container {
             display: flex;
@@ -91,29 +93,23 @@
             gap: 32px;
             position: relative; z-index: 1;
         }
-        .hero-image { order: -1; }
-        .hero-image img {
-            max-height: 300px; border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(124,111,255,0.12);
-            object-fit: cover; width: 100%;
-        }
         .hero-text { text-align: center; }
         .hero-badge {
             display: inline-flex; align-items: center; gap: 6px;
-            background: rgba(124,111,255,0.10); color: var(--brand);
+            background: rgba(255,255,255,0.15); color: #fff;
             padding: 4px 14px; border-radius: 50px;
             font-size: 0.75rem; font-weight: 600;
             margin-bottom: 14px;
         }
-        .hero-badge span { width: 6px; height: 6px; border-radius: 50%; background: var(--brand); animation: pulse-dot 2s infinite; }
+        .hero-badge span { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: pulse-dot 2s infinite; }
         @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         .hero-text h1 {
-            font-size: 1.8rem; font-weight: 800; color: var(--text-dark);
+            font-size: 1.8rem; font-weight: 800; color: #fff;
             line-height: 1.15; margin-bottom: 12px;
         }
         .hero-text h1 span { background: var(--brand-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .hero-text .subtitle {
-            font-size: 0.9rem; color: var(--text-muted);
+            font-size: 0.9rem; color: rgba(255,255,255,0.8);
             margin-bottom: 18px; line-height: 1.6;
         }
         .hero-text .cta-group {
@@ -127,17 +123,20 @@
             border: none; cursor: pointer;
         }
         .hero-text .cta-group .btn-secondary {
-            background: transparent; color: var(--brand);
-            border: 2px solid var(--brand); padding: 12px 28px;
+            background: rgba(255,255,255,0.12); color: #fff;
+            border: 2px solid rgba(255,255,255,0.4); padding: 12px 28px;
             border-radius: 12px; font-weight: 600; font-size: 0.95rem;
+        }
+        .hero-text .cta-group .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
         }
         .hero-stats {
             display: flex; justify-content: center; gap: 24px;
             margin-top: 28px; padding-top: 24px;
-            border-top: 1px solid rgba(124,111,255,0.12);
+            border-top: 1px solid rgba(255,255,255,0.15);
         }
-        .hero-stats .stat h3 { font-size: 1.3rem; font-weight: 700; color: var(--brand); }
-        .hero-stats .stat p { font-size: 0.75rem; color: var(--text-muted); }
+        .hero-stats .stat h3 { font-size: 1.3rem; font-weight: 700; color: #fff; }
+        .hero-stats .stat p { font-size: 0.75rem; color: rgba(255,255,255,0.7); }
 
         /* --- SECTION COMMON --- */
         section { padding: 50px 0; }
@@ -490,21 +489,13 @@
             .navbar .nav-links .btn-primary-nav::after { display: none; }
             .hamburger { display: none !important; }
 
-            /* Hero: side-by-side */
+            /* Hero: full background */
             .hero { padding: 120px 0 60px; }
-            .hero .container {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 40px;
-                align-items: center;
-            }
-            .hero-image { order: 0; }
-            .hero-image img { max-height: 440px; }
-            .hero-text { text-align: left; }
+            .hero-text { text-align: center; }
             .hero-text h1 { font-size: 2.4rem; }
-            .hero-text .subtitle { font-size: 1rem; max-width: 480px; }
-            .hero-text .cta-group { flex-direction: row; }
-            .hero-stats { justify-content: flex-start; gap: 32px; }
+            .hero-text .subtitle { font-size: 1rem; max-width: 480px; margin-left: auto; margin-right: auto; }
+            .hero-text .cta-group { flex-direction: row; justify-content: center; }
+            .hero-stats { justify-content: center; gap: 32px; }
             .hero-stats .stat h3 { font-size: 1.5rem; }
 
             .section-subtitle { margin-bottom: 40px; }
@@ -558,11 +549,6 @@
                 text-align: left;
             }
             .newsletter-bar .newsletter-form { flex-direction: row; flex: 1; max-width: 460px; }
-
-            .hero::before {
-                width: 500px; height: 500px;
-                top: -40%; right: -15%;
-            }
         }
 
         /* ===== DESKTOP ≥ 992px ===== */
@@ -570,11 +556,9 @@
             .container { padding: 0 40px; }
             section { padding: 80px 0; }
 
-            .hero { padding: 140px 0 80px; }
-            .hero .container { gap: 50px; }
+            .hero { padding: 140px 0 80px; background-image: url("{% static 'images/microbiota_desktop.jpg' %}"); background-size: cover; background-attachment: fixed; background-position: center; }
             .hero-text h1 { font-size: 2.8rem; }
             .hero-text .subtitle { font-size: 1.05rem; }
-            .hero-image img { max-height: 520px; }
             .hero-stats { gap: 40px; }
 
             .section-title { font-size: 2.2rem; }
@@ -592,10 +576,6 @@
             .contacto-grid { gap: 48px; }
             .cursos-teaser { grid-template-columns: repeat(3, 1fr); gap: 28px; }
 
-            .hero::before {
-                width: 600px; height: 600px;
-                top: -50%; right: -20%;
-            }
         }
 
         /* ===== LARGE ≥ 1200px ===== */
@@ -665,9 +645,6 @@
                     <div class="stat"><h3>10+</h3><p>Años de experiencia</p></div>
                     <div class="stat"><h3>95%</h3><p>Satisfacción</p></div>
                 </div>
-            </div>
-            <div class="hero-image">
-                <img src="{% static 'images/rc_frente.png' %}" alt="Dra. Romina Clementi - Bioquímica">
             </div>
         </div>
     </section>
