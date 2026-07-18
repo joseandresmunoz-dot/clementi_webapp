@@ -1,0 +1,13 @@
+.venv
+.idea
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+.env
+staticfiles
+media
+db
+docker/ssl
+*.md
