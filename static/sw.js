@@ -1,7 +1,7 @@
 const CACHE = "microbiota-v2";
 const PRECACHE_URLS = [
   "/",
-  "/static/manifest.json",
+  "/manifest.json",
   "/static/css/main.css",
   "/static/images/favicon/favicon.ico",
   "/static/images/favicon/android-chrome-192x192.png",
@@ -39,8 +39,42 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE).then((cache) => cache.put(event.request, clone));
         }
         return response;
+      }).catch(() => {
+        return caches.match("/offline/");
       });
       return cached || fetchPromise;
+    })
+  );
+});
+
+self.addEventListener("push", (event) => {
+  let data = { title: "Microbiota y Salud", body: "Nueva notificación", icon: "/static/images/favicon/android-chrome-192x192.png" };
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch {
+      data.body = event.data.text();
+    }
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: data.icon || "/static/images/favicon/android-chrome-192x192.png",
+      badge: "/static/images/favicon/favicon-32x32.png",
+      data: data.url ? { url: data.url } : {},
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || "/";
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
+      for (const client of windowClients) {
+        if (client.url === url && "focus" in client) return client.focus();
+      }
+      return clients.openWindow(url);
     })
   );
 });

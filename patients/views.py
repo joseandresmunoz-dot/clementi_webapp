@@ -20,7 +20,7 @@ from patients.models import AnswerOption, Category, ClinicalTimelineEntry, Lead,
 
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.http import require_POST
-from django.http import FileResponse, JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseRedirect
 
 
 def test_epigenetico(request):
@@ -496,12 +496,6 @@ def microbiota_admin(request):
         "questions": questions,
         "score_ranges": score_ranges,
     })
-
-
-def service_worker(request):
-    from pathlib import Path
-    sw_path = Path(settings.BASE_DIR) / "static" / "sw.js"
-    return FileResponse(open(sw_path, "rb"), content_type="application/javascript")
 
 
 @login_required

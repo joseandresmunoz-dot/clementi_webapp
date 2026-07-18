@@ -1,4 +1,4 @@
-{% load static %}
+{% load static pwa %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,9 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ product.name }} — Microbiota y Salud Integral</title>
     <link rel="icon" href="{% static 'images/favicon/favicon.ico' %}" type="image/x-icon">
-    <link rel="manifest" href="{% static 'manifest.json' %}">
-    <meta name="theme-color" content="#7c6fff">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    {% pwa_meta %}
     <link rel="apple-touch-icon" href="{% static 'images/favicon/apple-touch-icon.png' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -410,22 +408,7 @@
     {% endif %}
 
     <script>
-    // Service worker registration with proper error handling
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('{% url "service_worker" %}')
-            .then(function(registration) {
-                console.log('ServiceWorker registration successful:', registration.scope);
-            })
-            .catch(function(error) {
-                console.log('ServiceWorker registration failed:', error);
-                // Fallback: try to load from static path as well
-                try {
-                    navigator.serviceWorker.register('{% static "sw.js" %}');
-                } catch(e) {
-                    console.log('Additional registration attempt also failed:', e);
-                }
-            });
-    }
+    {% pwa_script %}
     </script>
 
     <script>

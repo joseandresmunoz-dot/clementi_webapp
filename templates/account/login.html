@@ -1,4 +1,4 @@
-{% load static %}
+{% load static pwa %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,9 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ingresar — Microbiota y Salud</title>
     <link rel="icon" href="{% static 'images/favicon/favicon.ico' %}" type="image/x-icon">
-    <link rel="manifest" href="{% static 'manifest.json' %}">
-    <meta name="theme-color" content="#7c6fff">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    {% pwa_meta %}
     <link rel="apple-touch-icon" href="{% static 'images/favicon/apple-touch-icon.png' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -442,10 +440,6 @@
         </div>
     </footer>
 
-    <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('{% url "service_worker" %}');
-    }
-    </script>
+    {% pwa_script %}
 </body>
 </html>

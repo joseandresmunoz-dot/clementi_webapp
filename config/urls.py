@@ -11,7 +11,8 @@ urlpatterns = [
     path("api/appointments/", include("appointments.urls")),
     path("api/files/", include("files_manager.urls")),
     path("private-media/", include(private_storage.urls)),
-    path("sw.js", views.service_worker, name="service_worker"),
+    path("", include("pwa.urls")),
+    path("", include("webpush.urls")),
     path("", include("patients.urls")),
 ]
 

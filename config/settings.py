@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "private_storage",
+    "pwa",
+    "webpush",
     # Local apps
     "patients.apps.PatientsConfig",
     "appointments.apps.AppointmentsConfig",
@@ -171,6 +173,42 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# ---------------------------------------------------------------------------
+# PWA (django-pwa)
+# ---------------------------------------------------------------------------
+PWA_APP_NAME = "Microbiota y Salud Integral"
+PWA_APP_SHORT_NAME = "MicrobiotaSalud"
+PWA_APP_DESCRIPTION = "Consultoría integral de microbiota y salud — Romina Clementi"
+PWA_APP_THEME_COLOR = "#7c6fff"
+PWA_APP_BACKGROUND_COLOR = "#f8f7ff"
+PWA_APP_DISPLAY = "standalone"
+PWA_APP_ORIENTATION = "portrait-primary"
+PWA_APP_START_URL = "/"
+PWA_APP_SCOPE = "/"
+PWA_APP_DEBUG_MODE = False
+PWA_SERVICE_WORKER_PATH = BASE_DIR / "static" / "sw.js"
+PWA_SERVICE_WORKER_URL = "/sw.js"
+PWA_APP_OFFLINE_URL = "/offline/"
+PWA_APP_ICONS = [
+    {"src": "/static/images/favicon/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "/static/images/favicon/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "/static/images/favicon/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"},
+]
+PWA_APP_ICONS_APPLE = [
+    {"src": "/static/images/favicon/apple-touch-icon.png", "sizes": "180x180", "type": "image/png"},
+]
+PWA_APP_DIR = "auto"
+PWA_APP_LANG = "es-AR"
+
+# ---------------------------------------------------------------------------
+# WEBPUSH (django-webpush)
+# ---------------------------------------------------------------------------
+WEBPUSH_SETTINGS = {
+    "VAPID_PUBLIC_KEY": "BIp6NZxaw76Opgi_kgdnyaA9zL5yE6Ac_DrZENmte7Po5ag_rvkkzncRpVH3n76AOktzQAEwFR9g7MQH3mi0KRw",
+    "VAPID_PRIVATE_KEY": "-GAKRzRhhoYLmZf8r9dEcCR7VvtOegsygHGZBa4uk_g",
+    "VAPID_CLAIMS": {"sub": "mailto:info@microbiotaysalud.com"},
+}
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
