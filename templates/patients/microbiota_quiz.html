@@ -21,7 +21,6 @@
         padding-bottom: 3rem !important;
     }
 
-    /* ===== OVERRIDE BASE BOOTSTRAP ===== */
     .bg-primary {
         background-color: var(--brand) !important;
     }
@@ -62,7 +61,6 @@
         transform: translateY(-2px);
     }
 
-    /* Cards */
     .card {
         border: none;
         border-radius: 16px;
@@ -75,7 +73,6 @@
         padding: 1rem 1.25rem;
     }
 
-    /* Inputs and selects */
     .form-control, .form-select {
         border-radius: 16px;
         border: 1px solid #dadce0;
@@ -99,7 +96,6 @@
         margin-bottom: 6px;
     }
 
-    /* Checkbox / Radio styling */
     .form-check-input:checked {
         background-color: var(--brand);
         border-color: var(--brand);
@@ -109,7 +105,6 @@
         box-shadow: 0 0 0 3px rgba(153, 153, 255, 0.2);
     }
 
-    /* ===== QUIZ LAYOUT ===== */
     .quiz-container {
         max-width: 800px;
         margin: 0 auto;
@@ -128,7 +123,6 @@
         font-size: 0.95rem;
     }
 
-    /* Step indicator */
     .step-indicator {
         text-align: center;
         margin-bottom: 28px;
@@ -166,7 +160,6 @@
         margin: 0 2px;
     }
 
-    /* Section header */
     .section-header {
         background: linear-gradient(135deg, var(--brand), var(--brand-dark));
         color: #fff;
@@ -183,7 +176,6 @@
         font-size: 0.85rem;
     }
 
-    /* Question rows */
     .question-row {
         padding: 0.85rem 0;
         border-bottom: 1px solid #f0f0f0;
@@ -197,7 +189,6 @@
         line-height: 1.5;
     }
 
-    /* Result card */
     .result-card {
         border-radius: 16px;
         padding: 2rem;
@@ -219,18 +210,15 @@
         color: #721c24;
     }
 
-    /* Quiz sections visibility */
     .quiz-section { display: none; }
     .quiz-section.active { display: block; }
 
-    /* Scale badges */
     #resScale .badge {
         font-size: 0.8rem;
         padding: 4px 10px;
         border-radius: 8px;
     }
 
-    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
         main {
             padding-left: 16px !important;
@@ -280,17 +268,19 @@
     <h2 class="quiz-title"><i class="bi bi-clipboard2-pulse" style="color:var(--brand)"></i> Evaluá tu Microbiota</h2>
     <p class="quiz-subtitle">Completá este cuestionario para obtener una evaluación orientativa sobre el estado de tu microbiota intestinal.</p>
 
+    {% with total_sections=sections|length %}
+    {% with results_section=total_sections|add:"1" %}
+
     <!-- Step indicator -->
     <div class="step-indicator">
         <span class="step current" id="stepInd0">1</span>
         <span class="step-line"></span>
-        <span class="step pending" id="stepInd1">A</span>
+        {% for section in sections %}
+        <span class="step pending" id="stepInd{{ forloop.counter }}">{{ forloop.counter|add:"1" }}</span>
+        {% if not forloop.last %}<span class="step-line"></span>{% endif %}
+        {% endfor %}
         <span class="step-line"></span>
-        <span class="step pending" id="stepInd2">B</span>
-        <span class="step-line"></span>
-        <span class="step pending" id="stepInd3">C</span>
-        <span class="step-line"></span>
-        <span class="step pending" id="stepInd4"><i class="bi bi-check-lg"></i></span>
+        <span class="step pending" id="stepInd{{ results_section }}"><i class="bi bi-check-lg"></i></span>
     </div>
 
     <!-- ═══════════════════════════════════════════
@@ -380,296 +370,59 @@
     </div>
 
     <!-- ═══════════════════════════════════════════
-         SECCIÓN A: HISTORIA
+         SECCIONES DINÁMICAS DESDE DB
          ═══════════════════════════════════════════ -->
-    <div class="quiz-section" id="section1">
+    {% for section in sections %}
+    <div class="quiz-section" id="section{{ forloop.counter }}">
         <div class="section-header">
-            <h5><i class="bi bi-journal-medical"></i> Sección A: Historia</h5>
-            <small>Respondé Sí o No a cada pregunta</small>
+            <h5><i class="bi bi-journal-medical"></i> {{ section.name }}</h5>
+            {% if section.description %}<small>{{ section.description }}</small>{% endif %}
         </div>
         <div class="card">
             <div class="card-body">
+                {% for question in section.questions.all %}
                 <div class="question-row">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span>1) ¿Has tomado algún antibiótico por más de 1 mes para acné o alguna otra causa?</span>
-                    </div>
+                    <span><strong>{{ forloop.counter }})</strong> {{ question.text }}</span>
                     <div class="ms-3 mt-1">
+                        {% for option in question.answer_options.all %}
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a1" id="a1_0" value="0" checked>
-                            <label class="form-check-label" for="a1_0">No</label>
+                            <input class="form-check-input quiz-radio" type="radio"
+                                   name="q_{{ question.id }}"
+                                   id="q_{{ question.id }}_{{ forloop.counter }}"
+                                   value="{{ option.points }}"
+                                   data-section-slug="{{ section.slug }}"
+                                   {% if forloop.first %}checked{% endif %}>
+                            <label class="form-check-label small" for="q_{{ question.id }}_{{ forloop.counter }}">
+                                {{ option.text }}
+                            </label>
                         </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a1" id="a1_25" value="25">
-                            <label class="form-check-label" for="a1_25">Sí</label>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
-                <div class="question-row">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span>2) ¿Has tomado antibióticos de amplio espectro para alguna infección (respiratoria, urinaria, etc.) por más de dos meses o en intervalos pequeños en más de 4 ocasiones en un año?</span>
-                    </div>
-                    <div class="ms-3 mt-1">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a2" id="a2_0" value="0" checked>
-                            <label class="form-check-label" for="a2_0">No</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a2" id="a2_20" value="20">
-                            <label class="form-check-label" for="a2_20">Sí</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="question-row">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span>3) ¿Has tomado antibióticos de amplio espectro aunque sea en una sola dosis?</span>
-                    </div>
-                    <div class="ms-3 mt-1">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a3" id="a3_0" value="0" checked>
-                            <label class="form-check-label" for="a3_0">No</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a3" id="a3_25" value="25">
-                            <label class="form-check-label" for="a3_25">Sí</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="question-row">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span>4) ¿Alguna vez has tenido síntomas persistentes de prostatitis, vaginitis, o algún otro problema de órganos reproductores?</span>
-                    </div>
-                    <div class="ms-3 mt-1">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a4" id="a4_0" value="0" checked>
-                            <label class="form-check-label" for="a4_0">No</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a4" id="a4_25" value="25">
-                            <label class="form-check-label" for="a4_25">Sí</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="question-row">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span>5) ¿Alguna vez has tenido problemas de concentración, memoria o algunas veces te sentís "en las nubes"?</span>
-                    </div>
-                    <div class="ms-3 mt-1">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a5" id="a5_0" value="0" checked>
-                            <label class="form-check-label" for="a5_0">No</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a5" id="a5_10" value="10">
-                            <label class="form-check-label" for="a5_10">Sí</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="question-row">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span>6) ¿Te sentís enfermo/a por todo a pesar de haber ido a muchos médicos y no encuentran qué tenés?</span>
-                    </div>
-                    <div class="ms-3 mt-1">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a6" id="a6_0" value="0" checked>
-                            <label class="form-check-label" for="a6_0">No</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a6" id="a6_5" value="5">
-                            <label class="form-check-label" for="a6_5">Sí</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="question-row">
-                    <label class="form-label mb-1">7) ¿Has estado embarazada?</label>
-                    <div class="ms-3">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a7" id="a7_0" value="0" checked>
-                            <label class="form-check-label" for="a7_0">No</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a7" id="a7_3" value="3">
-                            <label class="form-check-label" for="a7_3">Una vez</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a7" id="a7_5" value="5">
-                            <label class="form-check-label" for="a7_5">Dos o más veces</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="question-row">
-                    <label class="form-label mb-1">8) ¿Has tomado pastillas anticonceptivas?</label>
-                    <div class="ms-3">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a8" id="a8_0" value="0" checked>
-                            <label class="form-check-label" for="a8_0">No</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a8" id="a8_8" value="8">
-                            <label class="form-check-label" for="a8_8">6 meses a 2 años</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a8" id="a8_15" value="15">
-                            <label class="form-check-label" for="a8_15">Más de 2 años</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="question-row">
-                    <label class="form-label mb-1">9) ¿Has tomado cortisona o esteroides (orales, inyectados o inhalados)?</label>
-                    <div class="ms-3">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a9" id="a9_0" value="0" checked>
-                            <label class="form-check-label" for="a9_0">No</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a9" id="a9_6" value="6">
-                            <label class="form-check-label" for="a9_6">2 semanas o menos</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a9" id="a9_15" value="15">
-                            <label class="form-check-label" for="a9_15">Más de 2 semanas</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="question-row">
-                    <label class="form-label mb-1">10) ¿La exposición a perfumes, insecticidas, olores de fábrica y otros químicos te provocan síntomas?</label>
-                    <div class="ms-3">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a10" id="a10_0" value="0" checked>
-                            <label class="form-check-label" for="a10_0">No</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a10" id="a10_5" value="5">
-                            <label class="form-check-label" for="a10_5">Leves</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a10" id="a10_20" value="20">
-                            <label class="form-check-label" for="a10_20">Moderados a severos</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="question-row">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span>11) ¿El olor del tabaco te molesta?</span>
-                    </div>
-                    <div class="ms-3 mt-1">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a11" id="a11_0" value="0" checked>
-                            <label class="form-check-label" for="a11_0">No</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a11" id="a11_10" value="10">
-                            <label class="form-check-label" for="a11_10">Sí</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="question-row">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span>12) ¿Tus síntomas tienden a empeorar en lugares húmedos, bochornosos o enmohecidos?</span>
-                    </div>
-                    <div class="ms-3 mt-1">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a12" id="a12_0" value="0" checked>
-                            <label class="form-check-label" for="a12_0">No</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a12" id="a12_20" value="20">
-                            <label class="form-check-label" for="a12_20">Sí</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="question-row">
-                    <label class="form-label mb-1">13) ¿Has tenido pie de atleta u otra infección de hongos en piel o uñas?</label>
-                    <div class="ms-3">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a13" id="a13_0" value="0" checked>
-                            <label class="form-check-label" for="a13_0">No</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a13" id="a13_10" value="10">
-                            <label class="form-check-label" for="a13_10">Leve</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a13" id="a13_20" value="20">
-                            <label class="form-check-label" for="a13_20">Moderado a severo</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="question-row">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span>14) ¿Se te antoja mucho el azúcar?</span>
-                    </div>
-                    <div class="ms-3 mt-1">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a14" id="a14_0" value="0" checked>
-                            <label class="form-check-label" for="a14_0">No</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a14" id="a14_10" value="10">
-                            <label class="form-check-label" for="a14_10">Sí</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="question-row">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span>15) ¿Tenés ansias de pan?</span>
-                    </div>
-                    <div class="ms-3 mt-1">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a15" id="a15_0" value="0" checked>
-                            <label class="form-check-label" for="a15_0">No</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input secA-radio" type="radio" name="a15" id="a15_10" value="10">
-                            <label class="form-check-label" for="a15_10">Sí</label>
-                        </div>
-                    </div>
-                </div>
+                {% endfor %}
             </div>
         </div>
         <div class="d-flex justify-content-between mt-3">
-            <button class="btn btn-outline-secondary" onclick="prevSection(1)"><i class="bi bi-arrow-left"></i> Anterior</button>
-            <button class="btn btn-primary btn-lg" onclick="nextSection(1)">Sección B <i class="bi bi-arrow-right"></i></button>
+            <button class="btn btn-outline-secondary" onclick="prevSection({{ forloop.counter }})">
+                <i class="bi bi-arrow-left"></i> Anterior
+            </button>
+            {% if forloop.last %}
+            <button class="btn btn-primary btn-lg" onclick="showResults()">
+                Ver Resultados <i class="bi bi-check-circle"></i>
+            </button>
+            {% else %}
+            <button class="btn btn-primary btn-lg" onclick="nextSection({{ forloop.counter }})">
+                Siguiente <i class="bi bi-arrow-right"></i>
+            </button>
+            {% endif %}
         </div>
     </div>
-
-    <!-- ═══════════════════════════════════════════
-         SECCIÓN B: SÍNTOMAS
-         ═══════════════════════════════════════════ -->
-    <div class="quiz-section" id="section2">
-        <div class="section-header">
-            <h5><i class="bi bi-activity"></i> Sección B: Síntomas</h5>
-            <small>Indicá la intensidad de cada síntoma que padezcas o hayas padecido</small>
-        </div>
-        <div class="card">
-            <div class="card-body" id="sectionBBody"></div>
-        </div>
-        <div class="d-flex justify-content-between mt-3">
-            <button class="btn btn-outline-secondary" onclick="prevSection(2)"><i class="bi bi-arrow-left"></i> Anterior</button>
-            <button class="btn btn-primary btn-lg" onclick="nextSection(2)">Sección C <i class="bi bi-arrow-right"></i></button>
-        </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════
-         SECCIÓN C: OTROS SÍNTOMAS
-         ═══════════════════════════════════════════ -->
-    <div class="quiz-section" id="section3">
-        <div class="section-header">
-            <h5><i class="bi bi-list-check"></i> Sección C: Otros Síntomas</h5>
-            <small>Indicá la intensidad de cada síntoma que padezcas o hayas padecido</small>
-        </div>
-        <div class="card">
-            <div class="card-body" id="sectionCBody"></div>
-        </div>
-        <div class="d-flex justify-content-between mt-3">
-            <button class="btn btn-outline-secondary" onclick="prevSection(3)"><i class="bi bi-arrow-left"></i> Anterior</button>
-            <button class="btn btn-primary btn-lg" onclick="showResults()">Ver Resultados <i class="bi bi-check-circle"></i></button>
-        </div>
-    </div>
+    {% endfor %}
 
     <!-- ═══════════════════════════════════════════
          RESULTADOS
          ═══════════════════════════════════════════ -->
-    <div class="quiz-section" id="section4">
+    <div class="quiz-section" id="section{{ results_section }}">
         <div class="section-header">
             <h5><i class="bi bi-bar-chart-line"></i> Resultados de tu Evaluación</h5>
         </div>
@@ -697,118 +450,51 @@
         </div>
         <div id="sendResultMsg" class="text-center mt-3" style="display:none;"></div>
     </div>
+
+    {% endwith %}
+    {% endwith %}
 </div>
 {% endblock %}
 
 {% block extra_js %}
+{{ score_ranges|json_script:"score-ranges-data" }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 
-    // ── Preguntas Sección B ──
-    const secBQuestions = [
-        "Fatiga o Letargo",
-        "Sensación de estar drenado/a",
-        "Depresión o Maníaco-depresivo",
-        "Adormecimiento, quemazón u hormigueo",
-        "Dolores de cabeza",
-        "Dolores musculares",
-        "Debilidad muscular o parálisis",
-        "Dolor o hinchazón en articulaciones",
-        "Dolor abdominal",
-        "Estreñimiento y/o Diarrea",
-        "Hinchazón abdominal, gases, eruptos",
-        "Ardor, comezón o flujo vaginal",
-        "Prostatitis",
-        "Impotencia",
-        "Baja en libido",
-        "Endometriosis o infertilidad",
-        "Cólicos menstruales o irregularidades menstruales",
-        "Síndrome premenstrual",
-        "Ataques de ansiedad o de llorar",
-        "Manos y pies fríos, temperatura baja",
-        "Hipotiroidismo",
-        "Irritable cuando tenés hambre",
-        "Cistitis (infección de vejiga)",
-    ];
-    buildSymptomSection('sectionBBody', 'secB', secBQuestions, [3, 6, 9]);
+    // ── Score ranges from DB ──
+    const scoreRanges = JSON.parse(document.getElementById('score-ranges-data').textContent);
 
-    // ── Preguntas Sección C ──
-    const secCQuestions = [
-        "Mareado/a",
-        "Irritable",
-        "Incoordinación",
-        "Cambiás mucho de humor",
-        "Insomnio",
-        "Pérdida de balance",
-        "Presión arriba de los oídos o sentir que la cabeza está hinchada",
-        "Problemas de Sinusitis",
-        "Tendencia a que te salgan moretones fácil",
-        "Eczema o irritación de ojos",
-        "Psoriasis",
-        "Urticaria (crónica)",
-        "Indigestión o reflujo",
-        "Sensibilidad a la leche, trigo, maíz u otras comidas",
-        "Moco en las heces",
-        "Comezón anal",
-        "Boca y garganta seca",
-        "Lengua blanca o irritación en la boca",
-        "Mal aliento",
-        "Olores en pies, pelo y cuerpo que no se quitan aún después de bañarse",
-        "Congestión nasal y goteo retronasal",
-        "Comezón en nariz",
-        "Dolor de garganta",
-        "Laringitis",
-        "Tos o bronquitis recurrente",
-        "Dolor o presión en el pecho",
-        "Jadeo o falta de aliento",
-        "Urgencia para orinar",
-        "Ardor al orinar",
-        "Visión errática o puntos en la visión",
-        "Ardor en ojos o constante lagrimeo",
-        "Infecciones recurrentes en los oídos",
-        "Dolores en oídos o sordera",
-    ];
-    buildSymptomSection('sectionCBody', 'secC', secCQuestions, [1, 2, 3]);
+    // ── Section slugs for dynamic calculation ──
+    const sectionSlugs = [];
+    document.querySelectorAll('.quiz-section').forEach(function(sec) {
+        const firstRadio = sec.querySelector('.quiz-radio');
+        if (firstRadio) {
+            const slug = firstRadio.dataset.sectionSlug;
+            if (slug && !sectionSlugs.includes(slug)) {
+                sectionSlugs.push(slug);
+            }
+        }
+    });
 
-    function buildSymptomSection(containerId, prefix, questions, points) {
-        const container = document.getElementById(containerId);
-        const labels = points.length === 3 && points[0] === 3
-            ? ['No', 'Ocasional o leve', 'Frecuente o moderado', 'Severo o incapacitante']
-            : ['No', 'Ocasional o leve', 'Frecuente o moderado', 'Severo o incapacitante'];
-        const values = [0, ...points];
-
-        container.innerHTML = questions.map((q, i) => {
-            const radios = values.map((v, vi) =>
-                `<div class="form-check form-check-inline">
-                    <input class="form-check-input ${prefix}-radio" type="radio" name="${prefix}_${i}" id="${prefix}_${i}_${vi}" value="${v}" ${vi === 0 ? 'checked' : ''}>
-                    <label class="form-check-label small" for="${prefix}_${i}_${vi}">${labels[vi]}</label>
-                </div>`
-            ).join('');
-            return `<div class="question-row">
-                <div class="d-flex justify-content-between align-items-start">
-                    <span class="me-2"><strong>${i + 1}.</strong> ${q}</span>
-                </div>
-                <div class="ms-3 mt-1">${radios}</div>
-            </div>`;
-        }).join('');
-    }
-
-    window.calcSecA = function() {
+    // ── Calculate score for a specific section slug ──
+    window.calcSection = function(slug) {
         let total = 0;
-        document.querySelectorAll('.secA-radio:checked').forEach(el => {
+        document.querySelectorAll('input.quiz-radio[data-section-slug="' + slug + '"]:checked').forEach(function(el) {
             total += parseInt(el.value);
         });
         return total;
     };
 
-    window.calcRadioSum = function(prefix) {
-        let total = 0;
-        document.querySelectorAll(`.${prefix}-radio:checked`).forEach(el => {
-            total += parseInt(el.value);
+    // ── Calculate all sections and return a summary object ──
+    window.calcAllSections = function() {
+        const result = {};
+        sectionSlugs.forEach(function(slug) {
+            result[slug] = calcSection(slug);
         });
-        return total;
+        return result;
     };
 
+    // ── Navigation ──
     window.nextSection = function(current) {
         if (current === 0) {
             const nombre = document.getElementById('dNombre').value.trim();
@@ -837,9 +523,12 @@ document.addEventListener('DOMContentLoaded', function() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    const totalSteps = {{ sections|length }} + 2;
+
     function updateSteps(active) {
-        for (let i = 0; i <= 4; i++) {
+        for (let i = 0; i < totalSteps; i++) {
             const el = document.getElementById('stepInd' + i);
+            if (!el) continue;
             el.classList.remove('completed', 'current', 'pending');
             if (i < active) el.classList.add('completed');
             else if (i === active) el.classList.add('current');
@@ -847,103 +536,95 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // ── Results ──
     window.showResults = function() {
-        const scoreA = calcSecA();
-        const scoreB = calcRadioSum('secB');
-        const scoreC = calcRadioSum('secC');
-        const total = scoreA + scoreB + scoreC;
-        const sexo = document.getElementById('dSexo').value;
+        const scores = calcAllSections();
+        let total = 0;
+        Object.values(scores).forEach(function(v) { total += v; });
 
+        const sexo = document.getElementById('dSexo').value;
+        const isFemale = sexo === 'F';
         document.getElementById('resTotal').textContent = total;
 
         const card = document.getElementById('resultCard');
         const msg = document.getElementById('resMessage');
         card.classList.remove('result-green', 'result-yellow', 'result-red');
 
-        let colorClass, message;
-
-        if (sexo === 'F') {
-            if (total >= 180) {
-                colorClass = 'result-red';
-                message = 'Es muy probable que la cándida sea la causante de sus problemas de salud.';
-            } else if (total >= 120) {
-                colorClass = 'result-red';
-                message = 'Es probable que la cándida sea la causante de sus problemas de salud.';
-            } else if (total >= 60) {
-                colorClass = 'result-yellow';
-                message = 'Hay algunas posibilidades de que la cándida sea la causante de sus problemas de salud.';
-            } else {
-                colorClass = 'result-green';
-                message = 'Es poco probable que la cándida sea la causante de sus problemas de salud.';
+        // Find matching score range (gender-specific thresholds)
+        let matched = null;
+        for (let i = 0; i < scoreRanges.length; i++) {
+            const r = scoreRanges[i];
+            const min = isFemale ? r.min_score : r.min_score_male;
+            const max = isFemale ? r.max_score : r.max_score_male;
+            if (total >= min && total <= max) {
+                matched = r;
+                break;
             }
-            document.getElementById('resScale').innerHTML = `
-                <div class="mb-1"><span class="badge bg-danger">180+</span> Muy probable</div>
-                <div class="mb-1"><span class="badge bg-danger">120 – 179</span> Probable</div>
-                <div class="mb-1"><span class="badge bg-warning text-dark">60 – 119</span> Algunas posibilidades</div>
-                <div><span class="badge bg-success">0 – 59</span> Poco probable</div>
-            `;
-        } else {
-            if (total >= 140) {
-                colorClass = 'result-red';
-                message = 'Es muy probable que la cándida sea la causante de sus problemas de salud.';
-            } else if (total >= 90) {
-                colorClass = 'result-red';
-                message = 'Es probable que la cándida sea la causante de sus problemas de salud.';
-            } else if (total >= 40) {
-                colorClass = 'result-yellow';
-                message = 'Hay algunas posibilidades de que la cándida sea la causante de sus problemas de salud.';
-            } else {
-                colorClass = 'result-green';
-                message = 'Es poco probable que la cándida sea la causante de sus problemas de salud.';
-            }
-            document.getElementById('resScale').innerHTML = `
-                <div class="mb-1"><span class="badge bg-danger">140+</span> Muy probable</div>
-                <div class="mb-1"><span class="badge bg-danger">90 – 139</span> Probable</div>
-                <div class="mb-1"><span class="badge bg-warning text-dark">40 – 89</span> Algunas posibilidades</div>
-                <div><span class="badge bg-success">0 – 39</span> Poco probable</div>
-            `;
         }
 
-        card.classList.add(colorClass);
-        msg.textContent = message;
+        if (matched) {
+            const colorClass = 'result-' + matched.color;
+            card.classList.add(colorClass);
+            msg.textContent = isFemale ? matched.message_female : matched.message_male;
+        }
 
-        document.getElementById('section3').classList.remove('active');
-        document.getElementById('section4').classList.add('active');
-        updateSteps(4);
+        // Build scale reference (gender-specific)
+        let scaleHtml = '';
+        for (let i = 0; i < scoreRanges.length; i++) {
+            const r = scoreRanges[i];
+            const label = r.name;
+            const min = isFemale ? r.min_score : r.min_score_male;
+            const max = isFemale ? r.max_score : r.max_score_male;
+            const badgeClass = 'bg-' + (r.color === 'green' ? 'success' : r.color === 'yellow' ? 'warning text-dark' : 'danger');
+            scaleHtml += '<div class="mb-1"><span class="badge ' + badgeClass + '">' + min + ' – ' + max + '</span> ' + label + '</div>';
+        }
+        document.getElementById('resScale').innerHTML = scaleHtml;
+
+        document.getElementById('section{{ sections|length }}').classList.remove('active');
+        document.getElementById('section{{ sections|length|add:"1" }}').classList.add('active');
+        updateSteps({{ sections|length }} + 1);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    // ── Send results ──
     window.sendResults = function() {
         const btn = document.getElementById('btnSendResults');
-        const msg = document.getElementById('sendResultMsg');
+        const msgEl = document.getElementById('sendResultMsg');
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando...';
 
         const nombre = document.getElementById('dNombre').value.trim();
         const email = document.getElementById('dEmail').value.trim();
         if (!nombre) {
-            msg.innerHTML = '<div class="alert alert-warning">Completá tu nombre en la secci&oacute;n de datos primero.</div>';
-            msg.style.display = '';
+            msgEl.innerHTML = '<div class="alert alert-warning">Completá tu nombre en la secci&oacute;n de datos primero.</div>';
+            msgEl.style.display = '';
             btn.disabled = false;
             btn.innerHTML = '<i class="bi bi-envelope"></i> Enviar resultados por email';
             return;
         }
         if (!email) {
-            msg.innerHTML = '<div class="alert alert-warning">Completá tu email en la secci&oacute;n de datos primero.</div>';
-            msg.style.display = '';
+            msgEl.innerHTML = '<div class="alert alert-warning">Completá tu email en la secci&oacute;n de datos primero.</div>';
+            msgEl.style.display = '';
             btn.disabled = false;
             btn.innerHTML = '<i class="bi bi-envelope"></i> Enviar resultados por email';
             return;
         }
 
+        const scores = calcAllSections();
+        let total = 0;
+        let detalles = '';
+        sectionSlugs.forEach(function(slug) {
+            const s = scores[slug];
+            total += s;
+            detalles += slug + ': ' + s + '\n';
+        });
+
         const data = new URLSearchParams();
         data.append('nombre', nombre);
         data.append('email', document.getElementById('dEmail').value.trim());
         data.append('telefono', document.getElementById('dTelefono').value.trim());
-        data.append('score_a', calcSecA());
-        data.append('score_b', calcRadioSum('secB'));
-        data.append('score_c', calcRadioSum('secC'));
-        data.append('total', document.getElementById('resTotal').textContent);
+        data.append('detalles', detalles);
+        data.append('total', total);
         data.append('mensaje', document.getElementById('resMessage').textContent);
 
         fetch('{% url "patients:submit_quiz_results" %}', {
@@ -957,19 +638,19 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(function(r) { return r.json(); })
         .then(function(resp) {
             if (resp.ok) {
-                msg.innerHTML = '<div class="alert alert-success">Resultados enviados correctamente. Te contactaremos pronto.</div>';
-                msg.style.display = '';
+                msgEl.innerHTML = '<div class="alert alert-success">Resultados enviados correctamente. Te contactaremos pronto.</div>';
+                msgEl.style.display = '';
                 btn.style.display = 'none';
             } else {
-                msg.innerHTML = '<div class="alert alert-danger">' + (resp.error || 'Error al enviar.') + '</div>';
-                msg.style.display = '';
+                msgEl.innerHTML = '<div class="alert alert-danger">' + (resp.error || 'Error al enviar.') + '</div>';
+                msgEl.style.display = '';
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bi bi-envelope"></i> Enviar resultados por email';
             }
         })
         .catch(function() {
-            msg.innerHTML = '<div class="alert alert-danger">Error de conexi&oacute;n. Intent&aacute; de nuevo.</div>';
-            msg.style.display = '';
+            msgEl.innerHTML = '<div class="alert alert-danger">Error de conexi&oacute;n. Intent&aacute; de nuevo.</div>';
+            msgEl.style.display = '';
             btn.disabled = false;
             btn.innerHTML = '<i class="bi bi-envelope"></i> Enviar resultados por email';
         });

@@ -161,6 +161,83 @@ class Order(models.Model):
         return f"{self.product.name} x{self.quantity} — ${self.total_price}"
 
 
+class QuizSection(models.Model):
+    name = models.CharField("Nombre", max_length=200)
+    slug = models.SlugField("Slug", max_length=200, unique=True)
+    description = models.TextField("Descripción", blank=True)
+    order = models.PositiveIntegerField("Orden", default=0)
+    is_active = models.BooleanField("Activa", default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Sección del cuestionario"
+        verbose_name_plural = "Secciones del cuestionario"
+        ordering = ["order", "name"]
+
+    def __str__(self):
+        return self.name
+
+
+class Question(models.Model):
+    section = models.ForeignKey(
+        QuizSection, on_delete=models.CASCADE, related_name="questions", verbose_name="Sección"
+    )
+    text = models.TextField("Pregunta")
+    order = models.PositiveIntegerField("Orden", default=0)
+    is_active = models.BooleanField("Activa", default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Pregunta"
+        verbose_name_plural = "Preguntas"
+        ordering = ["section__order", "order"]
+
+    def __str__(self):
+        return f"{self.section.name} - {self.text[:60]}"
+
+
+class AnswerOption(models.Model):
+    question = models.ForeignKey(
+        Question, on_delete=models.CASCADE, related_name="answer_options", verbose_name="Pregunta"
+    )
+    text = models.CharField("Texto", max_length=200)
+    points = models.IntegerField("Puntos", default=0)
+    order = models.PositiveIntegerField("Orden", default=0)
+
+    class Meta:
+        verbose_name = "Opción de respuesta"
+        verbose_name_plural = "Opciones de respuesta"
+        ordering = ["order"]
+
+    def __str__(self):
+        return f"{self.text} ({self.points} pts)"
+
+
+class ScoreRange(models.Model):
+    name = models.CharField("Nombre", max_length=100, help_text="Ej: Bajo, Moderado, Alto")
+    min_score = models.IntegerField("Puntaje mínimo (Femenino)", default=0)
+    max_score = models.IntegerField("Puntaje máximo (Femenino)", default=0)
+    min_score_male = models.IntegerField("Puntaje mínimo (Masculino)", default=0)
+    max_score_male = models.IntegerField("Puntaje máximo (Masculino)", default=0)
+    color = models.CharField("Color", max_length=20, choices=[
+        ("green", "Verde"),
+        ("yellow", "Amarillo"),
+        ("red", "Rojo"),
+    ])
+    message_female = models.TextField("Mensaje (Femenino)", help_text="Mensaje que se muestra para pacientes femeninas")
+    message_male = models.TextField("Mensaje (Masculino)", help_text="Mensaje que se muestra para pacientes masculinos")
+    order = models.PositiveIntegerField("Orden", default=0)
+
+    class Meta:
+        verbose_name = "Rango de puntuación"
+        verbose_name_plural = "Rangos de puntuación"
+        ordering = ["min_score"]
+
+    def __str__(self):
+        return f"{self.name} (F:{self.min_score}-{self.max_score} / M:{self.min_score_male}-{self.max_score_male})"
+
+
 class Lead(models.Model):
     """Lead capturado desde el formulario de la landing page (embudo de ventas)."""
     name = models.CharField("Nombre", max_length=200)

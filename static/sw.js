@@ -1,4 +1,4 @@
-const CACHE = "microbiota-v1";
+const CACHE = "microbiota-v2";
 const PRECACHE_URLS = [
   "/",
   "/static/manifest.json",

@@ -15,7 +15,7 @@ from django.views.decorators.http import require_POST
 from appointments.models import Appointment
 from files_manager.models import FilePermission, SharedFile
 from patients.forms import CategoryForm, ProductForm
-from patients.models import Category, ClinicalTimelineEntry, Lead, Order, PatientProfile, Product, ProductImage
+from patients.models import AnswerOption, Category, ClinicalTimelineEntry, Lead, Order, PatientProfile, Product, ProductImage, Question, QuizSection, ScoreRange
 
 
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
@@ -304,17 +304,26 @@ def home(request):
 
 @ensure_csrf_cookie
 def microbiota_quiz(request):
-    return render(request, "patients/microbiota_quiz.html")
+    sections = QuizSection.objects.filter(is_active=True).prefetch_related(
+        "questions__answer_options"
+    ).order_by("order")
+    score_ranges = list(ScoreRange.objects.all().order_by("min_score").values(
+        "name", "min_score", "max_score", "min_score_male", "max_score_male",
+        "color", "message_female", "message_male", "order",
+    ))
+    return render(request, "patients/microbiota_quiz.html", {
+        "sections": sections,
+        "score_ranges": score_ranges,
+    })
 
 
+@csrf_exempt
 @require_POST
 def submit_quiz_results(request):
     nombre = request.POST.get("nombre", "").strip()
     email = request.POST.get("email", "").strip()
     telefono = request.POST.get("telefono", "").strip()
-    score_a = request.POST.get("score_a", "0")
-    score_b = request.POST.get("score_b", "0")
-    score_c = request.POST.get("score_c", "0")
+    detalles = request.POST.get("detalles", "")
     total = request.POST.get("total", "0")
     mensaje = request.POST.get("mensaje", "")
 
@@ -328,9 +337,7 @@ def submit_quiz_results(request):
         email=email,
         phone=telefono,
         message=f"Resultados del cuestionario de microbiota:\n"
-                f"Sección A (Historial): {score_a}\n"
-                f"Sección B (Síntomas): {score_b}\n"
-                f"Sección C (Otros síntomas): {score_c}\n"
+                f"{detalles}\n"
                 f"Total: {total}\n"
                 f"Diagnóstico: {mensaje}",
         source="microbiota_quiz",
@@ -341,9 +348,7 @@ def submit_quiz_results(request):
         f"Nombre: {nombre}\n"
         f"Email: {email}\n"
         f"Teléfono: {telefono}\n\n"
-        f"Sección A (Historial): {score_a}\n"
-        f"Sección B (Síntomas): {score_b}\n"
-        f"Sección C (Otros síntomas): {score_c}\n"
+        f"{detalles}\n"
         f"Total: {total}\n"
         f"Diagnóstico: {mensaje}\n"
     )
@@ -356,6 +361,141 @@ def submit_quiz_results(request):
     )
 
     return JsonResponse({"ok": True})
+
+
+@user_passes_test(lambda u: u.is_staff)
+def microbiota_admin(request):
+    sections = QuizSection.objects.all().order_by("order")
+    questions = Question.objects.all().select_related("section").prefetch_related("answer_options").order_by("section__order", "order")
+    score_ranges = ScoreRange.objects.all().order_by("min_score")
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        # ── Section CRUD ──
+        if action == "add_section":
+            name = request.POST.get("name")
+            slug = request.POST.get("slug")
+            description = request.POST.get("description", "")
+            order = request.POST.get("order", 0)
+            is_active = request.POST.get("is_active") == "on"
+            QuizSection.objects.create(name=name, slug=slug, description=description, order=order, is_active=is_active)
+            messages.success(request, "Sección creada correctamente.")
+            return redirect("patients:microbiota_admin")
+
+        elif action == "edit_section":
+            sec_id = request.POST.get("sec_id")
+            sec = get_object_or_404(QuizSection, id=sec_id)
+            sec.name = request.POST.get("name")
+            sec.slug = request.POST.get("slug")
+            sec.description = request.POST.get("description", "")
+            sec.order = request.POST.get("order", 0)
+            sec.is_active = request.POST.get("is_active") == "on"
+            sec.save()
+            messages.success(request, "Sección actualizada.")
+            return redirect("patients:microbiota_admin")
+
+        elif action == "delete_section":
+            sec_id = request.POST.get("sec_id")
+            get_object_or_404(QuizSection, id=sec_id).delete()
+            messages.success(request, "Sección eliminada.")
+            return redirect("patients:microbiota_admin")
+
+        # ── Question CRUD ──
+        elif action == "add_question":
+            section_id = request.POST.get("section")
+            text = request.POST.get("text")
+            order = request.POST.get("order", 0)
+            is_active = request.POST.get("is_active") == "on"
+            q = Question.objects.create(
+                section_id=section_id, text=text, order=order, is_active=is_active
+            )
+            # Save answer options
+            opt_texts = request.POST.getlist("opt_text[]")
+            opt_points = request.POST.getlist("opt_points[]")
+            opt_order = request.POST.getlist("opt_order[]")
+            for i in range(len(opt_texts)):
+                AnswerOption.objects.create(
+                    question=q,
+                    text=opt_texts[i],
+                    points=opt_points[i],
+                    order=opt_order[i] if i < len(opt_order) else i,
+                )
+            messages.success(request, "Pregunta creada correctamente.")
+            return redirect("patients:microbiota_admin")
+
+        elif action == "edit_question":
+            q_id = request.POST.get("q_id")
+            q = get_object_or_404(Question, id=q_id)
+            q.section_id = request.POST.get("section")
+            q.text = request.POST.get("text")
+            q.order = request.POST.get("order", 0)
+            q.is_active = request.POST.get("is_active") == "on"
+            q.save()
+            # Replace answer options
+            q.answer_options.all().delete()
+            opt_texts = request.POST.getlist("opt_text[]")
+            opt_points = request.POST.getlist("opt_points[]")
+            opt_order = request.POST.getlist("opt_order[]")
+            for i in range(len(opt_texts)):
+                AnswerOption.objects.create(
+                    question=q,
+                    text=opt_texts[i],
+                    points=opt_points[i],
+                    order=opt_order[i] if i < len(opt_order) else i,
+                )
+            messages.success(request, "Pregunta actualizada.")
+            return redirect("patients:microbiota_admin")
+
+        elif action == "delete_question":
+            q_id = request.POST.get("q_id")
+            get_object_or_404(Question, id=q_id).delete()
+            messages.success(request, "Pregunta eliminada.")
+            return redirect("patients:microbiota_admin")
+
+        # ── Score Range CRUD ──
+        elif action == "add_range":
+            ScoreRange.objects.create(
+                name=request.POST.get("name"),
+                min_score=request.POST.get("min_score", 0),
+                max_score=request.POST.get("max_score", 0),
+                min_score_male=request.POST.get("min_score_male", 0),
+                max_score_male=request.POST.get("max_score_male", 0),
+                color=request.POST.get("color", "green"),
+                message_female=request.POST.get("message_female", ""),
+                message_male=request.POST.get("message_male", ""),
+                order=request.POST.get("order", 0),
+            )
+            messages.success(request, "Rango creado correctamente.")
+            return redirect("patients:microbiota_admin")
+
+        elif action == "edit_range":
+            r_id = request.POST.get("r_id")
+            r = get_object_or_404(ScoreRange, id=r_id)
+            r.name = request.POST.get("name")
+            r.min_score = request.POST.get("min_score", 0)
+            r.max_score = request.POST.get("max_score", 0)
+            r.min_score_male = request.POST.get("min_score_male", 0)
+            r.max_score_male = request.POST.get("max_score_male", 0)
+            r.color = request.POST.get("color", "green")
+            r.message_female = request.POST.get("message_female", "")
+            r.message_male = request.POST.get("message_male", "")
+            r.order = request.POST.get("order", 0)
+            r.save()
+            messages.success(request, "Rango actualizado.")
+            return redirect("patients:microbiota_admin")
+
+        elif action == "delete_range":
+            r_id = request.POST.get("r_id")
+            get_object_or_404(ScoreRange, id=r_id).delete()
+            messages.success(request, "Rango eliminado.")
+            return redirect("patients:microbiota_admin")
+
+    return render(request, "patients/microbiota_admin.html", {
+        "sections": sections,
+        "questions": questions,
+        "score_ranges": score_ranges,
+    })
 
 
 def service_worker(request):

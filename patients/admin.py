@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from patients.models import Category, ClinicalTimelineEntry, Lead, Order, PatientProfile, Product, ProductImage
+from patients.models import AnswerOption, Category, ClinicalTimelineEntry, Lead, Order, PatientProfile, Product, ProductImage, Question, QuizSection, ScoreRange
 
 
 @admin.register(Category)
@@ -69,3 +69,31 @@ class LeadAdmin(admin.ModelAdmin):
     search_fields = ("name", "email", "phone")
     list_filter = ("source", "is_subscribed", "created_at")
     readonly_fields = ("created_at",)
+
+
+class AnswerOptionInline(admin.TabularInline):
+    model = AnswerOption
+    extra = 2
+    fields = ("text", "points", "order")
+
+
+@admin.register(Question)
+class QuestionAdmin(admin.ModelAdmin):
+    list_display = ("text", "section", "order", "is_active")
+    list_filter = ("section", "is_active")
+    list_editable = ("order", "is_active")
+    search_fields = ("text",)
+    inlines = [AnswerOptionInline]
+
+
+@admin.register(QuizSection)
+class QuizSectionAdmin(admin.ModelAdmin):
+    prepopulated_fields = {"slug": ("name",)}
+    list_display = ("name", "order", "is_active")
+    list_editable = ("order", "is_active")
+
+
+@admin.register(ScoreRange)
+class ScoreRangeAdmin(admin.ModelAdmin):
+    list_display = ("name", "min_score", "max_score", "min_score_male", "max_score_male", "color", "order")
+    list_editable = ("min_score", "max_score", "min_score_male", "max_score_male", "order")

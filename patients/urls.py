@@ -20,6 +20,7 @@ urlpatterns = [
     path("microbiota/enviar-resultados/", views.submit_quiz_results, name="submit_quiz_results"),
     path("mi-panel/", views.dashboard, name="dashboard"),
     path("mi-panel/pendiente-aprobacion/", views.pending_approval, name="pending_approval"),
+    path("administracion/microbiota/", views.microbiota_admin, name="microbiota_admin"),
     path("administracion/", views.admin_panel, name="admin_panel"),
     path("administracion/pacientes/", views.patients_admin_list, name="patients_admin_list"),
     path(
