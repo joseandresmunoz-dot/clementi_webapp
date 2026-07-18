@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ingresar — Microbiota y Salud</title>
     <link rel="icon" href="{% static 'images/favicon/favicon.ico' %}" type="image/x-icon">
-    {% pwa_meta %}
-    <link rel="apple-touch-icon" href="{% static 'images/favicon/apple-touch-icon.png' %}">
+    {% progressive_web_app_meta %}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -439,7 +438,5 @@
             <p>Desarrollado por <a href="https://creandosoluciones.ar" target="_blank" rel="noopener">Creando Soluciones</a></p>
         </div>
     </footer>
-
-    {% pwa_script %}
 </body>
 </html>

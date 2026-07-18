@@ -200,6 +200,7 @@ PWA_APP_ICONS_APPLE = [
 ]
 PWA_APP_DIR = "auto"
 PWA_APP_LANG = "es-AR"
+PWA_APP_STATUS_BAR_COLOR = "black-translucent"
 
 # ---------------------------------------------------------------------------
 # WEBPUSH (django-webpush)
