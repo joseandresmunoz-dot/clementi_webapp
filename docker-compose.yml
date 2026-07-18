@@ -13,8 +13,7 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings
       - DATABASE_URL=sqlite:////app/db/db.sqlite3
-    depends_on:
-      - db
+    depends_on: []
 
   db:
     image: postgres:16-alpine
