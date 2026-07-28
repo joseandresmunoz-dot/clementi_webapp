@@ -248,6 +248,7 @@ CORS_ALLOWED_ORIGINS = env.list(
 # Seguridad HTTPS (no UPSUN/Platform.sh)
 # ---------------------------------------------------------------------------
 if not DEBUG and os.getenv("PLATFORM_APPLICATION_NAME") is None:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host]
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
