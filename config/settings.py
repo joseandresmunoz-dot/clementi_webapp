@@ -237,7 +237,7 @@ REST_FRAMEWORK = {
 }
 
 # ---------------------------------------------------------------------------
-# CORS (desarrollo)
+# CORS
 # ---------------------------------------------------------------------------
 CORS_ALLOWED_ORIGINS = env.list(
     "CORS_ALLOWED_ORIGINS",
@@ -245,6 +245,15 @@ CORS_ALLOWED_ORIGINS = env.list(
 )
 
 # ---------------------------------------------------------------------------
+# Seguridad HTTPS (no UPSUN/Platform.sh)
+# ---------------------------------------------------------------------------
+if not DEBUG and os.getenv("PLATFORM_APPLICATION_NAME") is None:
+    CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host]
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+    CORS_ALLOWED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host]
+
 # MISC
 # ---------------------------------------------------------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
