@@ -296,9 +296,6 @@ def debug_login(request):
 
 
 def home(request):
-    if request.user.is_authenticated:
-        if not _is_patient_approved(request.user) and not request.user.is_staff:
-            return redirect("patients:pending_approval")
     return render(request, "landing.html")
 
 
@@ -500,13 +497,6 @@ def microbiota_admin(request):
 
 @login_required
 def calendar_view(request):
-    if request.user.is_authenticated and not _is_patient_approved(request.user):
-        messages.warning(
-            request,
-            "Tu cuenta aún no fue aprobada por administración."
-            " Te avisaremos cuando se habilite.",
-        )
-        return redirect("patients:pending_approval")
     return render(request, "patients/calendar.html")
 
 

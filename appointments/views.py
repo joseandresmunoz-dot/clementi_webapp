@@ -18,7 +18,6 @@ from appointments.services.google_calendar import (
     create_calendar_event,
     delete_calendar_event,
 )
-from patients.models import PatientProfile
 
 logger = logging.getLogger(__name__)
 
@@ -87,13 +86,6 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         """
         serializer = BookAppointmentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        profile = PatientProfile.objects.filter(user=request.user).first()
-        if not profile or not profile.is_approved:
-            return Response(
-                {"error": "Tu cuenta aún no fue aprobada por administración."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
 
         appointment_id = serializer.validated_data["appointment_id"]
         notes = serializer.validated_data.get("notes", "")

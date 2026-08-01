@@ -39,6 +39,8 @@ Thumbs.db
 # Documentos varios
 promtp.odt
 Cotizacion*.pdf
+nohup.out
+server.log
 
 # Google credentials
 *.json
