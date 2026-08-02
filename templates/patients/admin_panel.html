@@ -471,6 +471,30 @@
             </div>
         </div>
 
+        <!-- Mercado Pago -->
+        <div class="admin-card">
+            <div class="card-header-custom">
+                <h6><i class="bi bi-credit-card"></i> Mercado Pago</h6>
+            </div>
+            <div class="card-body-custom admin-form">
+                {% if mp_is_connected %}
+                <p class="small" style="color:var(--success,#198754);font-weight:600;margin-bottom:8px;">
+                    <i class="bi bi-check-circle"></i> Cuenta conectada
+                </p>
+                <a href="{% url 'patients:mp_connect' %}" class="btn-submit" style="display:block;text-align:center;">
+                    <i class="bi bi-arrow-repeat"></i> Reconectar
+                </a>
+                {% else %}
+                <p class="small text-muted" style="margin-bottom:8px;">
+                    Conectá tu cuenta para cobrar con Checkout Pro.
+                </p>
+                <a href="{% url 'patients:mp_connect' %}" class="btn-submit" style="display:block;text-align:center;">
+                    <i class="bi bi-link-45deg"></i> Conectar Mercado Pago
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
         <!-- Crear Turnos -->
         <div class="admin-card">
             <div class="card-header-custom">

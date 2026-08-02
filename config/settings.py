@@ -227,6 +227,25 @@ WEBPUSH_SETTINGS = {
     "VAPID_CLAIMS": {"sub": "mailto:info@microbiotaysalud.com"},
 }
 
+# ---------------------------------------------------------------------------
+# MERCADO PAGO (OAuth 2.0 + Checkout Pro)
+# ---------------------------------------------------------------------------
+MP_CLIENT_ID = env("MP_CLIENT_ID", default="")
+MP_CLIENT_SECRET = env("MP_CLIENT_SECRET", default="")
+MP_REDIRECT_URI = env("MP_REDIRECT_URI", default="")
+MP_PUBLIC_KEY = env("MP_PUBLIC_KEY", default="")
+# Access token directo de la app (modo "credenciales") usado como fallback
+# cuando el vendedor aún no conecta su cuenta vía OAuth.
+MP_ACCESS_TOKEN = env("MP_ACCESS_TOKEN", default="")
+MP_AUTH_URL = env("MP_AUTH_URL", default="https://auth.mercadopago.com/authorization")
+MP_TOKEN_URL = env("MP_TOKEN_URL", default="https://api.mercadopago.com/oauth/token")
+MP_BACK_URLS = {
+    "success": env("MP_BACK_SUCCESS", default="http://localhost:8000/tienda/"),
+    "pending": env("MP_BACK_PENDING", default="http://localhost:8000/tienda/"),
+    "failure": env("MP_BACK_FAILURE", default="http://localhost:8000/tienda/"),
+}
+MP_NOTIFICATION_URL = env("MP_NOTIFICATION_URL", default="")
+
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 

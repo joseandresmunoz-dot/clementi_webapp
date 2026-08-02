@@ -1,6 +1,19 @@
 from django.contrib import admin
 
-from patients.models import AnswerOption, Category, ClinicalTimelineEntry, Lead, Order, PatientProfile, Product, ProductImage, Question, QuizSection, ScoreRange
+from patients.models import (
+    AnswerOption,
+    Category,
+    ClinicalTimelineEntry,
+    Lead,
+    MercadoPagoCredentials,
+    Order,
+    PatientProfile,
+    Product,
+    ProductImage,
+    Question,
+    QuizSection,
+    ScoreRange,
+)
 
 
 @admin.register(Category)
@@ -69,6 +82,13 @@ class LeadAdmin(admin.ModelAdmin):
     search_fields = ("name", "email", "phone")
     list_filter = ("source", "is_subscribed", "created_at")
     readonly_fields = ("created_at",)
+
+
+@admin.register(MercadoPagoCredentials)
+class MercadoPagoCredentialsAdmin(admin.ModelAdmin):
+    list_display = ("user", "mp_user_id", "is_connected", "token_expires_at", "updated_at")
+    search_fields = ("user__email", "user__first_name", "user__last_name")
+    readonly_fields = ("created_at", "updated_at")
 
 
 class AnswerOptionInline(admin.TabularInline):

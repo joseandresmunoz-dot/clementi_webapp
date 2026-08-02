@@ -1,5 +1,8 @@
+import secrets
+import uuid
 from datetime import date, timedelta
 
+import requests
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -7,20 +10,33 @@ from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.db.models import Count, Sum
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
+from django.utils.http import urlencode
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.http import require_POST
 
 from appointments.models import Appointment
 from files_manager.models import FilePermission, SharedFile
+from patients import services
 from patients.forms import CategoryForm, ProductForm
-from patients.models import AnswerOption, Category, ClinicalTimelineEntry, Lead, Order, PatientProfile, Product, ProductImage, Question, QuizSection, ScoreRange
-
-
-from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
-from django.views.decorators.http import require_POST
-from django.http import JsonResponse, HttpResponseRedirect
+from patients.models import (
+    AnswerOption,
+    Category,
+    ClinicalTimelineEntry,
+    Lead,
+    MercadoPagoCredentials,
+    Order,
+    PatientProfile,
+    Product,
+    ProductImage,
+    Question,
+    QuizSection,
+    ScoreRange,
+)
 
 
 def test_epigenetico(request):
@@ -116,6 +132,64 @@ def cart(request):
         "cart_count": _cart_count(request),
         "whatsapp_message": whatsapp_message,
     })
+
+
+def checkout_mp(request):
+    """
+    Crea una preferencia de Checkout Pro con el carrito actual y redirige al
+    link de pago (`init_point`) de Mercado Pago.
+    """
+    cart_data = request.session.get("cart", {"items": {}})
+    raw_items = cart_data.get("items", {})
+    if not raw_items:
+        messages.warning(request, "Tu carrito está vacío.")
+        return redirect("patients:cart")
+
+    items = []
+    for pid, qty in raw_items.items():
+        try:
+            product = Product.objects.get(id=pid, is_active=True)
+        except Product.DoesNotExist:
+            continue
+        unit_price = (
+            float(product.discount_price)
+            if product.is_on_sale and product.discount_price
+            else float(product.price)
+        )
+        items.append({
+            "title": product.name,
+            "quantity": int(qty),
+            "unit_price": round(unit_price, 2),
+        })
+
+    if not items:
+        messages.warning(request, "Tu carrito está vacío.")
+        return redirect("patients:cart")
+
+    # La preferencia se crea con la cuenta del vendedor (o el token de la app).
+    seller = User.objects.filter(is_staff=True).order_by("id").first()
+    if not seller:
+        messages.error(request, "No hay un vendedor configurado.")
+        return redirect("patients:cart")
+
+    reference = f"cart-{request.session.session_key or uuid.uuid4().hex}"
+
+    try:
+        preference = services.create_checkout_preference(
+            seller,
+            items,
+            external_reference=reference,
+        )
+    except services.MercadoPagoError as exc:
+        messages.error(request, f"No se pudo iniciar el pago: {exc}")
+        return redirect("patients:cart")
+
+    init_point = preference.get("init_point")
+    if not init_point:
+        messages.error(request, "Mercado Pago no devolvió el link de pago.")
+        return redirect("patients:cart")
+
+    return redirect(init_point)
 
 
 @user_passes_test(lambda u: u.is_staff)
@@ -737,6 +811,8 @@ def admin_panel(request):
         "today_appointments": today_appointments,
         "week_booked": week_booked,
         "upcoming_appointments": upcoming_appointments,
+        "mp_is_connected": hasattr(request.user, "mp_credentials")
+        and request.user.mp_credentials.is_connected,
     }
     return render(request, "patients/admin_panel.html", context)
 
@@ -751,3 +827,84 @@ def _save_product_images(request, product):
             is_cover=(i == cover_index),
             order=i,
         )
+
+
+def _mp_redirect_uri(request):
+    """URL de redirección registrada en MP, o la del callback actual si no se configuró."""
+    return settings.MP_REDIRECT_URI or request.build_absolute_uri(
+        reverse("patients:mp_callback")
+    )
+
+
+@user_passes_test(lambda u: u.is_staff)
+def mp_connect(request):
+    """
+    Inicia el flujo OAuth 2.0: redirige al vendedor a la pantalla de
+    autorización de Mercado Pago (response_type=code, platform_id=mp).
+    """
+    state = secrets.token_urlsafe(32)
+    request.session["mp_oauth_state"] = state
+
+    params = {
+        "client_id": settings.MP_CLIENT_ID,
+        "response_type": "code",
+        "platform_id": "mp",
+        "redirect_uri": _mp_redirect_uri(request),
+        "state": state,
+    }
+    return redirect(f"{settings.MP_AUTH_URL}?{urlencode(params)}")
+
+
+@user_passes_test(lambda u: u.is_staff)
+def mp_callback(request):
+    """
+    Procesa la respuesta de MP tras el consentimiento: canjea el ``code`` por
+    las credenciales (grant_type=authorization_code) y las guarda vinculadas
+    al vendedor autenticado.
+    """
+    code = request.GET.get("code")
+    error = request.GET.get("error")
+    state = request.GET.get("state")
+
+    if error:
+        messages.error(request, f"La conexión fue rechazada por Mercado Pago: {error}")
+        return redirect("patients:admin_panel")
+
+    if not code:
+        messages.error(request, "Mercado Pago no devolvió un código de autorización.")
+        return redirect("patients:admin_panel")
+
+    if state != request.session.pop("mp_oauth_state", None):
+        messages.error(request, "El estado de la autorización no coincide.")
+        return redirect("patients:admin_panel")
+
+    data = {
+        "grant_type": "authorization_code",
+        "client_id": settings.MP_CLIENT_ID,
+        "client_secret": settings.MP_CLIENT_SECRET,
+        "code": code,
+        "redirect_uri": _mp_redirect_uri(request),
+    }
+
+    try:
+        response = requests.post(settings.MP_TOKEN_URL, data=data, timeout=30)
+    except requests.RequestException as exc:
+        messages.error(request, f"No se pudo contactar a Mercado Pago: {exc}")
+        return redirect("patients:admin_panel")
+
+    if response.status_code != 200:
+        messages.error(
+            request,
+            "Mercado Pago rechazó la conexión "
+            f"(HTTP {response.status_code}). Verificá CLIENT_ID, "
+            "CLIENT_SECRET y REDIRECT_URI.",
+        )
+        return redirect("patients:admin_panel")
+
+    credentials, _ = MercadoPagoCredentials.objects.get_or_create(user=request.user)
+    credentials.update_from_token(response.json())
+
+    messages.success(
+        request, "Tu cuenta de Mercado Pago se conectó correctamente."
+    )
+    return redirect("patients:admin_panel")

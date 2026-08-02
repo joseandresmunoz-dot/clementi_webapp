@@ -29,6 +29,10 @@ gunicorn>=23.0
 # Utilidades
 Pillow>=10.4
 python-dateutil>=2.9
+requests>=2.32
+
+# Mercado Pago (Checkout Pro)
+mercadopago>=2.3
 
 # PWA
 django-pwa>=2.0

@@ -1,7 +1,10 @@
 import uuid
+from datetime import timedelta
 
+import requests
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class PatientProfile(models.Model):
@@ -255,3 +258,117 @@ class Lead(models.Model):
 
     def __str__(self):
         return f"{self.name} — {self.email}"
+
+
+class MercadoPagoError(Exception):
+    """Error de la integración con Mercado Pago (OAuth / Checkout Pro)."""
+
+
+class MercadoPagoCredentials(models.Model):
+    """
+    Credenciales OAuth 2.0 del vendedor (staff), obtenidas tras el flujo de
+    autorización (`mp_connect` → `mp_callback`). Se usan para cobrar con
+    Checkout Pro con el token de la cuenta real del vendedor.
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="mp_credentials",
+        verbose_name="Vendedor",
+    )
+    access_token = models.CharField("Access token", max_length=512, blank=True)
+    refresh_token = models.CharField("Refresh token", max_length=512, blank=True)
+    public_key = models.CharField("Public key", max_length=256, blank=True)
+    mp_user_id = models.BigIntegerField("ID de usuario (MP)", null=True, blank=True)
+    token_type = models.CharField("Tipo de token", max_length=64, blank=True)
+    expires_in = models.PositiveIntegerField(
+        "Duración del token (segundos)", null=True, blank=True
+    )
+    token_expires_at = models.DateTimeField("El token expira en", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Credencial de Mercado Pago"
+        verbose_name_plural = "Credenciales de Mercado Pago"
+
+    def __str__(self):
+        return f"Credenciales MP de {self.user}"
+
+    @property
+    def is_connected(self):
+        """True si hay token de acceso y refresh token disponibles."""
+        return bool(self.access_token and self.refresh_token)
+
+    def update_from_token(self, payload):
+        """Persiste el payload devuelto por ``/oauth/token``."""
+        mapping = {
+            "access_token": "access_token",
+            "refresh_token": "refresh_token",
+            "public_key": "public_key",
+            "user_id": "mp_user_id",
+            "token_type": "token_type",
+        }
+        update_fields = ["updated_at"]
+        for key, field in mapping.items():
+            if key in payload and payload[key] is not None:
+                setattr(self, field, payload[key])
+                update_fields.append(field)
+
+        expires_in = payload.get("expires_in")
+        if expires_in:
+            self.expires_in = int(expires_in)
+            self.token_expires_at = timezone.now() + timedelta(seconds=int(expires_in))
+            update_fields += ["expires_in", "token_expires_at"]
+        else:
+            self.token_expires_at = None
+            update_fields.append("token_expires_at")
+
+        self.save(update_fields=update_fields)
+        return self
+
+    def is_token_expired(self, buffer_seconds=300):
+        """
+        Devuelve ``True`` si el token no existe, ya expiró, o va a expirar
+        dentro de ``buffer_seconds`` (margen de seguridad para no usar un
+        token a punto de vencer).
+        """
+        if not self.access_token or not self.token_expires_at:
+            return True
+        return timezone.now() >= self.token_expires_at - timedelta(
+            seconds=buffer_seconds
+        )
+
+    def refresh_credentials(self):
+        """
+        Renueva el ``access_token`` con ``grant_type=refresh_token`` y
+        actualiza la base automáticamente. Levanta ``MercadoPagoError`` si la
+        renovación falla (p. ej. refresh_token vencido o no autorizado).
+        """
+        if not self.refresh_token:
+            raise MercadoPagoError(
+                "No hay refresh_token para renovar las credenciales."
+            )
+
+        data = {
+            "grant_type": "refresh_token",
+            "client_id": settings.MP_CLIENT_ID,
+            "client_secret": settings.MP_CLIENT_SECRET,
+            "refresh_token": self.refresh_token,
+        }
+
+        try:
+            response = requests.post(settings.MP_TOKEN_URL, data=data, timeout=30)
+        except requests.RequestException as exc:
+            raise MercadoPagoError(
+                f"No se pudo contactar a Mercado Pago: {exc}"
+            ) from exc
+
+        if response.status_code != 200:
+            raise MercadoPagoError(
+                f"Error al renovar el token (HTTP {response.status_code}): "
+                f"{response.text[:300]}"
+            )
+
+        return self.update_from_token(response.json())
