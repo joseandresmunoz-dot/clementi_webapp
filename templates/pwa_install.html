@@ -1,0 +1,35 @@
+{% load static %}
+<!-- Botón de instalación PWA (solo visible cuando el navegador lo permite) -->
+<style>
+    #pwa-install-btn {
+        position: fixed;
+        bottom: 22px;
+        left: 22px;
+        z-index: 1000;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 999px;
+        background: #fff;
+        color: #4D4099;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.88rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 8px 24px rgba(77, 64, 153, 0.35);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    #pwa-install-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(77, 64, 153, 0.45);
+    }
+    #pwa-install-btn[hidden] { display: none; }
+    #pwa-install-btn svg { width: 18px; height: 18px; fill: #CE4888; flex-shrink: 0; }
+</style>
+<button id="pwa-install-btn" hidden aria-label="Instalar la app en tu dispositivo">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a1 1 0 0 1 1 1v8.59l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42l2.3 2.3V4a1 1 0 0 1 1-1zM5 16a1 1 0 0 1 1 1v1h12v-1a1 1 0 1 1 2 0v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a1 1 0 0 1 1-1z"/></svg>
+    Instalar app
+</button>
+<script src="{% static 'js/pwa-install.js' %}" defer></script>

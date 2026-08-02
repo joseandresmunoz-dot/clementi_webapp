@@ -180,8 +180,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 PWA_APP_NAME = "Microbiota y Salud Integral"
 PWA_APP_SHORT_NAME = "MicrobiotaSalud"
 PWA_APP_DESCRIPTION = "Consultoría integral de microbiota y salud — Romina Clementi"
-PWA_APP_THEME_COLOR = "#7c6fff"
-PWA_APP_BACKGROUND_COLOR = "#f8f7ff"
+PWA_APP_THEME_COLOR = "#82459D"
+PWA_APP_BACKGROUND_COLOR = "#F8F5FA"
 PWA_APP_DISPLAY = "standalone"
 PWA_APP_ORIENTATION = "portrait-primary"
 PWA_APP_START_URL = "/"
@@ -193,14 +193,29 @@ PWA_APP_OFFLINE_URL = "/offline/"
 PWA_APP_ICONS = [
     {"src": "/static/images/favicon/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png"},
     {"src": "/static/images/favicon/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png"},
-    {"src": "/static/images/favicon/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"},
+    {"src": "/static/images/favicon/android-chrome-maskable-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"},
 ]
 PWA_APP_ICONS_APPLE = [
     {"src": "/static/images/favicon/apple-touch-icon.png", "sizes": "180x180", "type": "image/png"},
 ]
+PWA_APP_SCREENSHOTS = [
+    {"src": "/static/images/pwa/pwa-screenshot-mobile.png", "sizes": "412x915", "type": "image/png", "form_factor": "narrow", "label": "Inicio en el celular"},
+    {"src": "/static/images/pwa/pwa-screenshot-desktop.png", "sizes": "1280x800", "type": "image/png", "form_factor": "wide", "label": "Inicio en escritorio"},
+]
+PWA_APP_SHORTCUTS = [
+    {"name": "Agendar consulta", "short_name": "Consultas", "url": "/#contacto", "icons": [
+        {"src": "/static/images/favicon/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png"},
+    ]},
+    {"name": "Test Epigenético", "short_name": "Test", "url": "/test-epigenetico/", "icons": [
+        {"src": "/static/images/favicon/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png"},
+    ]},
+    {"name": "Tienda", "short_name": "Tienda", "url": "/tienda/", "icons": [
+        {"src": "/static/images/favicon/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png"},
+    ]},
+]
 PWA_APP_DIR = "auto"
 PWA_APP_LANG = "es-AR"
-PWA_APP_STATUS_BAR_COLOR = "black-translucent"
+PWA_APP_STATUS_BAR_COLOR = "default"
 
 # ---------------------------------------------------------------------------
 # WEBPUSH (django-webpush)
@@ -208,6 +223,7 @@ PWA_APP_STATUS_BAR_COLOR = "black-translucent"
 WEBPUSH_SETTINGS = {
     "VAPID_PUBLIC_KEY": "BIp6NZxaw76Opgi_kgdnyaA9zL5yE6Ac_DrZENmte7Po5ag_rvkkzncRpVH3n76AOktzQAEwFR9g7MQH3mi0KRw",
     "VAPID_PRIVATE_KEY": "-GAKRzRhhoYLmZf8r9dEcCR7VvtOegsygHGZBa4uk_g",
+    "VAPID_ADMIN_EMAIL": "info@microbiotaysalud.com",
     "VAPID_CLAIMS": {"sub": "mailto:info@microbiotaysalud.com"},
 }
 

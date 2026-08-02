@@ -376,6 +376,23 @@
     </div>
 </div>
 
+<!-- Notificaciones push -->
+<div class="section-card">
+    <div class="section-header">
+        <h5><i class="bi bi-bell"></i> Notificaciones</h5>
+    </div>
+    <div class="section-body d-flex align-items-center justify-content-between gap-3 flex-wrap">
+        <div>
+            <strong>Documentos nuevos</strong>
+            <p class="mb-0 text-muted small" id="pushStatus">Recibí un aviso cuando la Dra. suba documentos para vos.</p>
+        </div>
+        <div class="form-check form-switch push-switch mb-0">
+            <input class="form-check-input" type="checkbox" id="pushToggle" style="width:3rem;height:1.6rem;cursor:pointer;">
+            <label class="form-check-label" for="pushToggle" style="cursor:pointer;font-weight:600;">Activar</label>
+        </div>
+    </div>
+</div>
+
 <!-- Mis Documentos -->
 <div class="section-card">
     <div class="section-header">
@@ -461,6 +478,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/push-subscribe.js' %}"></script>
 <script>
 document.querySelectorAll('.cancel-apt-btn').forEach(btn => {
     btn.addEventListener('click', function() {

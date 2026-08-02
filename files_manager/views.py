@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from rest_framework import permissions, status, viewsets
@@ -13,8 +15,29 @@ from files_manager.serializers import (
     SharedFileUploadSerializer,
 )
 from patients.models import PatientProfile
+from webpush import send_user_notification
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
+
+
+def _notify_new_document(patient, shared_file):
+    """Envía un push al paciente cuando la Dra. le comparte un documento."""
+    try:
+        send_user_notification(
+            patient,
+            {
+                "title": "Nuevo documento de tu doctora",
+                "body": f"Tenés un documento nuevo: {shared_file.title}",
+                "icon": "/static/images/favicon/android-chrome-192x192.png",
+                "badge": "/static/images/favicon/favicon-32x32.png",
+                "url": "/mi-panel/",
+                "requireInteraction": True,
+            },
+        )
+    except Exception:
+        logger.warning("No se pudo enviar push a %s por archivo %s", patient, shared_file.pk, exc_info=True)
 
 
 class IsStaffPermission(permissions.BasePermission):
@@ -82,7 +105,9 @@ class SharedFileViewSet(viewsets.ModelViewSet):
         return self.get_paginated_response(data)
 
     def perform_create(self, serializer):
-        serializer.save(uploaded_by=self.request.user)
+        instance = serializer.save(uploaded_by=self.request.user)
+        for perm in instance.permissions.select_related("patient"):
+            _notify_new_document(perm.patient, instance)
 
     # ── Asignar permiso a paciente (archivo PRIVATE) ─────────────
     @action(detail=True, methods=["post"], url_path="assign")
@@ -113,6 +138,8 @@ class SharedFileViewSet(viewsets.ModelViewSet):
                 {"message": "El paciente ya tiene acceso a este archivo."},
                 status=status.HTTP_200_OK,
             )
+
+        _notify_new_document(patient, shared_file)
 
         return Response(
             FilePermissionSerializer(perm).data,
