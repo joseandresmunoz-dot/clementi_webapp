@@ -9,24 +9,25 @@
     {% progressive_web_app_meta %}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
-        body { font-family: 'Inter', sans-serif; color: #1a1a2e; line-height: 1.6; background: #f8f7ff; }
+        body { font-family: 'Inter', sans-serif; color: #251833; line-height: 1.6; background: #F8F5FA; }
+        h1, h2, h3, h4 { font-family: 'Montserrat', sans-serif; line-height: 1.2; }
         a { text-decoration: none; color: inherit; }
         img { max-width: 100%; height: auto; display: block; }
         .container { width: 100%; max-width: 800px; margin: 0 auto; padding: 0 20px; }
 
         :root {
-            --brand: #7c6fff;
-            --brand-dark: #5a4fd8;
-            --brand-light: #a99eff;
-            --brand-bg: #f8f7ff;
-            --brand-gradient: linear-gradient(135deg, #7c6fff 0%, #b8a9ff 100%);
-            --accent: #ff6b9d;
-            --text-dark: #1a1a2e;
-            --text-muted: #6b6b80;
+            --brand: #82459D;
+            --brand-dark: #4D4099;
+            --brand-light: #E6D9F7;
+            --brand-bg: #F8F5FA;
+            --brand-gradient: linear-gradient(135deg, #4D4099 0%, #82459D 50%, #CE4888 100%);
+            --accent: #CE4888;
+            --text-dark: #251833;
+            --text-muted: #6E5B7D;
         }
 
         .navbar {
@@ -35,7 +36,7 @@
             padding: 12px 20px;
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(124,111,255,0.08);
+            border-bottom: 1px solid rgba(130,69,157,0.12);
         }
         .navbar .logo img { height: 36px; width: auto; }
         .navbar .nav-links {
@@ -70,7 +71,7 @@
         .cart-item {
             display: flex; gap: 16px; align-items: center;
             background: #fff; border-radius: 16px; padding: 16px 20px;
-            margin-bottom: 12px; box-shadow: 0 4px 16px rgba(124,111,255,0.06);
+            margin-bottom: 12px; box-shadow: 0 4px 16px rgba(130,69,157,0.10);
         }
         .cart-item img { width: 70px; height: 70px; border-radius: 10px; object-fit: cover; }
         .cart-item .info { flex: 1; }
@@ -81,7 +82,7 @@
 
         .cart-summary {
             background: #fff; border-radius: 16px; padding: 20px;
-            box-shadow: 0 4px 16px rgba(124,111,255,0.06); margin-bottom: 30px;
+            box-shadow: 0 4px 16px rgba(130,69,157,0.10); margin-bottom: 30px;
         }
         .cart-summary .total-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
         .cart-summary .total-row .label { font-size: 1rem; font-weight: 600; }
@@ -106,11 +107,11 @@
         .empty-cart h3 { font-size: 1.2rem; margin-bottom: 10px; color: var(--text-dark); }
 
         .footer {
-            background: #1a1a2e; color: rgba(255,255,255,0.7);
+            background: var(--brand-gradient); color: rgba(255,255,255,0.85);
             padding: 36px 0 24px; text-align: center;
         }
         .footer img { height: 30px; margin: 0 auto 16px; }
-        .footer .divider { width: 36px; height: 2px; background: var(--brand); margin: 16px auto; border: none; }
+        .footer .divider { width: 36px; height: 2px; background: rgba(255,255,255,0.45); margin: 16px auto; border: none; }
         .footer p { font-size: 0.75rem; margin-bottom: 4px; }
         .footer a { color: var(--brand-light); }
 

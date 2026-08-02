@@ -1,0 +1,299 @@
+{% load static %}
+<!-- ===== ESPECIALIDADES ===== -->
+<section class="esp-section" id="especialidades" aria-labelledby="esp-title">
+    <div class="esp-container">
+
+        <header class="esp-header">
+            <span class="esp-tag">Especialidades</span>
+            <h2 class="esp-title" id="esp-title">Mi especialidad</h2>
+            <p class="esp-subtitle">
+                Brindo asesoramiento personalizado en patologías gastrointestinales relacionadas con la microbiota
+            </p>
+        </header>
+
+        <!-- Filtros por categoría -->
+        <nav class="esp-filters" aria-label="Filtrar especialidades">
+            <button type="button" class="esp-filter is-active" data-filter="todos">Todo</button>
+            <button type="button" class="esp-filter" data-filter="intestinales">Patologías Intestinales</button>
+            <button type="button" class="esp-filter" data-filter="neurodesarrollo">Neurodesarrollo y Ánimo</button>
+            <button type="button" class="esp-filter" data-filter="inmunidad">Inmunidad, Piel y Otras Crónicas</button>
+        </nav>
+
+        <!-- Grilla de flipboxes -->
+        <div class="esp-grid" id="esp-grid">
+
+            <article class="esp-card" data-category="intestinales" tabindex="0" aria-label="Gastritis Crónica. Saber más.">
+                <div class="esp-card-inner">
+                    <div class="esp-face esp-face-front">
+                        <img src="{% static 'images/gastritis.svg' %}" alt="Gastritis Crónica" class="esp-icon">
+                        <h3 class="esp-name">Gastritis Crónica</h3>
+                        <span class="esp-more">Saber más
+                            <svg class="esp-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                    </div>
+                    <div class="esp-face esp-face-back">
+                        <h3 class="esp-name">Gastritis Crónica</h3>
+                        <p class="esp-desc">Inflamación persistente de la mucosa del estómago que se desarrolla lentamente y puede durar meses o años.</p>
+                        <a class="esp-cta" href="https://wa.me/5493512535160?text=Hola%2C%20quiero%20consultar%20por%20Gastritis%20Cr%C3%B3nica" target="_blank" rel="noopener">Consultar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="esp-card" data-category="intestinales" tabindex="0" aria-label="Diarrea, estreñimiento, gases e hinchazón. Saber más.">
+                <div class="esp-card-inner">
+                    <div class="esp-face esp-face-front">
+                        <img src="{% static 'images/diarrea.svg' %}" alt="Diarrea y/o estreñimiento" class="esp-icon">
+                        <h3 class="esp-name">Diarrea y/o estreñimiento, gases, hinchazón y distensión abdominal</h3>
+                        <span class="esp-more">Saber más
+                            <svg class="esp-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                    </div>
+                    <div class="esp-face esp-face-back">
+                        <h3 class="esp-name">Trastornos del tránsito intestinal</h3>
+                        <p class="esp-desc">Trastornos del tránsito intestinal: evacuaciones frecuentes y acuosas o dificultad para evacuar con heces duras.</p>
+                        <a class="esp-cta" href="https://wa.me/5493512535160?text=Hola%2C%20quiero%20consultar%20por%20trastornos%20del%20tr%C3%A1nsito%20intestinal" target="_blank" rel="noopener">Consultar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="esp-card" data-category="intestinales" tabindex="0" aria-label="Digestiones pesadas. Saber más.">
+                <div class="esp-card-inner">
+                    <div class="esp-face esp-face-front">
+                        <img src="{% static 'images/digestiones_pesadas.svg' %}" alt="Digestiones pesadas" class="esp-icon">
+                        <h3 class="esp-name">Digestiones pesadas</h3>
+                        <span class="esp-more">Saber más
+                            <svg class="esp-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                    </div>
+                    <div class="esp-face esp-face-back">
+                        <h3 class="esp-name">Digestiones pesadas</h3>
+                        <p class="esp-desc">Sensación de llenura, ardor o malestar después de comer. Relacionado con comidas abundantes o muy condimentadas.</p>
+                        <a class="esp-cta" href="https://wa.me/5493512535160?text=Hola%2C%20quiero%20consultar%20por%20digestiones%20pesadas" target="_blank" rel="noopener">Consultar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="esp-card" data-category="intestinales" tabindex="0" aria-label="Crohn y colitis ulcerosa. Saber más.">
+                <div class="esp-card-inner">
+                    <div class="esp-face esp-face-front">
+                        <img src="{% static 'images/enfermedad_inflamatoria.svg' %}" alt="Enfermedad inflamatoria intestinal" class="esp-icon">
+                        <h3 class="esp-name">Crohn y colitis ulcerosa</h3>
+                        <span class="esp-more">Saber más
+                            <svg class="esp-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                    </div>
+                    <div class="esp-face esp-face-back">
+                        <h3 class="esp-name">Enfermedades inflamatorias intestinales</h3>
+                        <p class="esp-desc">Trastornos crónicos que inflaman el tubo digestivo causando dolor abdominal, diarrea, fatiga y pérdida de peso.</p>
+                        <a class="esp-cta" href="https://wa.me/5493512535160?text=Hola%2C%20quiero%20consultar%20por%20Crohn%20o%20colitis%20ulcerosa" target="_blank" rel="noopener">Consultar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="esp-card" data-category="intestinales" tabindex="0" aria-label="Síndrome del intestino irritable y permeable. Saber más.">
+                <div class="esp-card-inner">
+                    <div class="esp-face esp-face-front">
+                        <img src="{% static 'images/intestino_irritable.svg' %}" alt="Síndrome del intestino irritable" class="esp-icon">
+                        <h3 class="esp-name">Síndrome del intestino irritable y permeable</h3>
+                        <span class="esp-more">Saber más
+                            <svg class="esp-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                    </div>
+                    <div class="esp-face esp-face-back">
+                        <h3 class="esp-name">Intestino irritable y permeable</h3>
+                        <p class="esp-desc">El SII causa dolor abdominal y alteraciones intestinales. El intestino permeable permite el paso de toxinas al torrente sanguíneo.</p>
+                        <a class="esp-cta" href="https://wa.me/5493512535160?text=Hola%2C%20quiero%20consultar%20por%20intestino%20irritable%20y%20permeable" target="_blank" rel="noopener">Consultar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="esp-card" data-category="intestinales" tabindex="0" aria-label="Disbiosis intestinal. Saber más.">
+                <div class="esp-card-inner">
+                    <div class="esp-face esp-face-front">
+                        <img src="{% static 'images/disbiosis.svg' %}" alt="Disbiosis intestinal" class="esp-icon">
+                        <h3 class="esp-name">Disbiosis intestinal</h3>
+                        <span class="esp-more">Saber más
+                            <svg class="esp-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                    </div>
+                    <div class="esp-face esp-face-back">
+                        <h3 class="esp-name">Disbiosis intestinal</h3>
+                        <p class="esp-desc">Desequilibrio en la microbiota con aumento de patógenos, vinculado a inflamación, alergias y enfermedades metabólicas.</p>
+                        <a class="esp-cta" href="https://wa.me/5493512535160?text=Hola%2C%20quiero%20consultar%20por%20disbiosis%20intestinal" target="_blank" rel="noopener">Consultar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="esp-card" data-category="intestinales" tabindex="0" aria-label="Candidiasis intestinal. Saber más.">
+                <div class="esp-card-inner">
+                    <div class="esp-face esp-face-front">
+                        <img src="{% static 'images/candidiasis.svg' %}" alt="Candidiasis intestinal" class="esp-icon">
+                        <h3 class="esp-name">Candidiasis intestinal</h3>
+                        <span class="esp-more">Saber más
+                            <svg class="esp-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                    </div>
+                    <div class="esp-face esp-face-back">
+                        <h3 class="esp-name">Candidiasis intestinal</h3>
+                        <p class="esp-desc">Sobrecrecimiento de Candida que provoca distensión, fatiga y antojos de azúcar. Común tras antibióticos o dietas altas en carbohidratos.</p>
+                        <a class="esp-cta" href="https://wa.me/5493512535160?text=Hola%2C%20quiero%20consultar%20por%20candidiasis%20intestinal" target="_blank" rel="noopener">Consultar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="esp-card" data-category="intestinales" tabindex="0" aria-label="Parasitosis. Saber más.">
+                <div class="esp-card-inner">
+                    <div class="esp-face esp-face-front">
+                        <img src="{% static 'images/parasitosis.svg' %}" alt="Parasitosis intestinal" class="esp-icon">
+                        <h3 class="esp-name">Parasitosis</h3>
+                        <span class="esp-more">Saber más
+                            <svg class="esp-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                    </div>
+                    <div class="esp-face esp-face-back">
+                        <h3 class="esp-name">Parasitosis intestinal</h3>
+                        <p class="esp-desc">Infección por parásitos como Giardia, causando diarrea, dolor abdominal y deficiencias nutricionales.</p>
+                        <a class="esp-cta" href="https://wa.me/5493512535160?text=Hola%2C%20quiero%20consultar%20por%20parasitosis%20intestinal" target="_blank" rel="noopener">Consultar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="esp-card" data-category="inmunidad" tabindex="0" aria-label="Alergias y migraña. Saber más.">
+                <div class="esp-card-inner">
+                    <div class="esp-face esp-face-front">
+                        <img src="{% static 'images/alergia_migrana.svg' %}" alt="Alergias y migraña" class="esp-icon">
+                        <h3 class="esp-name">Alergias y migraña</h3>
+                        <span class="esp-more">Saber más
+                            <svg class="esp-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                    </div>
+                    <div class="esp-face esp-face-back">
+                        <h3 class="esp-name">Alergias y migraña</h3>
+                        <p class="esp-desc">Alergias alimentarias pueden desencadenar migrañas por inflamación e histamina. Eliminar desencadenantes reduce su frecuencia.</p>
+                        <a class="esp-cta" href="https://wa.me/5493512535160?text=Hola%2C%20quiero%20consultar%20por%20alergias%20y%20migra%C3%B1a" target="_blank" rel="noopener">Consultar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="esp-card" data-category="inmunidad" tabindex="0" aria-label="Eczemas y dermatitis atópica. Saber más.">
+                <div class="esp-card-inner">
+                    <div class="esp-face esp-face-front">
+                        <img src="{% static 'images/piel.svg' %}" alt="Problemas autoinmunes de la piel" class="esp-icon">
+                        <h3 class="esp-name">Eczemas y dermatitis atópica</h3>
+                        <span class="esp-more">Saber más
+                            <svg class="esp-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                    </div>
+                    <div class="esp-face esp-face-back">
+                        <h3 class="esp-name">Problemas autoinmunes de la piel</h3>
+                        <p class="esp-desc">Eczema y dermatitis atópica se relacionan con disbiosis, inflamación y alteraciones inmunes.</p>
+                        <a class="esp-cta" href="https://wa.me/5493512535160?text=Hola%2C%20quiero%20consultar%20por%20eczemas%20o%20dermatitis%20at%C3%B3pica" target="_blank" rel="noopener">Consultar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="esp-card" data-category="inmunidad" tabindex="0" aria-label="Fatiga crónica y fibromialgia. Saber más.">
+                <div class="esp-card-inner">
+                    <div class="esp-face esp-face-front">
+                        <img src="{% static 'images/fatiga.svg' %}" alt="Síndrome de fatiga crónica" class="esp-icon">
+                        <h3 class="esp-name">Fatiga crónica y fibromialgia</h3>
+                        <span class="esp-more">Saber más
+                            <svg class="esp-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                    </div>
+                    <div class="esp-face esp-face-back">
+                        <h3 class="esp-name">Síndrome de fatiga crónica y fibromialgia</h3>
+                        <p class="esp-desc">Fatiga extrema, dolor muscular y alteraciones del sueño. Relacionados con desequilibrios inflamatorios y estrés oxidativo.</p>
+                        <a class="esp-cta" href="https://wa.me/5493512535160?text=Hola%2C%20quiero%20consultar%20por%20fatiga%20cr%C3%B3nica%20o%20fibromialgia" target="_blank" rel="noopener">Consultar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="esp-card" data-category="neurodesarrollo" tabindex="0" aria-label="Autismo y TDAH. Saber más.">
+                <div class="esp-card-inner">
+                    <div class="esp-face esp-face-front">
+                        <img src="{% static 'images/neurodesarrollo.svg' %}" alt="Trastornos del neurodesarrollo" class="esp-icon">
+                        <h3 class="esp-name">Autismo y TDAH</h3>
+                        <span class="esp-more">Saber más
+                            <svg class="esp-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                    </div>
+                    <div class="esp-face esp-face-back">
+                        <h3 class="esp-name">Trastornos del neurodesarrollo</h3>
+                        <p class="esp-desc">Autismo y TDAH pueden vincularse a disbiosis, inflamación y toxinas ambientales. La salud intestinal influye en la función cerebral.</p>
+                        <a class="esp-cta" href="https://wa.me/5493512535160?text=Hola%2C%20quiero%20consultar%20por%20autismo%20o%20TDAH" target="_blank" rel="noopener">Consultar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="esp-card" data-category="inmunidad" tabindex="0" aria-label="Metabolismo, obesidad y diabetes. Saber más.">
+                <div class="esp-card-inner">
+                    <div class="esp-face esp-face-front">
+                        <img src="{% static 'images/obesidad.svg' %}" alt="Síndrome metabólico y obesidad" class="esp-icon">
+                        <h3 class="esp-name">Síndrome metabólico, obesidad y diabetes</h3>
+                        <span class="esp-more">Saber más
+                            <svg class="esp-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                    </div>
+                    <div class="esp-face esp-face-back">
+                        <h3 class="esp-name">Síndrome metabólico, obesidad y diabetes</h3>
+                        <p class="esp-desc">Trastornos interconectados por resistencia a la insulina, inflamación crónica y alteraciones en la microbiota intestinal.</p>
+                        <a class="esp-cta" href="https://wa.me/5493512535160?text=Hola%2C%20quiero%20consultar%20por%20s%C3%ADndrome%20metab%C3%B3lico%2C%20obesidad%20o%20diabetes" target="_blank" rel="noopener">Consultar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="esp-card" data-category="neurodesarrollo" tabindex="0" aria-label="Ansiedad y depresión. Saber más.">
+                <div class="esp-card-inner">
+                    <div class="esp-face esp-face-front">
+                        <img src="{% static 'images/ansiedad.svg' %}" alt="Ansiedad y depresión" class="esp-icon">
+                        <h3 class="esp-name">Ansiedad y depresión</h3>
+                        <span class="esp-more">Saber más
+                            <svg class="esp-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                    </div>
+                    <div class="esp-face esp-face-back">
+                        <h3 class="esp-name">Ansiedad y depresión</h3>
+                        <p class="esp-desc">La disbiosis intestinal afecta la producción de neurotransmisores como la serotonina, influyendo en el estado de ánimo.</p>
+                        <a class="esp-cta" href="https://wa.me/5493512535160?text=Hola%2C%20quiero%20consultar%20por%20ansiedad%20o%20depresi%C3%B3n" target="_blank" rel="noopener">Consultar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="esp-card" data-category="inmunidad" tabindex="0" aria-label="Vaginitis y vaginosis recurrente. Saber más.">
+                <div class="esp-card-inner">
+                    <div class="esp-face esp-face-front">
+                        <img src="{% static 'images/vaginitis.svg' %}" alt="Vaginitis y vaginosis recurrente" class="esp-icon">
+                        <h3 class="esp-name">Vaginitis y vaginosis recurrente</h3>
+                        <span class="esp-more">Saber más
+                            <svg class="esp-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                    </div>
+                    <div class="esp-face esp-face-back">
+                        <h3 class="esp-name">Vaginitis y vaginosis recurrente</h3>
+                        <p class="esp-desc">Infecciones vaginales frecuentes por desequilibrios inmunes o microbiota alterada, ligadas a la salud intestinal.</p>
+                        <a class="esp-cta" href="https://wa.me/5493512535160?text=Hola%2C%20quiero%20consultar%20por%20vaginitis%20o%20vaginosis%20recurrente" target="_blank" rel="noopener">Consultar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="esp-card" data-category="inmunidad" tabindex="0" aria-label="Onicomicosis. Saber más.">
+                <div class="esp-card-inner">
+                    <div class="esp-face esp-face-front">
+                        <img src="{% static 'images/onicomicosis.svg' %}" alt="Onicomicosis" class="esp-icon">
+                        <h3 class="esp-name">Onicomicosis</h3>
+                        <span class="esp-more">Saber más
+                            <svg class="esp-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                    </div>
+                    <div class="esp-face esp-face-back">
+                        <h3 class="esp-name">Onicomicosis</h3>
+                        <p class="esp-desc">Infección por hongos en uñas, relacionada con inmunidad débil o diabetes. Requiere antifúngicos y fortalecimiento inmunológico.</p>
+                        <a class="esp-cta" href="https://wa.me/5493512535160?text=Hola%2C%20quiero%20consultar%20por%20onicomicosis" target="_blank" rel="noopener">Consultar</a>
+                    </div>
+                </div>
+            </article>
+
+        </div>
+    </div>
+</section>

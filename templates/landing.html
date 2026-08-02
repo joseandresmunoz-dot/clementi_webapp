@@ -9,32 +9,36 @@
     {% progressive_web_app_meta %}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <style>
         /* ===== RESET & TOKENS ===== */
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
+        html { scroll-behavior: smooth; scroll-padding-top: 76px; }
         body {
             font-family: 'Inter', sans-serif;
-            color: #1a1a2e;
+            color: #251833;
             line-height: 1.6;
-            background: #fff;
+            background: #F8F5FA;
         }
+        h1, h2, h3, h4 { font-family: 'Montserrat', sans-serif; line-height: 1.2; }
         a { text-decoration: none; color: inherit; transition: all 0.3s; }
         img { max-width: 100%; height: auto; display: block; }
         .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
         :root {
-            --brand: #7c6fff;
-            --brand-dark: #5a4fd8;
-            --brand-light: #a99eff;
-            --brand-bg: #f8f7ff;
-            --brand-gradient: linear-gradient(135deg, #7c6fff 0%, #b8a9ff 100%);
-            --accent: #ff6b9d;
-            --text-dark: #1a1a2e;
-            --text-muted: #6b6b80;
-            --card-shadow: 0 8px 30px rgba(124, 111, 255, 0.10);
-            --card-hover-shadow: 0 16px 48px rgba(124, 111, 255, 0.18);
+            --brand: #82459D;                    /* Violeta orquídea — primario (30%) */
+            --brand-dark: #4D4099;               /* Índigo profundo — hover/footer */
+            --brand-light: #E4D5F5;              /* Lavanda claro — links sobre oscuro */
+            --brand-bg: #F8F5FA;                 /* Lavanda suave — fondo general (60%) */
+            --brand-tint: #F1E9F8;               /* Tinte violeta — chips e iconos */
+            --brand-gradient: linear-gradient(135deg, #4D4099 0%, #82459D 50%, #CE4888 100%);
+            --accent: #CE4888;                   /* Rosa magenta — CTA (10%) */
+            --accent-dark: #B1376F;              /* Rosa oscuro — hover de CTA */
+            --text-dark: #251833;                /* Ciruela oscuro */
+            --text-muted: #6E5B7D;               /* Ciruela apagado */
+            --card-shadow: 0 8px 30px rgba(130, 69, 157, 0.12);
+            --card-hover-shadow: 0 16px 48px rgba(130, 69, 157, 0.20);
         }
 
         /* ===== MOBILE FIRST — BASE STYLES ===== */
@@ -47,7 +51,7 @@
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(124,111,255,0.08);
+            border-bottom: 1px solid rgba(130,69,157,0.12);
         }
         .navbar .logo img { height: 36px; width: auto; }
         .navbar .nav-links {
@@ -116,11 +120,15 @@
             display: flex; flex-direction: column; gap: 10px; margin-top: 20px;
         }
         .hero-text .cta-group .btn-primary {
-            background: var(--brand-gradient); color: #fff;
+            background: var(--accent); color: #fff;
             padding: 14px 28px; border-radius: 12px; font-weight: 600;
             font-size: 0.95rem;
-            box-shadow: 0 6px 20px rgba(124,111,255,0.30);
+            box-shadow: 0 6px 20px rgba(206,72,136,0.35);
             border: none; cursor: pointer;
+        }
+        .hero-text .cta-group .btn-primary:hover {
+            background: var(--accent-dark);
+            transform: translateY(-2px);
         }
         .hero-text .cta-group .btn-secondary {
             background: rgba(255,255,255,0.12); color: #fff;
@@ -169,50 +177,11 @@
             justify-content: center;
         }
         .sobre-mi-text .credentials span {
-            background: var(--brand-bg); color: var(--brand);
+            background: var(--brand-tint); color: var(--brand);
             padding: 4px 12px; border-radius: 50px;
             font-size: 0.75rem; font-weight: 500;
         }
         .sobre-mi-text p { color: var(--text-muted); margin-bottom: 12px; font-size: 0.9rem; }
-
-        /* --- ESPECIALIDADES (mobile: 2 cols) --- */
-        .especialidades { background: var(--brand-bg); }
-        .flip-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        .flip-box { perspective: 1000px; height: 150px; }
-        .flip-box-inner {
-            position: relative; width: 100%; height: 100%;
-            transition: transform 0.6s ease;
-            transform-style: preserve-3d;
-        }
-        .flip-box:hover .flip-box-inner { transform: rotateY(180deg); }
-        .flip-box-front, .flip-box-back {
-            position: absolute; inset: 0;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-            border-radius: 14px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 10px; text-align: center;
-            box-shadow: var(--card-shadow);
-        }
-        .flip-box-front {
-            background: #fff;
-            border: 1px solid rgba(124,111,255,0.08);
-            overflow: hidden; padding: 0;
-        }
-        .flip-box-front img {
-            position: absolute; inset: 0; width: 100%; height: 100%;
-            object-fit: cover;
-        }
-        .flip-box-back {
-            background: var(--brand-gradient); color: #fff;
-            transform: rotateY(180deg); border: none;
-            padding: 14px 10px;
-        }
-        .flip-box-back p { font-size: 0.7rem; line-height: 1.4; color: #fff; }
 
         /* --- CÓMO FUNCIONA (mobile: 1 col) --- */
         .steps-grid {
@@ -220,7 +189,8 @@
         }
         .step-card {
             text-align: center; padding: 28px 20px;
-            border-radius: 18px; background: var(--brand-bg);
+            border-radius: 18px; background: #fff;
+            box-shadow: var(--card-shadow);
         }
         .step-number {
             width: 48px; height: 48px; line-height: 48px;
@@ -249,21 +219,21 @@
         .testimonio-card .author { font-weight: 600; color: var(--text-dark); font-size: 0.9rem; }
         .testimonio-card .role { font-size: 0.75rem; color: var(--text-muted); }
 
-        /* --- SERVICIOS (mobile: 2 cols) --- */
+        /* --- SERVICIOS (mobile: 1 col) --- */
         .servicios-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr;
             gap: 14px;
         }
         .servicio-card {
             text-align: center; padding: 24px 14px;
             border-radius: 18px;
-            border: 1px solid rgba(124,111,255,0.08);
+            border: 1px solid rgba(130,69,157,0.14);
         }
         .servicio-card .icon {
             width: 56px; height: 56px; margin: 0 auto 12px;
             display: flex; align-items: center; justify-content: center;
-            border-radius: 16px; background: var(--brand-bg);
+            border-radius: 16px; background: var(--brand-tint);
         }
         .servicio-card .icon img { width: 32px; height: 32px; object-fit: contain; }
         .servicio-card h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
@@ -334,11 +304,16 @@
         }
         .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--brand); flex-shrink: 0; }
         .contacto-form .btn-submit {
-            background: var(--brand-gradient); color: #fff;
+            background: var(--accent); color: #fff;
             padding: 14px 28px; border: none; border-radius: 12px;
             font-size: 0.95rem; font-weight: 600; cursor: pointer;
             width: 100%;
-            box-shadow: 0 6px 20px rgba(124,111,255,0.30);
+            box-shadow: 0 6px 20px rgba(206,72,136,0.35);
+            transition: all 0.3s;
+        }
+        .contacto-form .btn-submit:hover {
+            background: var(--accent-dark);
+            transform: translateY(-2px);
         }
 
         /* --- PRÓXIMAMENTE CURSOS (mobile: 1 col) --- */
@@ -365,7 +340,7 @@
         }
         .curso-card .icon {
             width: 56px; height: 56px; margin: 0 auto 12px;
-            border-radius: 14px; background: var(--brand-bg);
+            border-radius: 14px; background: var(--brand-tint);
             display: flex; align-items: center; justify-content: center;
             font-size: 1.4rem;
         }
@@ -380,7 +355,7 @@
 
         /* --- FOOTER --- */
         .footer {
-            background: #1a1a2e; color: rgba(255,255,255,0.7);
+            background: var(--brand-gradient); color: rgba(255,255,255,0.85);
             padding: 36px 0 24px; text-align: center;
         }
         .footer img { height: 42px; margin: 0 auto 16px; }
@@ -393,10 +368,10 @@
             background: rgba(255,255,255,0.06);
             transition: all 0.3s;
         }
-        .footer .social-links a:hover { background: var(--brand); transform: translateY(-2px); }
+        .footer .social-links a:hover { background: var(--accent); transform: translateY(-2px); }
         .footer .social-links a svg { width: 18px; height: 18px; fill: currentColor; color: rgba(255,255,255,0.6); }
         .footer .social-links a:hover svg { color: #fff; }
-        .footer .divider { width: 36px; height: 2px; background: var(--brand); margin: 16px auto; border: none; }
+        .footer .divider { width: 36px; height: 2px; background: rgba(255,255,255,0.45); margin: 16px auto; border: none; }
         .footer p { font-size: 0.75rem; margin-bottom: 4px; }
         .footer a { color: var(--brand-light); }
 
@@ -409,25 +384,6 @@
             box-shadow: 0 4px 16px rgba(37,211,102,0.35);
         }
         .whatsapp-btn svg { width: 26px; height: 26px; fill: #fff; }
-
-        /* --- NEWSLETTER BAR (mobile: stacked) --- */
-        .newsletter-bar { background: var(--text-dark); padding: 20px 0; }
-        .newsletter-bar .container {
-            display: flex; flex-direction: column; gap: 12px; text-align: center;
-        }
-        .newsletter-bar p { color: #fff; font-weight: 500; font-size: 0.9rem; }
-        .newsletter-bar .newsletter-form {
-            display: flex; flex-direction: column; gap: 8px;
-        }
-        .newsletter-bar .newsletter-form input {
-            padding: 10px 14px; border: none; border-radius: 10px;
-            font-size: 0.9rem; font-family: inherit; outline: none;
-        }
-        .newsletter-bar .newsletter-form button {
-            padding: 10px 20px; border: none; border-radius: 10px;
-            background: var(--brand-gradient); color: #fff;
-            font-weight: 600; font-size: 0.9rem; cursor: pointer;
-        }
 
         /* --- MESSAGES --- */
         .messages-toast {
@@ -450,10 +406,7 @@
             .navbar { padding: 12px 28px; }
             .hero-text h1 { font-size: 2rem; }
             .section-title { font-size: 1.8rem; }
-            .flip-grid { gap: 14px; }
-            .flip-box { height: 170px; }
-            .flip-box-back p { font-size: 0.75rem; }
-            .servicios-grid { gap: 18px; }
+            .servicios-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
             .contacto-form { padding: 32px 28px; }
         }
 
@@ -489,7 +442,7 @@
             .navbar .nav-links a:hover::after { width: 100%; }
             .navbar .nav-links .btn-primary-nav {
                 padding: 10px 22px; font-size: 0.9rem;
-                box-shadow: 0 4px 14px rgba(124,111,255,0.30);
+                box-shadow: 0 4px 14px rgba(130,69,157,0.35);
             }
             .navbar .nav-links .btn-primary-nav:hover {
                 background: var(--brand-dark); transform: translateY(-2px);
@@ -518,11 +471,6 @@
             .sobre-mi-text .credentials { justify-content: flex-start; }
             .sobre-mi-image img { max-height: 500px; object-fit: cover; }
 
-            /* Especialidades: 3 cols */
-            .flip-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
-            .flip-box { height: 180px; }
-            .flip-box-back p { font-size: 0.78rem; }
-
             /* Cómo funciona: 3 cols */
             .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
             .step-card { padding: 32px 24px; }
@@ -530,8 +478,8 @@
             /* Testimonios: 2 cols */
             .testimonios-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
 
-            /* Servicios: 4 cols */
-            .servicios-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; }
+            /* Servicios: 3 cols */
+            .servicios-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
             .servicio-card { padding: 28px 16px; }
             .servicio-card .icon { width: 64px; height: 64px; }
             .servicio-card .icon img { width: 36px; height: 36px; }
@@ -549,14 +497,6 @@
 
             /* Cursos: 2 cols */
             .cursos-teaser { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
-
-            /* Newsletter: inline */
-            .newsletter-bar .container {
-                flex-direction: row;
-                justify-content: space-between;
-                text-align: left;
-            }
-            .newsletter-bar .newsletter-form { flex-direction: row; flex: 1; max-width: 460px; }
         }
 
         /* ===== DESKTOP ≥ 992px ===== */
@@ -575,9 +515,6 @@
             .sobre-mi .container { gap: 60px; }
             .sobre-mi-text p { font-size: 0.95rem; }
 
-            .flip-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; }
-            .flip-box { height: 200px; }
-            .flip-box-back p { font-size: 0.8rem; }
             .step-card { padding: 40px 28px; }
             .testimonios-grid { grid-template-columns: repeat(3, 1fr); gap: 28px; }
             .servicios-grid { gap: 28px; }
@@ -721,193 +658,7 @@
     </section>
 
     <!-- ===== ESPECIALIDADES ===== -->
-    <section class="especialidades" id="especialidades">
-        <div class="container text-center">
-            <h2 class="section-title" style="font-size: 1.8rem;">Mi especialidad</h2>
-            <p class="section-subtitle mx-auto">
-                Brindo asesoramiento personalizado en patologías gastrointestinales relacionadas con la microbiota
-            </p>
-            <div class="flip-grid">
-
-                <div class="flip-box">
-                    <div class="flip-box-inner">
-                        <div class="flip-box-front">
-                            <img src="{% static 'images/gastritis.svg' %}" alt="Gastritis">
-                        </div>
-                        <div class="flip-box-back">
-                            <p>Inflamación persistente de la mucosa del estómago que se desarrolla lentamente y puede durar meses o años.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flip-box">
-                    <div class="flip-box-inner">
-                        <div class="flip-box-front">
-                            <img src="{% static 'images/diarrea.svg' %}" alt="Diarrea / Estreñimiento">
-                        </div>
-                        <div class="flip-box-back">
-                            <p>Trastornos del tránsito intestinal: evacuaciones frecuentes y acuosas o dificultad para evacuar con heces duras.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flip-box">
-                    <div class="flip-box-inner">
-                        <div class="flip-box-front">
-                            <img src="{% static 'images/digestionpesada.svg' %}" alt="Digestión Pesada">
-                        </div>
-                        <div class="flip-box-back">
-                            <p>Sensación de llenura, ardor o malestar después de comer. Relacionado con comidas abundantes o muy condimentadas.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flip-box">
-                    <div class="flip-box-inner">
-                        <div class="flip-box-front">
-                            <img src="{% static 'images/chron.svg' %}" alt="Crohn / Colitis">
-                        </div>
-                        <div class="flip-box-back">
-                            <p>Trastornos crónicos que inflaman el tubo digestivo causando dolor abdominal, diarrea, fatiga y pérdida de peso.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flip-box">
-                    <div class="flip-box-inner">
-                        <div class="flip-box-front">
-                            <img src="{% static 'images/intestino.svg' %}" alt="SII / Intestino Permeable">
-                        </div>
-                        <div class="flip-box-back">
-                            <p>El SII causa dolor abdominal y alteraciones intestinales. El intestino permeable permite el paso de toxinas al torrente sanguíneo.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flip-box">
-                    <div class="flip-box-inner">
-                        <div class="flip-box-front">
-                            <img src="{% static 'images/disbiosis.svg' %}" alt="Disbiosis Intestinal">
-                        </div>
-                        <div class="flip-box-back">
-                            <p>Desequilibrio en la microbiota con aumento de patógenos, vinculado a inflamación, alergias y enfermedades metabólicas.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flip-box">
-                    <div class="flip-box-inner">
-                        <div class="flip-box-front">
-                            <img src="{% static 'images/candiasis.svg' %}" alt="Candidiasis">
-                        </div>
-                        <div class="flip-box-back">
-                            <p>Sobrecrecimiento de Candida que provoca distensión, fatiga y antojos de azúcar. Común tras antibióticos o dietas altas en carbohidratos.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flip-box">
-                    <div class="flip-box-inner">
-                        <div class="flip-box-front">
-                            <img src="{% static 'images/parasitosis.svg' %}" alt="Parasitosis Intestinal">
-                        </div>
-                        <div class="flip-box-back">
-                            <p>Infección por parásitos como Giardia, causando diarrea, dolor abdominal y deficiencias nutricionales.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flip-box">
-                    <div class="flip-box-inner">
-                        <div class="flip-box-front">
-                            <img src="{% static 'images/migrana.svg' %}" alt="Migraña / Alergias">
-                        </div>
-                        <div class="flip-box-back">
-                            <p>Alergias alimentarias pueden desencadenar migrañas por inflamación e histamina. Eliminar desencadenantes reduce su frecuencia.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flip-box">
-                    <div class="flip-box-inner">
-                        <div class="flip-box-front">
-                            <img src="{% static 'images/piel.svg' %}" alt="Eczema / Dermatitis">
-                        </div>
-                        <div class="flip-box-back">
-                            <p>Eczema y dermatitis atópica se relacionan con disbiosis, inflamación y alteraciones inmunes.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flip-box">
-                    <div class="flip-box-inner">
-                        <div class="flip-box-front">
-                            <img src="{% static 'images/fatiga.svg' %}" alt="Fibromialgia / Fatiga">
-                        </div>
-                        <div class="flip-box-back">
-                            <p>Fatiga extrema, dolor muscular y alteraciones del sueño. Relacionados con desequilibrios inflamatorios y estrés oxidativo.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flip-box">
-                    <div class="flip-box-inner">
-                        <div class="flip-box-front">
-                            <img src="{% static 'images/tdh.svg' %}" alt="Autismo / TDAH">
-                        </div>
-                        <div class="flip-box-back">
-                            <p>Autismo y TDAH pueden vincularse a disbiosis, inflamación y toxinas ambientales. La salud intestinal influye en la función cerebral.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flip-box">
-                    <div class="flip-box-inner">
-                        <div class="flip-box-front">
-                            <img src="{% static 'images/obesidad.svg' %}" alt="Obesidad / Diabetes">
-                        </div>
-                        <div class="flip-box-back">
-                            <p>Trastornos interconectados por resistencia a la insulina, inflamación crónica y alteraciones en la microbiota intestinal.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flip-box">
-                    <div class="flip-box-inner">
-                        <div class="flip-box-front">
-                            <img src="{% static 'images/ansiedad.svg' %}" alt="Ansiedad / Depresión">
-                        </div>
-                        <div class="flip-box-back">
-                            <p>La disbiosis intestinal afecta la producción de neurotransmisores como la serotonina, influyendo en el estado de ánimo.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flip-box">
-                    <div class="flip-box-inner">
-                        <div class="flip-box-front">
-                            <img src="{% static 'images/vaginitis.svg' %}" alt="Vaginitis / Vaginosis">
-                        </div>
-                        <div class="flip-box-back">
-                            <p>Infecciones vaginales frecuentes por desequilibrios inmunes o microbiota alterada, ligadas a la salud intestinal.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flip-box">
-                    <div class="flip-box-inner">
-                        <div class="flip-box-front">
-                            <img src="{% static 'images/onicomicosis.svg' %}" alt="Onicomicosis">
-                        </div>
-                        <div class="flip-box-back">
-                            <p>Infección por hongos en uñas, relacionada con inmunidad débil o diabetes. Requiere antifúngicos y fortalecimiento inmunológico.</p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
+    {% include 'especialidades.html' %}
 
     <!-- ===== TESTIMONIOS ===== -->
     <section class="testimonios" id="testimonios">
@@ -1017,20 +768,6 @@
         </div>
     </section>
 
-    <!-- ===== NEWSLETTER BAR ===== -->
-    <div class="newsletter-bar">
-        <div class="container">
-            <p>📩 Recibí contenido exclusivo sobre microbiota y salud</p>
-            <form class="newsletter-form" method="post" action="{% url 'patients:capture_lead' %}">
-                {% csrf_token %}
-                <input type="hidden" name="source" value="newsletter">
-                <input type="email" name="email" placeholder="Tu email" required>
-                <input type="hidden" name="name" value="Newsletter Suscriptor">
-                <button type="submit">Suscribirme</button>
-            </form>
-        </div>
-    </div>
-
     <!-- ===== CONTACTO / LEAD CAPTURE ===== -->
     <section class="contacto" id="contacto">
         <div class="container">
@@ -1121,6 +858,13 @@
     </a>
 
     <script>
+    // Cerrar el menú móvil al tocar un link
+    document.querySelectorAll('.nav-links a').forEach(function(link) {
+        link.addEventListener('click', function() {
+            var toggle = document.getElementById('nav-toggle');
+            if (toggle) toggle.checked = false;
+        });
+    });
     // Auto-dismiss messages after 5s
     document.addEventListener('DOMContentLoaded', function() {
         setTimeout(function() {
@@ -1132,5 +876,6 @@
         }, 3000);
     });
     </script>
+    <script src="{% static 'js/script.js' %}"></script>
 </body>
 </html>
