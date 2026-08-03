@@ -166,10 +166,14 @@ def checkout_mp(request):
         messages.warning(request, "Tu carrito está vacío.")
         return redirect("patients:cart")
 
-    # La preferencia se crea con la cuenta del vendedor (o el token de la app).
-    seller = User.objects.filter(is_staff=True).order_by("id").first()
+    # La preferencia se crea con la cuenta del vendedor conectada a MP.
+    seller = services.get_connected_seller()
     if not seller:
-        messages.error(request, "No hay un vendedor configurado.")
+        messages.error(
+            request,
+            "Aún no hay una cuenta de Mercado Pago conectada. "
+            "Conectala desde el panel de administración para empezar a cobrar.",
+        )
         return redirect("patients:cart")
 
     reference = f"cart-{request.session.session_key or uuid.uuid4().hex}"
@@ -842,6 +846,14 @@ def mp_connect(request):
     Inicia el flujo OAuth 2.0: redirige al vendedor a la pantalla de
     autorización de Mercado Pago (response_type=code, platform_id=mp).
     """
+    if not settings.MP_CLIENT_ID or not settings.MP_CLIENT_SECRET:
+        messages.error(
+            request,
+            "Falta configurar MP_CLIENT_ID y MP_CLIENT_SECRET en el .env "
+            "para poder conectar la cuenta de Mercado Pago.",
+        )
+        return redirect("patients:admin_panel")
+
     state = secrets.token_urlsafe(32)
     request.session["mp_oauth_state"] = state
 

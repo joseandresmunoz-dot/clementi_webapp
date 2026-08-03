@@ -4,7 +4,6 @@ credenciales OAuth del vendedor (ver models.MercadoPagoCredentials).
 """
 
 import logging
-from types import SimpleNamespace
 
 from django.conf import settings
 from mercadopago import SDK
@@ -16,31 +15,40 @@ logger = logging.getLogger(__name__)
 
 def get_active_credentials(user):
     """
-    Devuelve las credenciales vigentes para cobrar.
+    Devuelve las credenciales OAuth vigentes del vendedor para cobrar.
 
-    Prioridad:
-    1. Credenciales OAuth del vendedor (``MercadoPagoCredentials``). Si el
-       ``access_token`` expiró o está por expirar, las renueva primero.
-    2. Fallback: token directo de la aplicación configurado en settings
-       (``MP_ACCESS_TOKEN``), útil mientras el vendedor no conecta su cuenta
-       vía el flujo OAuth.
-
-    Levanta ``MercadoPagoError`` si no hay ninguna credencial disponible.
+    Si el ``access_token`` expiró o está por expirar, las renueva primero.
+    Levanta ``MercadoPagoError`` si el vendedor aún no conectó su cuenta de
+    Mercado Pago (es requisito para cobrar).
     """
     credentials = MercadoPagoCredentials.objects.filter(user=user).first()
-    if credentials and credentials.is_connected:
-        if credentials.is_token_expired():
-            logger.info("Token de Mercado Pago de %s vencido: renovando…", user)
-            credentials.refresh_credentials()
-        return credentials
+    if not credentials or not credentials.is_connected:
+        raise MercadoPagoError(
+            "El vendedor aún no conectó su cuenta de Mercado Pago. "
+            "Conectala desde el panel de administración."
+        )
 
-    if settings.MP_ACCESS_TOKEN:
-        logger.info("Usando access token de MP configurado en settings (usuario %s).", user)
-        return SimpleNamespace(access_token=settings.MP_ACCESS_TOKEN)
+    if credentials.is_token_expired():
+        logger.info("Token de Mercado Pago de %s vencido: renovando…", user)
+        credentials.refresh_credentials()
 
-    raise MercadoPagoError(
-        "El vendedor aún no conectó su cuenta de Mercado Pago."
+    return credentials
+
+
+def get_connected_seller():
+    """
+    Devuelve el primer vendedor (staff) que tiene su cuenta de Mercado Pago
+    conectada, o ``None`` si nadie la conectó todavía.
+    """
+    credentials = (
+        MercadoPagoCredentials.objects.select_related("user")
+        .filter(user__is_staff=True)
+        .order_by("user_id")
+        .first()
     )
+    if credentials and credentials.is_connected:
+        return credentials.user
+    return None
 
 
 def create_checkout_preference(user, items, external_reference=None, back_urls=None):
