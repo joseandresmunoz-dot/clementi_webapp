@@ -5,12 +5,12 @@
 (function () {
   'use strict';
 
-  var grid = document.getElementById('esp-grid');
+  var grid = document.getElementById('mi-grid');
   if (!grid) return;
 
-  var cards = Array.prototype.slice.call(grid.querySelectorAll('.esp-card'));
+  var cards = Array.prototype.slice.call(grid.querySelectorAll('.mi-card'));
   var filters = Array.prototype.slice.call(
-    document.querySelectorAll('.esp-filter')
+    document.querySelectorAll('.mi-filter')
   );
 
   /* ---------- Filtrado con animación ---------- */
@@ -71,7 +71,7 @@
     if (!finePointer) {
       // en táctil: un tap gira, otro tap devuelve; el CTA navega
       card.addEventListener('click', function (e) {
-        if (e.target.closest('.esp-cta')) return;
+        if (e.target.closest('.mi-cta')) return;
         toggleFlip(card);
       });
     }
