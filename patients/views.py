@@ -18,16 +18,21 @@ from django.utils.dateparse import parse_date
 from django.utils.http import urlencode
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.http import require_POST
+import logging
+
+logger = logging.getLogger(__name__)
 
 from appointments.models import Appointment
 from files_manager.models import FilePermission, SharedFile
 from patients import services
-from patients.forms import CategoryForm, ProductForm
+from patients.forms import CategoryForm, LeadReplyForm, ProductForm
 from patients.models import (
     AnswerOption,
     Category,
     ClinicalTimelineEntry,
+    GoogleCalendarCredentials,
     Lead,
+    LeadReply,
     MercadoPagoCredentials,
     Order,
     PatientProfile,
@@ -290,6 +295,35 @@ def shop_admin(request):
     })
 
 
+def _notify_staff_new_lead(lead):
+    """Envía notificación push a todos los staff cuando llega una consulta nueva."""
+    try:
+        from webpush import send_user_notification
+    except ImportError:
+        logger.warning("django-webpush no instalado, no se envía push.")
+        return
+
+    payload = {
+        "head": "Nueva consulta desde la web",
+        "body": (
+            f"{lead.name}: {lead.message[:100]}..."
+            if lead.message
+            else f"{lead.name} te contactó"
+        ),
+        "icon": "/static/img/logo.png",
+        "badge": "/static/img/logo.png",
+        "url": "/consultas/",
+        "actions": [{"action": "open", "title": "Ver consulta"}],
+    }
+
+    staff_users = User.objects.filter(is_staff=True, is_active=True)
+    for user in staff_users:
+        try:
+            send_user_notification(user, payload, ttl=3600)
+        except Exception:
+            logger.debug("No se pudo enviar push a %s", user.username)
+
+
 @require_POST
 def capture_lead(request):
     name = request.POST.get("name", "").strip()
@@ -311,6 +345,11 @@ def capture_lead(request):
         source=source,
         is_subscribed=is_subscribed,
     )
+
+    _notify_staff_new_lead(
+        Lead.objects.filter(email=email).order_by("-created_at").first()
+    )
+
     messages.success(request, "¡Gracias! Te contactaremos pronto.")
     return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/") + "#contacto")
 
@@ -416,6 +455,10 @@ def submit_quiz_results(request):
                 f"Total: {total}\n"
                 f"Diagnóstico: {mensaje}",
         source="microbiota_quiz",
+    )
+
+    _notify_staff_new_lead(
+        Lead.objects.filter(email=email).order_by("-created_at").first()
     )
 
     asunto = f"Resultados del cuestionario de microbiota — {nombre}"
@@ -815,8 +858,13 @@ def admin_panel(request):
         "today_appointments": today_appointments,
         "week_booked": week_booked,
         "upcoming_appointments": upcoming_appointments,
+        "leads": Lead.objects.order_by("-created_at")[:5],
         "mp_is_connected": hasattr(request.user, "mp_credentials")
         and request.user.mp_credentials.is_connected,
+        "google_calendar_is_connected": hasattr(
+            request.user, "google_calendar_credentials"
+        )
+        and request.user.google_calendar_credentials.is_connected,
     }
     return render(request, "patients/admin_panel.html", context)
 
@@ -920,3 +968,306 @@ def mp_callback(request):
         request, "Tu cuenta de Mercado Pago se conectó correctamente."
     )
     return redirect("patients:admin_panel")
+
+
+def _google_oauth_app():
+    """Devuelve el dict ``APP`` de allauth para Google (client_id/secret)."""
+    return settings.SOCIALACCOUNT_PROVIDERS.get("google", {}).get("APP", {})
+
+
+GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
+GOOGLE_CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar"
+
+
+@user_passes_test(lambda u: u.is_staff)
+def connect_google_calendar(request):
+    """
+    Inicia el flujo OAuth2 de Google Calendar para la Dra. (scope de calendar
+    solo acá; el login normal de pacientes no pide scopes sensibles).
+    """
+    app = _google_oauth_app()
+    client_id = app.get("client_id", "")
+    client_secret = app.get("secret", "")
+    if not client_id or not client_secret:
+        messages.error(
+            request,
+            "Falta configurar GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET "
+            "en el .env para conectar Google Calendar.",
+        )
+        return redirect("patients:admin_panel")
+
+    state = secrets.token_urlsafe(32)
+    request.session["google_calendar_state"] = state
+
+    params = {
+        "client_id": client_id,
+        "response_type": "code",
+        "scope": f"{GOOGLE_CALENDAR_SCOPE} openid email profile",
+        "access_type": "offline",
+        "prompt": "consent",
+        "redirect_uri": request.build_absolute_uri(
+            reverse("patients:google_calendar_callback")
+        ),
+        "state": state,
+    }
+    return redirect(f"{GOOGLE_AUTH_URL}?{urlencode(params)}")
+
+
+@user_passes_test(lambda u: u.is_staff)
+def google_calendar_callback(request):
+    """
+    Procesa la respuesta de Google tras el consentimiento: canjea el ``code``
+    por las credenciales y las guarda en ``GoogleCalendarCredentials``.
+    """
+    state = request.GET.get("state")
+    if not state or state != request.session.pop("google_calendar_state", None):
+        messages.error(request, "La solicitud no es válida (state incorrecto).")
+        return redirect("patients:admin_panel")
+
+    error = request.GET.get("error")
+    if error:
+        messages.error(request, f"No se pudo conectar Google Calendar: {error}")
+        return redirect("patients:admin_panel")
+
+    code = request.GET.get("code")
+    if not code:
+        messages.error(request, "Google no devolvió un código de autorización.")
+        return redirect("patients:admin_panel")
+
+    app = _google_oauth_app()
+    client_id = app.get("client_id", "")
+    client_secret = app.get("secret", "")
+    redirect_uri = request.build_absolute_uri(
+        reverse("patients:google_calendar_callback")
+    )
+
+    try:
+        token_resp = requests.post(
+            GOOGLE_TOKEN_URL,
+            data={
+                "code": code,
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "redirect_uri": redirect_uri,
+                "grant_type": "authorization_code",
+            },
+            timeout=30,
+        )
+        token_resp.raise_for_status()
+        payload = token_resp.json()
+    except requests.RequestException as exc:
+        messages.error(request, f"No se pudo contactar a Google: {exc}")
+        return redirect("patients:admin_panel")
+
+    access_token = payload.get("access_token")
+    if not access_token:
+        messages.error(request, "Google no devolvió un token de acceso.")
+        return redirect("patients:admin_panel")
+
+    google_email = ""
+    try:
+        info_resp = requests.get(
+            GOOGLE_USERINFO_URL,
+            headers={"Authorization": f"Bearer {access_token}"},
+            timeout=30,
+        )
+        if info_resp.status_code == 200:
+            google_email = info_resp.json().get("email", "")
+    except requests.RequestException:
+        pass
+
+    expires_in = int(payload.get("expires_in", 3600))
+    expires_at = timezone.now() + timedelta(seconds=expires_in)
+    refresh_token = payload.get("refresh_token", "")
+    creds, created = GoogleCalendarCredentials.objects.get_or_create(
+        user=request.user,
+        defaults={
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": payload.get("token_type", "Bearer"),
+            "expires_at": expires_at,
+            "google_email": google_email,
+        },
+    )
+    if not created:
+        creds.access_token = access_token
+        creds.refresh_token = refresh_token or creds.refresh_token
+        creds.token_type = payload.get("token_type", "Bearer")
+        creds.expires_at = expires_at
+        creds.google_email = google_email
+        creds.save()
+
+    messages.success(request, "Google Calendar se conectó correctamente.")
+    return redirect("patients:admin_panel")
+
+
+@user_passes_test(lambda u: u.is_staff)
+def disconnect_google_calendar(request):
+    """Desconecta Google Calendar (borra las credenciales guardadas)."""
+    GoogleCalendarCredentials.objects.filter(user=request.user).delete()
+    messages.info(request, "Se desconectó Google Calendar.")
+    return redirect("patients:admin_panel")
+
+
+# ──────────────────────────────────────────────────────
+# BANDEJA DE ENTRADA: Consultas desde la web
+# ──────────────────────────────────────────────────────
+
+LEADS_PER_PAGE = 20
+
+
+@user_passes_test(lambda u: u.is_staff)
+def lead_inbox(request):
+    """Lista paginada de leads con filtros por status, fuente, búsqueda y rango de fechas."""
+    qs = Lead.objects.all()
+
+    # Filtro por estado
+    status_filter = request.GET.get("status", "")
+    if status_filter in dict(Lead.Status.choices):
+        qs = qs.filter(status=status_filter)
+
+    # Filtro por fuente
+    source_filter = request.GET.get("source", "")
+    if source_filter:
+        qs = qs.filter(source=source_filter)
+
+    # Búsqueda por texto
+    search_query = request.GET.get("q", "").strip()
+    if search_query:
+        qs = qs.filter(
+            Q(name__icontains=search_query)
+            | Q(email__icontains=search_query)
+            | Q(phone__icontains=search_query)
+            | Q(message__icontains=search_query)
+        )
+
+    # Filtro por rango de fechas
+    date_from = request.GET.get("date_from", "")
+    date_to = request.GET.get("date_to", "")
+    if date_from:
+        d = parse_date(date_from)
+        if d:
+            qs = qs.filter(created_at__date__gte=d)
+    if date_to:
+        d = parse_date(date_to)
+        if d:
+            qs = qs.filter(created_at__date__lte=d)
+
+    # Contadores para los filtros (sobre queryset completo sin paginación)
+    base_qs = Lead.objects.all()
+    status_counts = {
+        "all": base_qs.count(),
+        "new": base_qs.filter(status=Lead.Status.NEW).count(),
+        "read": base_qs.filter(status=Lead.Status.READ).count(),
+        "replied": base_qs.filter(status=Lead.Status.REPLIED).count(),
+        "archived": base_qs.filter(status=Lead.Status.ARCHIVED).count(),
+    }
+
+    # Paginación
+    from django.core.paginator import Paginator
+
+    paginator = Paginator(qs, LEADS_PER_PAGE)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "leads": page_obj,
+        "status_counts": status_counts,
+        "current_status": status_filter,
+        "current_source": source_filter,
+        "search_query": search_query,
+        "date_from": date_from,
+        "date_to": date_to,
+        "source_choices": Lead.objects.values_list("source", flat=True).distinct(),
+    }
+    return render(request, "patients/lead_inbox.html", context)
+
+
+@user_passes_test(lambda u: u.is_staff)
+def lead_detail(request, pk):
+    """Detalle de un lead + historial de respuestas + formulario reply."""
+    lead = get_object_or_404(Lead, pk=pk)
+
+    # Marcar como leído si estaba nuevo
+    if not lead.is_read:
+        lead.is_read = True
+        if lead.status == Lead.Status.NEW:
+            lead.status = Lead.Status.READ
+        lead.save(update_fields=["is_read", "status", "updated_at"])
+
+    replies = lead.replies.select_related("sent_by").all()
+    form = LeadReplyForm()
+
+    context = {
+        "lead": lead,
+        "replies": replies,
+        "form": form,
+    }
+    return render(request, "patients/lead_detail.html", context)
+
+
+@user_passes_test(lambda u: u.is_staff)
+@require_POST
+def lead_reply(request, pk):
+    """Envía una respuesta a un lead."""
+    lead = get_object_or_404(Lead, pk=pk)
+    form = LeadReplyForm(request.POST)
+
+    if form.is_valid():
+        reply = form.save(commit=False)
+        reply.lead = lead
+        reply.sent_by = request.user
+        reply.save()
+
+        lead.reply_count = lead.replies.count()
+        lead.status = Lead.Status.REPLIED
+        lead.save(update_fields=["reply_count", "status", "updated_at"])
+
+        messages.success(request, "Respuesta enviada correctamente.")
+    else:
+        messages.error(request, "Hubo un error al enviar la respuesta.")
+
+    return redirect("patients:lead_detail", pk=pk)
+
+
+@user_passes_test(lambda u: u.is_staff)
+@require_POST
+def lead_update_status(request, pk):
+    """Cambiar el estado de un lead."""
+    lead = get_object_or_404(Lead, pk=pk)
+    new_status = request.POST.get("status", "")
+
+    if new_status in dict(Lead.Status.choices):
+        lead.status = new_status
+        if new_status in (Lead.Status.READ, Lead.Status.REPLIED, Lead.Status.ARCHIVED):
+            lead.is_read = True
+        lead.save(update_fields=["status", "is_read", "updated_at"])
+        messages.success(request, f"Estado cambiado a {lead.get_status_display()}.")
+    else:
+        messages.error(request, "Estado no válido.")
+
+    return redirect("patients:lead_detail", pk=pk)
+
+
+@user_passes_test(lambda u: u.is_staff)
+@require_POST
+def lead_delete(request, pk):
+    """Eliminar un lead y todas sus respuestas."""
+    lead = get_object_or_404(Lead, pk=pk)
+    lead_name = lead.name
+    lead.delete()
+    messages.success(request, f"Consulta de {lead_name} eliminada.")
+    return redirect("patients:lead_inbox")
+
+
+@user_passes_test(lambda u: u.is_staff)
+@require_POST
+def lead_mark_all_read(request):
+    """Marca todos los leads nuevos como leídos."""
+    updated = Lead.objects.filter(is_read=False).update(
+        is_read=True, status=Lead.Status.READ
+    )
+    messages.success(request, f"{updated} consulta(s) marcada(s) como leída(s).")
+    return redirect("patients:lead_inbox")

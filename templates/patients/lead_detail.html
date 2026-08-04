@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+{% block title %}Consulta de {{ lead.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --brand: #82459D;
+        --brand-dark: #4D4099;
+        --brand-light: #C9AEE4;
+        --brand-bg: #F8F5FA;
+    }
+
+    .detail-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--brand-dark);
+        text-decoration: none;
+        font-size: 0.88rem;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+        transition: color 0.15s;
+    }
+    .detail-back:hover {
+        color: var(--brand);
+    }
+
+    .detail-card {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.07);
+        overflow: hidden;
+    }
+
+    /* Header */
+    .detail-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .detail-header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    .detail-header-info h1 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0 0 6px 0;
+    }
+    .detail-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        font-size: 0.85rem;
+        color: #666;
+    }
+    .detail-meta i {
+        margin-right: 4px;
+        color: #999;
+    }
+    .detail-badge {
+        display: inline-block;
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 600;
+    }
+    .detail-badge.source {
+        background: rgba(130,69,157,.1);
+        color: var(--brand-dark);
+    }
+    .detail-badge.status-new {
+        background: rgba(59,130,246,.12);
+        color: #3b82f6;
+    }
+    .detail-badge.status-read {
+        background: rgba(107,114,128,.12);
+        color: #6b7280;
+    }
+    .detail-badge.status-replied {
+        background: rgba(34,197,94,.12);
+        color: #16a34a;
+    }
+    .detail-badge.status-archived {
+        background: rgba(245,158,11,.12);
+        color: #d97706;
+    }
+
+    /* Status actions */
+    .detail-actions {
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+    .btn-status {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        border: 1px solid #e0e0e0;
+        background: #fff;
+        color: #555;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.15s;
+    }
+    .btn-status:hover {
+        background: #f5f5f5;
+    }
+
+    /* Message */
+    .detail-message {
+        padding: 1.5rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .detail-message h3 {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0 0 0.75rem 0;
+    }
+    .detail-message-text {
+        background: var(--brand-bg);
+        border-radius: 12px;
+        padding: 1.25rem;
+        font-size: 0.92rem;
+        line-height: 1.7;
+        color: #333;
+        white-space: pre-line;
+        word-break: break-word;
+    }
+
+    /* Contact info */
+    .detail-contact {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        font-size: 0.85rem;
+        color: #555;
+    }
+    .detail-contact a {
+        color: var(--brand-dark);
+        text-decoration: none;
+    }
+    .detail-contact a:hover {
+        text-decoration: underline;
+    }
+    .detail-contact i {
+        margin-right: 6px;
+        color: #999;
+    }
+
+    /* Replies timeline */
+    .detail-replies {
+        padding: 1.5rem;
+    }
+    .detail-replies h3 {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0 0 1rem 0;
+    }
+    .reply-timeline {
+        position: relative;
+        padding-left: 24px;
+    }
+    .reply-timeline::before {
+        content: "";
+        position: absolute;
+        left: 8px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e5e7eb;
+    }
+    .reply-item {
+        position: relative;
+        margin-bottom: 1.25rem;
+        padding: 1rem;
+        background: #fafafa;
+        border-radius: 10px;
+        border: 1px solid #f0f0f0;
+    }
+    .reply-item::before {
+        content: "";
+        position: absolute;
+        left: -20px;
+        top: 14px;
+        width: 10px;
+        height: 10px;
+        background: var(--brand);
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 2px var(--brand-light);
+    }
+    .reply-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+    .reply-item-author {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #333;
+    }
+    .reply-item-date {
+        font-size: 0.75rem;
+        color: #999;
+    }
+    .reply-item-msg {
+        font-size: 0.88rem;
+        line-height: 1.6;
+        color: #444;
+        white-space: pre-line;
+        word-break: break-word;
+    }
+    .no-replies {
+        color: #999;
+        font-size: 0.88rem;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    /* Reply form */
+    .detail-reply-form {
+        padding: 1.5rem;
+        border-top: 1px solid #f0f0f0;
+        background: #fafafa;
+    }
+    .detail-reply-form h3 {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0 0 0.75rem 0;
+    }
+    .reply-form-group {
+        margin-bottom: 1rem;
+    }
+    .reply-form-group textarea {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        resize: vertical;
+        min-height: 100px;
+        font-family: inherit;
+    }
+    .reply-form-group textarea:focus {
+        outline: none;
+        border-color: var(--brand);
+        box-shadow: 0 0 0 2px rgba(130,69,157,.12);
+    }
+    .reply-form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+    .btn-reply {
+        padding: 10px 24px;
+        background: var(--brand);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-reply:hover {
+        background: var(--brand-dark);
+    }
+
+    /* Delete button */
+    .detail-danger-zone {
+        padding: 1.5rem;
+        border-top: 1px solid #fee2e2;
+        background: #fef2f2;
+    }
+    .btn-delete {
+        padding: 10px 24px;
+        background: #dc2626;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-delete:hover {
+        background: #b91c1c;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .detail-header-top {
+            flex-direction: column;
+        }
+        .detail-actions {
+            flex-wrap: wrap;
+        }
+        .detail-contact {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{% url 'patients:lead_inbox' %}" class="detail-back">
+    <i class="bi bi-arrow-left"></i> Volver a la bandeja
+</a>
+
+<div class="detail-card">
+    <!-- Header -->
+    <div class="detail-header">
+        <div class="detail-header-top">
+            <div class="detail-header-info">
+                <h1>{{ lead.name }}</h1>
+                <div class="detail-meta">
+                    <span class="detail-badge source">{{ lead.source }}</span>
+                    <span class="detail-badge status-{{ lead.status|lower }}">{{ lead.get_status_display }}</span>
+                    <span><i class="bi bi-calendar"></i> {{ lead.created_at|date:"d/m/Y H:i" }}</span>
+                </div>
+            </div>
+            <div class="detail-actions">
+                {% if lead.status != 'READ' %}
+                <form method="post" action="{% url 'patients:lead_update_status' pk=lead.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="READ">
+                    <button type="submit" class="btn-status"><i class="bi bi-envelope-open"></i> Marcar leído</button>
+                </form>
+                {% endif %}
+                {% if lead.status != 'ARCHIVED' %}
+                <form method="post" action="{% url 'patients:lead_update_status' pk=lead.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="ARCHIVED">
+                    <button type="submit" class="btn-status"><i class="bi bi-archive"></i> Archivar</button>
+                </form>
+                {% endif %}
+                {% if lead.status != 'NEW' %}
+                <form method="post" action="{% url 'patients:lead_update_status' pk=lead.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="NEW">
+                    <button type="submit" class="btn-status"><i class="bi bi-envelope"></i> Marcar nuevo</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact info -->
+    <div class="detail-contact">
+        <span><i class="bi bi-envelope"></i> <a href="mailto:{{ lead.email }}">{{ lead.email }}</a></span>
+        {% if lead.phone %}
+        <span><i class="bi bi-telephone"></i> {{ lead.phone }}</span>
+        {% endif %}
+    </div>
+
+    <!-- Message -->
+    <div class="detail-message">
+        <h3>Mensaje</h3>
+        <div class="detail-message-text">{{ lead.message|default:"(Sin mensaje)" }}</div>
+    </div>
+
+    <!-- Replies timeline -->
+    <div class="detail-replies">
+        <h3>Respuestas ({{ replies|length }})</h3>
+        {% if replies %}
+        <div class="reply-timeline">
+            {% for reply in replies %}
+            <div class="reply-item">
+                <div class="reply-item-header">
+                    <span class="reply-item-author">
+                        <i class="bi bi-person-circle"></i>
+                        {{ reply.sent_by.get_full_name|default:reply.sent_by.email }}
+                    </span>
+                    <span class="reply-item-date">{{ reply.sent_at|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="reply-item-msg">{{ reply.message }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="no-replies">Aún no hay respuestas.</p>
+        {% endif %}
+    </div>
+
+    <!-- Reply form -->
+    <div class="detail-reply-form">
+        <h3>Enviar respuesta</h3>
+        <form method="post" action="{% url 'patients:lead_reply' pk=lead.pk %}">
+            {% csrf_token %}
+            <div class="reply-form-group">
+                {{ form.message }}
+            </div>
+            <div class="reply-form-actions">
+                <button type="submit" class="btn-reply">
+                    <i class="bi bi-send"></i> Enviar respuesta
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Danger zone: delete -->
+    <div class="detail-danger-zone">
+        <form method="post" action="{% url 'patients:lead_delete' pk=lead.pk %}"
+              onsubmit="return confirm('¿Estás seguro de eliminar esta consulta? Esta acción no se puede deshacer.');">
+            {% csrf_token %}
+            <button type="submit" class="btn-delete">
+                <i class="bi bi-trash"></i> Eliminar consulta
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

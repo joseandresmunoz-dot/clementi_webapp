@@ -16,6 +16,21 @@ urlpatterns = [
     path("capture-lead/", views.capture_lead, name="capture_lead"),
     path("mp/connect/", views.mp_connect, name="mp_connect"),
     path("mp/callback/", views.mp_callback, name="mp_callback"),
+    path(
+        "google-calendar/conectar/",
+        views.connect_google_calendar,
+        name="connect_google_calendar",
+    ),
+    path(
+        "google-calendar/callback/",
+        views.google_calendar_callback,
+        name="google_calendar_callback",
+    ),
+    path(
+        "google-calendar/desconectar/",
+        views.disconnect_google_calendar,
+        name="disconnect_google_calendar",
+    ),
     path("debug-login/", views.debug_login, name="debug_login"),
     path("", views.home, name="home"),
     path("turnos/", views.calendar_view, name="calendar"),
@@ -31,4 +46,10 @@ urlpatterns = [
         views.patient_admin_detail,
         name="patient_admin_detail",
     ),
+    path("consultas/", views.lead_inbox, name="lead_inbox"),
+    path("consultas/marcar-todas-leidas/", views.lead_mark_all_read, name="lead_mark_all_read"),
+    path("consultas/<int:pk>/", views.lead_detail, name="lead_detail"),
+    path("consultas/<int:pk>/responder/", views.lead_reply, name="lead_reply"),
+    path("consultas/<int:pk>/estado/", views.lead_update_status, name="lead_update_status"),
+    path("consultas/<int:pk>/eliminar/", views.lead_delete, name="lead_delete"),
 ]

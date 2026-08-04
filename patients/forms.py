@@ -1,6 +1,6 @@
 from django import forms
 
-from patients.models import Category, Product
+from patients.models import Category, LeadReply, Product
 
 
 class CategoryForm(forms.ModelForm):
@@ -24,4 +24,22 @@ class ProductForm(forms.ModelForm):
         widgets = {
             "description": forms.Textarea(attrs={"rows": 2}),
             "details": forms.Textarea(attrs={"rows": 4}),
+        }
+
+
+class LeadReplyForm(forms.ModelForm):
+    class Meta:
+        model = LeadReply
+        fields = ["message"]
+        widgets = {
+            "message": forms.Textarea(
+                attrs={
+                    "rows": 4,
+                    "placeholder": "Escribí tu respuesta...",
+                    "class": "form-control",
+                }
+            ),
+        }
+        labels = {
+            "message": "Respuesta",
         }

@@ -1,6 +1,6 @@
 (function () {
   var VAPID_PUBLIC_KEY = "BIp6NZxaw76Opgi_kgdnyaA9zL5yE6Ac_DrZENmte7Po5ag_rvkkzncRpVH3n76AOktzQAEwFR9g7MQH3mi0KRw";
-  var SW_PATH = "/serviceworker.js";
+  var SW_PATH = "/sw.js";
   var SAVE_URL = "/save_information";
 
   var toggle = document.getElementById("pushToggle");

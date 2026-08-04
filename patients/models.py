@@ -243,13 +243,26 @@ class ScoreRange(models.Model):
 
 class Lead(models.Model):
     """Lead capturado desde el formulario de la landing page (embudo de ventas)."""
+
+    class Status(models.TextChoices):
+        NEW = "NEW", "Nuevo"
+        READ = "READ", "Leído"
+        REPLIED = "REPLIED", "Respondido"
+        ARCHIVED = "ARCHIVED", "Archivado"
+
     name = models.CharField("Nombre", max_length=200)
     email = models.EmailField("Email")
     phone = models.CharField("Teléfono", max_length=20, blank=True)
     message = models.TextField("Mensaje", blank=True)
     source = models.CharField("Origen", max_length=100, default="landing")
     is_subscribed = models.BooleanField("Suscrito a newsletter", default=True)
+    status = models.CharField(
+        "Estado", max_length=10, choices=Status.choices, default=Status.NEW, db_index=True
+    )
+    is_read = models.BooleanField("Leído", default=False, db_index=True)
+    reply_count = models.PositiveIntegerField("Cantidad de respuestas", default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "Lead"
@@ -258,6 +271,31 @@ class Lead(models.Model):
 
     def __str__(self):
         return f"{self.name} — {self.email}"
+
+
+class LeadReply(models.Model):
+    """Respuesta del staff a una consulta (Lead)."""
+
+    lead = models.ForeignKey(
+        Lead, on_delete=models.CASCADE, related_name="replies", verbose_name="Consulta"
+    )
+    message = models.TextField("Respuesta")
+    sent_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Respondido por",
+    )
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Respuesta a consulta"
+        verbose_name_plural = "Respuestas a consultas"
+        ordering = ["sent_at"]
+
+    def __str__(self):
+        return f"Respuesta de {self.sent_by} a {self.lead.name}"
 
 
 class MercadoPagoError(Exception):
@@ -372,3 +410,45 @@ class MercadoPagoCredentials(models.Model):
             )
 
         return self.update_from_token(response.json())
+
+
+class GoogleCalendarCredentials(models.Model):
+    """
+    Credenciales OAuth 2.0 de la Dra. para Google Calendar.
+
+    Se obtienen con el botón "Conectar Google Calendar" (flujo de
+    autorización separado del login de Google), así el login de pacientes
+    no pide scopes sensibles y no aparece el aviso de "app no verificada".
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="google_calendar_credentials",
+        verbose_name="Dra.",
+    )
+    access_token = models.TextField("Access token")
+    refresh_token = models.TextField("Refresh token")
+    token_type = models.CharField("Tipo de token", max_length=64, default="Bearer")
+    expires_at = models.DateTimeField("El token expira en")
+    google_email = models.EmailField("Email de Google", blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Credencial de Google Calendar"
+        verbose_name_plural = "Credenciales de Google Calendar"
+
+    def __str__(self):
+        return f"Google Calendar de {self.user}"
+
+    @property
+    def is_connected(self):
+        """True si hay token de acceso y refresh token disponibles."""
+        return bool(self.access_token and self.refresh_token)
+
+    def is_token_expired(self, buffer_seconds=300):
+        """True si el token no existe, expiró, o expira dentro del margen."""
+        if not self.access_token or not self.expires_at:
+            return True
+        return timezone.now() >= self.expires_at - timedelta(seconds=buffer_seconds)

@@ -2,13 +2,16 @@
 Servicio de integración con Google Calendar API.
 
 Flujo:
-1. La Dra. inicia sesión con Google OAuth (allauth almacena sus tokens).
-2. Cuando un paciente reserva un turno, usamos el token de la Dra.
-   para crear un evento en su Google Calendar con enlace de Meet.
+1. La Dra. conecta Google Calendar una vez con el botón del panel
+   (``patients:connect_google_calendar``), que guarda sus credenciales
+   OAuth2 en ``GoogleCalendarCredentials``.
+2. Cuando un paciente reserva un turno, usamos esas credenciales para
+   crear un evento en su Google Calendar con enlace de Meet.
 3. Si se cancela, se elimina el evento del calendario.
 
-Requiere que la Dra. (staff/superuser) tenga una cuenta social de Google
-vinculada vía allauth con scope 'calendar'.
+Requerimiento: la Dra. (staff) debe tener credenciales de Google Calendar
+conectadas desde el panel. El login normal de pacientes no pide scope de
+calendar (así no aparece el aviso de "app no verificada").
 """
 
 import logging
@@ -17,11 +20,12 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.utils import timezone
 
-from allauth.socialaccount.models import SocialAccount, SocialApp, SocialToken
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+
+from patients.models import GoogleCalendarCredentials
 
 logger = logging.getLogger(__name__)
 
@@ -30,30 +34,19 @@ SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
 def _get_doctor_credentials():
     """
-    Obtiene las credenciales OAuth2 de la Dra. (primer staff con cuenta Google).
-    Refresca el token si está vencido.
+    Obtiene las credenciales OAuth2 de la Dra. (primer staff con Google
+    Calendar conectado). Refresca el token si está vencido.
     """
-    # Buscar el primer usuario staff con cuenta social de Google
-    social_account = (
-        SocialAccount.objects.filter(
-            provider="google",
-            user__is_staff=True,
+    creds = (
+        GoogleCalendarCredentials.objects.select_related("user")
+        .filter(user__is_staff=True)
+        .order_by("user_id")
+        .first()
+    )
+    if not creds or not creds.is_connected:
+        logger.error(
+            "La Dra. aún no conectó Google Calendar (botón en el panel)."
         )
-        .select_related("user")
-        .first()
-    )
-    if not social_account:
-        logger.error("No se encontró una cuenta Google de staff (Dra.) para Calendar API.")
-        return None
-
-    # Obtener el token más reciente
-    social_token = (
-        SocialToken.objects.filter(account=social_account)
-        .order_by("-id")
-        .first()
-    )
-    if not social_token:
-        logger.error("No se encontró token OAuth para la Dra. ¿Inició sesión con Google?")
         return None
 
     # Obtener client_id y secret desde la config de allauth
@@ -63,8 +56,8 @@ def _get_doctor_credentials():
     client_secret = app_config.get("secret", "")
 
     credentials = Credentials(
-        token=social_token.token,
-        refresh_token=social_token.token_secret,
+        token=creds.access_token,
+        refresh_token=creds.refresh_token,
         token_uri="https://oauth2.googleapis.com/token",
         client_id=client_id,
         client_secret=client_secret,
@@ -76,8 +69,9 @@ def _get_doctor_credentials():
         try:
             credentials.refresh(Request())
             # Actualizar token en DB
-            social_token.token = credentials.token
-            social_token.save(update_fields=["token"])
+            creds.access_token = credentials.token
+            creds.expires_at = timezone.now() + timedelta(seconds=3600)
+            creds.save(update_fields=["access_token", "expires_at", "updated_at"])
             logger.info("Token de Google Calendar refrescado exitosamente.")
         except Exception:
             logger.exception("Error al refrescar el token de Google Calendar.")

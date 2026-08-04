@@ -1,0 +1,572 @@
+{% extends "base.html" %}
+{% block title %}Consultas desde la web{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --brand: #82459D;
+        --brand-dark: #4D4099;
+        --brand-light: #C9AEE4;
+        --brand-bg: #F8F5FA;
+    }
+
+    .inbox-layout {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        gap: 1.5rem;
+        min-height: 70vh;
+    }
+
+    /* ─── Sidebar ─── */
+    .inbox-sidebar {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.07);
+        padding: 1.25rem;
+        height: fit-content;
+        position: sticky;
+        top: 1rem;
+    }
+    .inbox-sidebar h6 {
+        font-weight: 700;
+        color: #222;
+        margin-bottom: 1rem;
+        font-size: 0.95rem;
+    }
+    .filter-group {
+        margin-bottom: 1.25rem;
+    }
+    .filter-group label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+    .filter-link {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 7px 12px;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #444;
+        font-size: 0.88rem;
+        transition: all 0.15s;
+        margin-bottom: 2px;
+    }
+    .filter-link:hover {
+        background: var(--brand-bg);
+        color: var(--brand-dark);
+    }
+    .filter-link.active {
+        background: var(--brand);
+        color: #fff;
+        font-weight: 600;
+    }
+    .filter-link .badge-count {
+        background: rgba(0,0,0,.08);
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.72rem;
+        font-weight: 600;
+    }
+    .filter-link.active .badge-count {
+        background: rgba(255,255,255,.25);
+    }
+    .inbox-sidebar hr {
+        border: none;
+        border-top: 1px solid #f0f0f0;
+        margin: 1rem 0;
+    }
+
+    /* Date filter */
+    .date-filter {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .date-filter input[type="date"] {
+        width: 100%;
+        padding: 7px 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        color: #444;
+        background: #fafafa;
+    }
+    .date-filter input[type="date"]:focus {
+        outline: none;
+        border-color: var(--brand);
+        box-shadow: 0 0 0 2px rgba(130,69,157,.12);
+    }
+    .date-filter-row {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+    .date-filter-row input[type="date"] {
+        flex: 1;
+    }
+
+    .btn-filter {
+        width: 100%;
+        padding: 8px;
+        background: var(--brand);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-filter:hover {
+        background: var(--brand-dark);
+    }
+    .btn-clear {
+        width: 100%;
+        padding: 8px;
+        background: transparent;
+        color: #888;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        text-align: center;
+        display: block;
+        margin-top: 6px;
+    }
+    .btn-clear:hover {
+        background: #f5f5f5;
+        color: #555;
+    }
+
+    /* ─── Main area ─── */
+    .inbox-main {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.07);
+        overflow: hidden;
+    }
+    .inbox-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .inbox-header h2 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+    }
+    .inbox-header h2 i {
+        color: var(--brand);
+        margin-right: 8px;
+    }
+    .inbox-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+    .btn-mark-read {
+        padding: 7px 14px;
+        background: transparent;
+        color: var(--brand-dark);
+        border: 1px solid var(--brand-light);
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .btn-mark-read:hover {
+        background: var(--brand-bg);
+    }
+
+    /* Search */
+    .inbox-search {
+        padding: 0.75rem 1.5rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .search-form {
+        display: flex;
+        gap: 8px;
+    }
+    .search-form input[type="text"] {
+        flex: 1;
+        padding: 9px 14px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        background: #fafafa;
+    }
+    .search-form input[type="text"]:focus {
+        outline: none;
+        border-color: var(--brand);
+        box-shadow: 0 0 0 2px rgba(130,69,157,.12);
+    }
+    .search-form button {
+        padding: 9px 18px;
+        background: var(--brand);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+    .search-form button:hover {
+        background: var(--brand-dark);
+    }
+
+    /* Lead list */
+    .lead-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .lead-row {
+        display: flex;
+        align-items: flex-start;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f5f5f5;
+        text-decoration: none;
+        color: inherit;
+        transition: background 0.15s;
+        gap: 1rem;
+    }
+    .lead-row:hover {
+        background: rgba(130,69,157,.03);
+    }
+    .lead-row.unread {
+        background: rgba(130,69,157,.04);
+    }
+    .lead-row.unread .lead-row-name {
+        font-weight: 700;
+    }
+    .lead-row.unread::before {
+        content: "";
+        display: block;
+        width: 8px;
+        height: 8px;
+        background: var(--brand);
+        border-radius: 50%;
+        flex-shrink: 0;
+        margin-top: 7px;
+    }
+    .lead-row:not(.unread)::before {
+        content: "";
+        display: block;
+        width: 8px;
+        flex-shrink: 0;
+    }
+
+    .lead-row-body {
+        flex: 1;
+        min-width: 0;
+    }
+    .lead-row-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+        gap: 12px;
+    }
+    .lead-row-name {
+        font-weight: 600;
+        color: #222;
+        font-size: 0.92rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .lead-row-date {
+        font-size: 0.75rem;
+        color: #999;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .lead-row-email {
+        font-size: 0.8rem;
+        color: #888;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .lead-row-msg {
+        font-size: 0.82rem;
+        color: #666;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .lead-row-bottom {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 6px;
+    }
+    .lead-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-size: 0.68rem;
+        font-weight: 600;
+    }
+    .lead-badge.source {
+        background: rgba(130,69,157,.1);
+        color: var(--brand-dark);
+    }
+    .lead-badge.status-new {
+        background: rgba(59,130,246,.12);
+        color: #3b82f6;
+    }
+    .lead-badge.status-read {
+        background: rgba(107,114,128,.12);
+        color: #6b7280;
+    }
+    .lead-badge.status-replied {
+        background: rgba(34,197,94,.12);
+        color: #16a34a;
+    }
+    .lead-badge.status-archived {
+        background: rgba(245,158,11,.12);
+        color: #d97706;
+    }
+    .lead-reply-count {
+        font-size: 0.72rem;
+        color: #999;
+    }
+
+    /* Empty state */
+    .inbox-empty {
+        padding: 4rem 2rem;
+        text-align: center;
+        color: #999;
+    }
+    .inbox-empty i {
+        font-size: 3rem;
+        color: #ddd;
+        margin-bottom: 1rem;
+        display: block;
+    }
+    .inbox-empty p {
+        font-size: 0.95rem;
+    }
+
+    /* Pagination */
+    .inbox-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        padding: 1rem;
+        border-top: 1px solid #f0f0f0;
+    }
+    .inbox-pagination a,
+    .inbox-pagination span {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        text-decoration: none;
+        color: #555;
+        transition: all 0.15s;
+    }
+    .inbox-pagination a:hover {
+        background: var(--brand-bg);
+        color: var(--brand-dark);
+    }
+    .inbox-pagination .current {
+        background: var(--brand);
+        color: #fff;
+        font-weight: 600;
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 768px) {
+        .inbox-layout {
+            grid-template-columns: 1fr;
+        }
+        .inbox-sidebar {
+            position: static;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .inbox-sidebar h6 {
+            grid-column: 1 / -1;
+        }
+        .inbox-header {
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .lead-row {
+            padding: 0.85rem 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="inbox-layout">
+    <!-- Sidebar filtros -->
+    <aside class="inbox-sidebar">
+        <h6><i class="bi bi-funnel"></i> Filtros</h6>
+
+        <div class="filter-group">
+            <label>Estado</label>
+            <a href="{% url 'patients:lead_inbox' %}{% if current_source %}?source={{ current_source }}{% endif %}"
+               class="filter-link {% if not current_status %}active{% endif %}">
+                Todos <span class="badge-count">{{ status_counts.all }}</span>
+            </a>
+            <a href="{% url 'patients:lead_inbox' %}?status=NEW{% if current_source %}&source={{ current_source }}{% endif %}"
+               class="filter-link {% if current_status == 'NEW' %}active{% endif %}">
+                No leídos <span class="badge-count">{{ status_counts.new }}</span>
+            </a>
+            <a href="{% url 'patients:lead_inbox' %}?status=READ{% if current_source %}&source={{ current_source }}{% endif %}"
+               class="filter-link {% if current_status == 'READ' %}active{% endif %}">
+                Leídos <span class="badge-count">{{ status_counts.read }}</span>
+            </a>
+            <a href="{% url 'patients:lead_inbox' %}?status=REPLIED{% if current_source %}&source={{ current_source }}{% endif %}"
+               class="filter-link {% if current_status == 'REPLIED' %}active{% endif %}">
+                Respondidos <span class="badge-count">{{ status_counts.replied }}</span>
+            </a>
+            <a href="{% url 'patients:lead_inbox' %}?status=ARCHIVED{% if current_source %}&source={{ current_source }}{% endif %}"
+               class="filter-link {% if current_status == 'ARCHIVED' %}active{% endif %}">
+                Archivados <span class="badge-count">{{ status_counts.archived }}</span>
+            </a>
+        </div>
+
+        <hr>
+
+        <div class="filter-group">
+            <label>Origen</label>
+            <a href="{% url 'patients:lead_inbox' %}{% if current_status %}?status={{ current_status }}{% endif %}"
+               class="filter-link {% if not current_source %}active{% endif %}">
+                Todos
+            </a>
+            {% for src in source_choices %}
+            <a href="{% url 'patients:lead_inbox' %}?source={{ src }}{% if current_status %}&status={{ current_status }}{% endif %}"
+               class="filter-link {% if current_source == src %}active{% endif %}">
+                {{ src }}
+            </a>
+            {% endfor %}
+        </div>
+
+        <hr>
+
+        <div class="filter-group">
+            <label>Rango de fechas</label>
+            <form method="get" action="{% url 'patients:lead_inbox' %}" class="date-filter">
+                {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+                {% if current_source %}<input type="hidden" name="source" value="{{ current_source }}">{% endif %}
+                {% if search_query %}<input type="hidden" name="q" value="{{ search_query }}">{% endif %}
+                <input type="date" name="date_from" value="{{ date_from }}" placeholder="Desde">
+                <input type="date" name="date_to" value="{{ date_to }}" placeholder="Hasta">
+                <button type="submit" class="btn-filter">Filtrar fechas</button>
+                {% if date_from or date_to %}
+                <a href="{% url 'patients:lead_inbox' %}{% if current_status %}?status={{ current_status }}{% endif %}{% if current_source %}{% if current_status %}&{% else %}?{% endif %}source={{ current_source }}{% endif %}{% if search_query %}{% if current_status or current_source %}&{% else %}?{% endif %}q={{ search_query }}{% endif %}"
+                   class="btn-clear">Limpiar fechas</a>
+                {% endif %}
+            </form>
+        </div>
+    </aside>
+
+    <!-- Lista principal -->
+    <main class="inbox-main">
+        <div class="inbox-header">
+            <h2><i class="bi bi-inbox"></i> Consultas desde la web</h2>
+            <div class="inbox-actions">
+                <form method="post" action="{% url 'patients:lead_mark_all_read' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-mark-read">
+                        <i class="bi bi-check-all"></i> Marcar todas como leídas
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Búsqueda -->
+        <div class="inbox-search">
+            <form method="get" action="{% url 'patients:lead_inbox' %}" class="search-form">
+                {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+                {% if current_source %}<input type="hidden" name="source" value="{{ current_source }}">{% endif %}
+                {% if date_from %}<input type="hidden" name="date_from" value="{{ date_from }}">{% endif %}
+                {% if date_to %}<input type="hidden" name="date_to" value="{{ date_to }}">{% endif %}
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Buscar por nombre, email, teléfono o mensaje...">
+                <button type="submit"><i class="bi bi-search"></i> Buscar</button>
+            </form>
+        </div>
+
+        <!-- Lista de leads -->
+        {% if leads %}
+        <ul class="lead-list">
+            {% for lead in leads %}
+            <a href="{% url 'patients:lead_detail' pk=lead.pk %}" class="lead-row {% if not lead.is_read %}unread{% endif %}">
+                <div class="lead-row-body">
+                    <div class="lead-row-top">
+                        <span class="lead-row-name">{{ lead.name }}</span>
+                        <span class="lead-row-date">{{ lead.created_at|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    <div class="lead-row-email">{{ lead.email }}{% if lead.phone %} · {{ lead.phone }}{% endif %}</div>
+                    {% if lead.message %}
+                    <div class="lead-row-msg">{{ lead.message }}</div>
+                    {% endif %}
+                    <div class="lead-row-bottom">
+                        <span class="lead-badge source">{{ lead.source }}</span>
+                        <span class="lead-badge status-{{ lead.status|lower }}">{{ lead.get_status_display }}</span>
+                        {% if lead.reply_count %}
+                        <span class="lead-reply-count"><i class="bi bi-reply"></i> {{ lead.reply_count }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </ul>
+
+        <!-- Paginación -->
+        {% if leads.has_other_pages %}
+        <div class="inbox-pagination">
+            {% if leads.has_previous %}
+            <a href="?page={{ leads.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_source %}&source={{ current_source }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+            {% endif %}
+
+            {% for num in leads.paginator.page_range %}
+                {% if leads.number == num %}
+                <span class="current">{{ num }}</span>
+                {% elif num > leads.number|add:'-3' and num < leads.number|add:'3' %}
+                <a href="?page={{ num }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_source %}&source={{ current_source }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if leads.has_next %}
+            <a href="?page={{ leads.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_source %}&source={{ current_source }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="inbox-empty">
+            <i class="bi bi-inbox"></i>
+            <p>No hay consultas que coincidan con los filtros seleccionados.</p>
+        </div>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}

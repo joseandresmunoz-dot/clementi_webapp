@@ -127,13 +127,15 @@ LOGOUT_REDIRECT_URL = "/"
 DEFAULT_FROM_EMAIL = "Microbiota y Salud Integral <noreply@microbiotaysaludintegral.com>"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-# Google OAuth2 — las credenciales se leen desde .env
+# Google OAuth2 — las credenciales se leen desde .env.
+# El scope de calendar NO va acá: se pide solo a la Dra. en el flujo
+# "Conectar Google Calendar" (para que el login de pacientes no dispare
+# el aviso de "app no verificada" por scopes sensibles).
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "SCOPE": [
             "profile",
             "email",
-            "https://www.googleapis.com/auth/calendar",
         ],
         "AUTH_PARAMS": {
             "access_type": "offline",

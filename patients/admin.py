@@ -4,7 +4,9 @@ from patients.models import (
     AnswerOption,
     Category,
     ClinicalTimelineEntry,
+    GoogleCalendarCredentials,
     Lead,
+    LeadReply,
     MercadoPagoCredentials,
     Order,
     PatientProfile,
@@ -78,16 +80,31 @@ class ClinicalTimelineEntryAdmin(admin.ModelAdmin):
 
 @admin.register(Lead)
 class LeadAdmin(admin.ModelAdmin):
-    list_display = ("name", "email", "phone", "source", "is_subscribed", "created_at")
-    search_fields = ("name", "email", "phone")
-    list_filter = ("source", "is_subscribed", "created_at")
-    readonly_fields = ("created_at",)
+    list_display = ("name", "email", "phone", "source", "status", "is_read", "reply_count", "created_at")
+    search_fields = ("name", "email", "phone", "message")
+    list_filter = ("status", "source", "is_read", "created_at")
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(LeadReply)
+class LeadReplyAdmin(admin.ModelAdmin):
+    list_display = ("lead", "sent_by", "sent_at")
+    list_filter = ("sent_at",)
+    search_fields = ("lead__name", "lead__email", "message")
+    readonly_fields = ("sent_at",)
 
 
 @admin.register(MercadoPagoCredentials)
 class MercadoPagoCredentialsAdmin(admin.ModelAdmin):
     list_display = ("user", "mp_user_id", "is_connected", "token_expires_at", "updated_at")
     search_fields = ("user__email", "user__first_name", "user__last_name")
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(GoogleCalendarCredentials)
+class GoogleCalendarCredentialsAdmin(admin.ModelAdmin):
+    list_display = ("user", "google_email", "is_connected", "expires_at", "updated_at")
+    search_fields = ("user__email", "user__first_name", "user__last_name", "google_email")
     readonly_fields = ("created_at", "updated_at")
 
 
