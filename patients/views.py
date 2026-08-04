@@ -459,6 +459,23 @@ def submit_quiz_results(request):
         source="microbiota_quiz",
     )
 
+    # Si el email coincide con un paciente registrado, agregar a su historia clínica
+    matching_user = User.objects.filter(email__iexact=email).first()
+    if matching_user:
+        ClinicalTimelineEntry.objects.create(
+            patient=matching_user,
+            subject="Resultados del cuestionario de microbiota",
+            details=(
+                f"Nombre: {nombre}\n"
+                f"Email: {email}\n"
+                f"Teléfono: {telefono}\n\n"
+                f"{detalles}\n"
+                f"Puntuación total: {total}\n"
+                f"Diagnóstico: {mensaje}\n"
+            ),
+            created_by=matching_user,
+        )
+
     _notify_staff_new_lead(
         Lead.objects.filter(email=email).order_by("-created_at").first()
     )
@@ -681,6 +698,13 @@ def dashboard(request):
 
     timeline_entries = ClinicalTimelineEntry.objects.filter(patient=user).select_related("created_by", "appointment")
 
+    # Consultas de la web pendientes de respuesta (solo para staff)
+    pending_consults_count = (
+        Lead.objects.filter(status__in=[Lead.Status.NEW, Lead.Status.READ]).count()
+        if request.user.is_staff
+        else 0
+    )
+
     context = {
         "upcoming_appointments": upcoming_appointments,
         "upcoming_count": upcoming_appointments.count(),
@@ -688,6 +712,7 @@ def dashboard(request):
         "files_count": files.count(),
         "files": files,
         "timeline_entries": timeline_entries,
+        "pending_consults_count": pending_consults_count,
     }
     return render(request, "patients/dashboard.html", context)
 
@@ -869,6 +894,69 @@ def admin_panel(request):
         and request.user.google_calendar_credentials.is_connected,
     }
     return render(request, "patients/admin_panel.html", context)
+
+
+@login_required
+def doctor_dashboard(request):
+    """Dashboard de estadísticas exclusivo de la Dra. (romina.c.clementi@gmail.com)."""
+    if not (request.user.is_staff and request.user.email.lower() == settings.DOCTOR_EMAIL):
+        return redirect("patients:dashboard")
+
+    today = date.today()
+    week_end = today + timedelta(days=7)
+    month_start = today.replace(day=1)
+
+    # Consultas web
+    pending_consults = Lead.objects.filter(
+        status__in=[Lead.Status.NEW, Lead.Status.READ]
+    ).count()
+    total_consults = Lead.objects.count()
+
+    # Pacientes
+    total_patients = PatientProfile.objects.count()
+    new_patients_month = PatientProfile.objects.filter(
+        created_at__date__gte=month_start
+    ).count()
+
+    # Turnos
+    today_booked = Appointment.objects.filter(
+        date=today, status=Appointment.Status.BOOKED
+    ).count()
+    week_booked = Appointment.objects.filter(
+        date__gte=today,
+        date__lte=week_end,
+        status=Appointment.Status.BOOKED,
+    ).count()
+    upcoming_appointments = (
+        Appointment.objects.filter(date__gte=today)
+        .exclude(status=Appointment.Status.CANCELLED)
+        .select_related("patient")
+        .order_by("date", "start_time")[:15]
+    )
+
+    # Ventas
+    orders = Order.objects.filter(status="completed")
+    total_sales = orders.count()
+    sales_revenue = orders.aggregate(total=Sum("total_price"))["total"] or 0
+    recent_orders = orders.order_by("-created_at")[:10]
+
+    # Microbiota (los test enviados llegan como Lead con source="microbiota_quiz")
+    microbiota_tests = Lead.objects.filter(source="microbiota_quiz").count()
+
+    context = {
+        "pending_consults": pending_consults,
+        "total_consults": total_consults,
+        "total_patients": total_patients,
+        "new_patients_month": new_patients_month,
+        "today_booked": today_booked,
+        "week_booked": week_booked,
+        "upcoming_appointments": upcoming_appointments,
+        "total_sales": total_sales,
+        "sales_revenue": sales_revenue,
+        "recent_orders": recent_orders,
+        "microbiota_tests": microbiota_tests,
+    }
+    return render(request, "patients/doctor_dashboard.html", context)
 
 
 def _save_product_images(request, product):

@@ -441,6 +441,9 @@
             <button class="btn btn-outline-primary me-2" onclick="window.print()">
                 <i class="bi bi-printer"></i> Imprimir
             </button>
+            <button class="btn btn-outline-primary me-2" id="btnSendAdmin" onclick="sendToAdmin()">
+                <i class="bi bi-send"></i> Enviar resultados
+            </button>
             <button class="btn btn-primary me-2" id="btnSendResults" onclick="sendWhatsApp()">
                 <i class="bi bi-whatsapp"></i> Enviar resultados por WhatsApp
             </button>
@@ -586,28 +589,15 @@ document.addEventListener('DOMContentLoaded', function() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // ── Send results via WhatsApp ──
-    window.sendWhatsApp = function() {
-        const btn = document.getElementById('btnSendResults');
-        const msgEl = document.getElementById('sendResultMsg');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Preparando...';
-
+    // ── Guardar resultados en la bandeja de consultas del admin ──
+    function buildResultsPayload() {
         const nombre = document.getElementById('dNombre').value.trim();
         const email = document.getElementById('dEmail').value.trim();
         if (!nombre) {
-            msgEl.innerHTML = '<div class="alert alert-warning">Completá tu nombre en la secci&oacute;n de datos primero.</div>';
-            msgEl.style.display = '';
-            btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-whatsapp"></i> Enviar resultados por WhatsApp';
-            return;
+            return { error: 'Completá tu nombre en la sección de datos primero.' };
         }
         if (!email) {
-            msgEl.innerHTML = '<div class="alert alert-warning">Completá tu email en la secci&oacute;n de datos primero.</div>';
-            msgEl.style.display = '';
-            btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-whatsapp"></i> Enviar resultados por WhatsApp';
-            return;
+            return { error: 'Completá tu email en la sección de datos primero.' };
         }
 
         const scores = calcAllSections();
@@ -619,7 +609,6 @@ document.addEventListener('DOMContentLoaded', function() {
             detalles += slug + ': ' + s + '\n';
         });
 
-        // 1) Guardar lead en el panel de administración
         const data = new URLSearchParams();
         data.append('nombre', nombre);
         data.append('email', email);
@@ -628,16 +617,81 @@ document.addEventListener('DOMContentLoaded', function() {
         data.append('total', total);
         data.append('mensaje', document.getElementById('resMessage').textContent);
 
+        return { nombre: nombre, email: email, total: total, detalles: detalles, data: data };
+    }
+
+    window.sendToAdmin = function() {
+        const btn = document.getElementById('btnSendAdmin');
+        const msgEl = document.getElementById('sendResultMsg');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando...';
+
+        const payload = buildResultsPayload();
+        if (payload.error) {
+            msgEl.innerHTML = '<div class="alert alert-warning">' + payload.error + '</div>';
+            msgEl.style.display = '';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-send"></i> Enviar resultados';
+            return;
+        }
+
         fetch('{% url "patients:submit_quiz_results" %}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'X-CSRFToken': getCookie('csrftoken'),
             },
-            body: data,
+            body: payload.data,
         })
         .then(function(r) { return r.json(); })
         .then(function(resp) {
+            if (!resp.ok) throw new Error(resp.error || 'Error');
+            msgEl.innerHTML = '<div class="alert alert-success">Tus resultados se enviaron correctamente. La Dra. los recibió y te va a contactar a la brevedad.</div>';
+            msgEl.style.display = '';
+            btn.disabled = false;
+            btn.style.display = 'none';
+        })
+        .catch(function() {
+            msgEl.innerHTML = '<div class="alert alert-danger">Error de conexión. Intentá de nuevo.</div>';
+            msgEl.style.display = '';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-send"></i> Enviar resultados';
+        });
+    };
+
+    // ── Send results via WhatsApp ──
+    window.sendWhatsApp = function() {
+        const btn = document.getElementById('btnSendResults');
+        const msgEl = document.getElementById('sendResultMsg');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Preparando...';
+
+        const payload = buildResultsPayload();
+        if (payload.error) {
+            msgEl.innerHTML = '<div class="alert alert-warning">' + payload.error + '</div>';
+            msgEl.style.display = '';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-whatsapp"></i> Enviar resultados por WhatsApp';
+            return;
+        }
+
+        const nombre = payload.nombre;
+        const email = payload.email;
+        const total = payload.total;
+        const detalles = payload.detalles;
+
+        // 1) Guardar lead en el panel de administración
+        fetch('{% url "patients:submit_quiz_results" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: payload.data,
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(resp) {
+            if (!resp.ok) throw new Error(resp.error || 'Error');
             // 2) Abrir WhatsApp con los resultados
             const texto = encodeURIComponent(
                 'Hola, soy ' + nombre + '.\n' +

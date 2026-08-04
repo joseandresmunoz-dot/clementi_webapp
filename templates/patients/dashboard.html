@@ -44,6 +44,7 @@
     .stat-card-modern .stat-icon.blue { background: linear-gradient(135deg, #82459D, #4D4099); }
     .stat-card-modern .stat-icon.green { background: linear-gradient(135deg, #4ade80, #22c55e); }
     .stat-card-modern .stat-icon.purple { background: linear-gradient(135deg, #c084fc, #a855f7); }
+    .stat-card-modern .stat-icon.orange { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
     .stat-card-modern .stat-number {
         font-size: 2rem;
         font-weight: 800;
@@ -322,6 +323,15 @@
             <div class="stat-label">Documentos disponibles</div>
         </div>
     </div>
+    {% if user.is_staff %}
+    <div class="col-md-4">
+        <a href="{% url 'patients:lead_inbox' %}" class="stat-card-modern text-decoration-none">
+            <div class="stat-icon orange"><i class="bi bi-inbox"></i></div>
+            <div class="stat-number">{{ pending_consults_count }}</div>
+            <div class="stat-label">Consultas por responder</div>
+        </a>
+    </div>
+    {% endif %}
 </div>
 
 <!-- Próximos turnos -->

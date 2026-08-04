@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Panel de la Dra. — Microbiota y Salud{% endblock %}
+{% block main_class %}admin-main-content{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-title {
+        font-weight: 700;
+        color: #222;
+        font-size: 1.5rem;
+    }
+    .page-title i {
+        color: var(--brand);
+        margin-right: 8px;
+    }
+
+    .ds-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(153, 153, 255, 0.15);
+        padding: 1.25rem;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        text-decoration: none;
+    }
+    a.ds-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 14px 30px rgba(153, 153, 255, 0.25);
+    }
+    .ds-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #fff;
+        flex-shrink: 0;
+    }
+    .ds-icon.purple { background: linear-gradient(135deg, #82459D, #4D4099); }
+    .ds-icon.orange { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+    .ds-icon.green { background: linear-gradient(135deg, #4ade80, #22c55e); }
+    .ds-icon.blue { background: linear-gradient(135deg, #60a5fa, #3b82f6); }
+    .ds-icon.red { background: linear-gradient(135deg, #f87171, #ef4444); }
+    .ds-icon.teal { background: linear-gradient(135deg, #2dd4bf, #14b8a6); }
+    .ds-icon.pink { background: linear-gradient(135deg, #f472b6, #ec4899); }
+
+    .ds-num {
+        font-size: 1.7rem;
+        font-weight: 800;
+        color: #222;
+        line-height: 1.1;
+    }
+    .ds-label {
+        font-size: 0.8rem;
+        color: #777;
+        font-weight: 500;
+    }
+    .ds-sub {
+        font-size: 0.7rem;
+        color: #aaa;
+    }
+    .ds-link {
+        font-size: 0.7rem;
+        color: var(--brand);
+        font-weight: 600;
+    }
+
+    .admin-card {
+        background: #fff;
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(153, 153, 255, 0.15);
+        margin-bottom: 1.25rem;
+        overflow: hidden;
+    }
+    .admin-card .card-header-custom {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .admin-card .card-header-custom h6 {
+        font-weight: 600;
+        color: #222;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    .admin-card .card-header-custom h6 i {
+        color: var(--brand);
+        margin-right: 8px;
+    }
+    .admin-card .card-body-custom {
+        padding: 1.25rem;
+    }
+
+    .table-stats {
+        font-size: 0.85rem;
+        margin-bottom: 0;
+    }
+    .table-stats th {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #999;
+        border-bottom: 1px solid #f0f0f0;
+        padding: 0.6rem 0.75rem;
+    }
+    .table-stats td {
+        padding: 0.6rem 0.75rem;
+        border-bottom: 1px solid #f6f6f6;
+        color: #444;
+    }
+    .table-stats tr:last-child td {
+        border-bottom: none;
+    }
+    .badge-status {
+        font-size: 0.7rem;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2 class="page-title"><i class="bi bi-graph-up-arrow"></i> Panel de la Dra. — Estadísticas</h2>
+
+<!-- Fila de tarjetas -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-4">
+        <a href="{% url 'patients:lead_inbox' %}" class="ds-card">
+            <div class="ds-icon orange"><i class="bi bi-inbox"></i></div>
+            <div>
+                <div class="ds-num">{{ pending_consults }}</div>
+                <div class="ds-label">Consultas por responder</div>
+                <div class="ds-sub">{{ total_consults }} consultas en total</div>
+                <div class="ds-link">Ir a la bandeja →</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-xl-4">
+        <a href="{% url 'patients:patients_admin_list' %}" class="ds-card">
+            <div class="ds-icon purple"><i class="bi bi-people"></i></div>
+            <div>
+                <div class="ds-num">{{ total_patients }}</div>
+                <div class="ds-label">Pacientes registrados</div>
+                <div class="ds-sub">+{{ new_patients_month }} nuevos este mes</div>
+                <div class="ds-link">Ver pacientes →</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-xl-4">
+        <a href="{% url 'patients:calendar' %}" class="ds-card">
+            <div class="ds-icon blue"><i class="bi bi-calendar-check"></i></div>
+            <div>
+                <div class="ds-num">{{ today_booked }}</div>
+                <div class="ds-label">Turnos de hoy</div>
+                <div class="ds-sub">{{ week_booked }} reservados esta semana</div>
+                <div class="ds-link">Ver calendario →</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-xl-4">
+        <a href="{% url 'patients:shop_admin' %}" class="ds-card">
+            <div class="ds-icon green"><i class="bi bi-cart-check"></i></div>
+            <div>
+                <div class="ds-num">{{ total_sales }}</div>
+                <div class="ds-label">Ventas de la tienda</div>
+                <div class="ds-sub">${{ sales_revenue|floatformat:0 }} ingresados</div>
+                <div class="ds-link">Administrar tienda →</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-xl-4">
+        <a href="{% url 'patients:microbiota_admin' %}" class="ds-card">
+            <div class="ds-icon pink"><i class="bi bi-clipboard2-pulse"></i></div>
+            <div>
+                <div class="ds-num">{{ microbiota_tests }}</div>
+                <div class="ds-label">Test de microbiota</div>
+                <div class="ds-sub">realizados desde la web</div>
+                <div class="ds-link">Ver resultados →</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-xl-4">
+        <a href="{% url 'patients:admin_panel' %}" class="ds-card">
+            <div class="ds-icon teal"><i class="bi bi-gear"></i></div>
+            <div>
+                <div class="ds-num">Panel</div>
+                <div class="ds-label">Administración completa</div>
+                <div class="ds-sub">pacientes, calendario, archivos</div>
+                <div class="ds-link">Ir al panel admin →</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Próximos turnos + últimas ventas -->
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="admin-card">
+            <div class="card-header-custom">
+                <h6><i class="bi bi-calendar3"></i> Próximos turnos</h6>
+            </div>
+            <div class="card-body-custom p-0">
+                <table class="table table-stats">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Paciente</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for apt in upcoming_appointments %}
+                        <tr>
+                            <td>{{ apt.date|date:"d/m/Y" }}</td>
+                            <td>{{ apt.start_time|time:"H:i" }}</td>
+                            <td>
+                                {% if apt.patient %}{{ apt.patient.get_full_name|default:apt.patient.email }}{% else %}—{% endif %}
+                            </td>
+                            <td>
+                                {% if apt.status == "BOOKED" %}
+                                    <span class="badge-status" style="background:#dcfce7;color:#16a34a;">Reservado</span>
+                                {% elif apt.status == "AVAILABLE" %}
+                                    <span class="badge-status" style="background:#e0f2fe;color:#0284c7;">Disponible</span>
+                                {% elif apt.status == "COMPLETED" %}
+                                    <span class="badge-status" style="background:#ede9fe;color:#7c3aed;">Completado</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center text-muted py-4">No hay turnos próximos.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="admin-card">
+            <div class="card-header-custom">
+                <h6><i class="bi bi-bag"></i> Últimas ventas</h6>
+            </div>
+            <div class="card-body-custom p-0">
+                <table class="table table-stats">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cant.</th>
+                            <th>Total</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                        <tr>
+                            <td>{{ order.product.name|truncatechars:30 }}</td>
+                            <td>x{{ order.quantity }}</td>
+                            <td>${{ order.total_price }}</td>
+                            <td>{{ order.created_at|date:"d/m/Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center text-muted py-4">Todavía no hay ventas.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

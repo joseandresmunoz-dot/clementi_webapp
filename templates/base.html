@@ -334,6 +334,9 @@
                 <a href="{% url 'patients:lead_inbox' %}" class="admin-sidebar-link {% if request.resolver_match.url_name == 'lead_inbox' or request.resolver_match.url_name == 'lead_detail' %}active{% endif %}">
                     <i class="bi bi-inbox"></i> Consultas
                 </a>
+                <a href="{% url 'patients:doctor_dashboard' %}" class="admin-sidebar-link {% if request.resolver_match.url_name == 'doctor_dashboard' %}active{% endif %}">
+                    <i class="bi bi-graph-up-arrow"></i> Estadísticas
+                </a>
             </div>
             <hr class="admin-sidebar-divider">
             <div class="admin-sidebar-section">

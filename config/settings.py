@@ -112,6 +112,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # django-allauth
+ACCOUNT_ADAPTER = "patients.adapters.CustomAccountAdapter"
 ALLAUTH_TRUSTED_PROXY_COUNT = 1
 ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
@@ -122,6 +123,9 @@ SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 SOCIALACCOUNT_STORE_TOKENS = True
 LOGIN_REDIRECT_URL = "/mi-panel/"
 LOGOUT_REDIRECT_URL = "/"
+
+# Email de la Dra.: único usuario con dashboard de estadísticas exclusivo
+DOCTOR_EMAIL = "romina.c.clementi@gmail.com"
 
 # Email
 DEFAULT_FROM_EMAIL = "Microbiota y Salud Integral <noreply@microbiotaysaludintegral.com>"
