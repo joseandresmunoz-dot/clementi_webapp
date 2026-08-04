@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block title %}Administración — Microbiota y Salud{% endblock %}
+{% block main_class %}admin-main-content{% endblock %}
 
 {% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
@@ -246,90 +247,6 @@
         color: #999;
         font-size: 0.88rem;
     }
-    /* --- Consultas desde la web (Leads) --- */
-    .lead-item {
-        padding: 0.85rem 1.25rem;
-        border-bottom: 1px solid #f5f5f5;
-        transition: background 0.2s;
-    }
-    .lead-item:last-child {
-        border-bottom: none;
-    }
-    .lead-item:hover {
-        background: rgba(153,153,255,0.04);
-    }
-    .lead-item .lead-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 4px;
-        gap: 8px;
-    }
-    .lead-item .lead-name {
-        font-weight: 600;
-        color: #222;
-        font-size: 0.88rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    .lead-item .lead-date {
-        flex-shrink: 0;
-        font-size: 0.72rem;
-        color: #999;
-    }
-    .lead-item .lead-contact {
-        font-size: 0.8rem;
-        color: #666;
-        margin-bottom: 4px;
-    }
-    .lead-item .lead-contact i {
-        margin-right: 4px;
-    }
-    .lead-item .lead-msg {
-        font-size: 0.8rem;
-        color: #555;
-        line-height: 1.5;
-        background: rgba(153,153,255,0.05);
-        border-radius: 10px;
-        padding: 0.55rem 0.7rem;
-        margin-bottom: 6px;
-        white-space: pre-line;
-        word-break: break-word;
-    }
-    .lead-item .lead-msg:empty {
-        display: none;
-    }
-    .lead-item .lead-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 8px;
-    }
-    .lead-item .lead-source {
-        display: inline-block;
-        padding: 2px 10px;
-        border-radius: 20px;
-        font-size: 0.68rem;
-        font-weight: 600;
-        background: rgba(153,153,255,0.12);
-        color: var(--brand-dark);
-    }
-    .lead-item .lead-mailto {
-        font-size: 0.76rem;
-        color: var(--brand);
-        text-decoration: none;
-    }
-    .lead-item .lead-mailto:hover {
-        color: var(--brand-dark);
-        text-decoration: underline;
-    }
-    .lead-empty {
-        padding: 1.5rem 1.25rem;
-        text-align: center;
-        color: #999;
-        font-size: 0.88rem;
-    }
 
     /* Calendar container */
     .calendar-wrap {
@@ -569,30 +486,6 @@
             </div>
         </div>
 
-        <!-- Mercado Pago -->
-        <div class="admin-card">
-            <div class="card-header-custom">
-                <h6><i class="bi bi-credit-card"></i> Mercado Pago</h6>
-            </div>
-            <div class="card-body-custom admin-form">
-                {% if mp_is_connected %}
-                <p class="small" style="color:var(--success,#198754);font-weight:600;margin-bottom:8px;">
-                    <i class="bi bi-check-circle"></i> Cuenta conectada
-                </p>
-                <a href="{% url 'patients:mp_connect' %}" class="btn-submit" style="display:block;text-align:center;">
-                    <i class="bi bi-arrow-repeat"></i> Reconectar
-                </a>
-                {% else %}
-                <p class="small text-muted" style="margin-bottom:8px;">
-                    Conectá tu cuenta para cobrar con Checkout Pro.
-                </p>
-                <a href="{% url 'patients:mp_connect' %}" class="btn-submit" style="display:block;text-align:center;">
-                    <i class="bi bi-link-45deg"></i> Conectar Mercado Pago
-                </a>
-                {% endif %}
-            </div>
-        </div>
-
         <!-- Google Calendar -->
         <div class="admin-card">
             <div class="card-header-custom">
@@ -712,49 +605,7 @@
             </div>
         </div>
 
-        <!-- Consultas desde la web -->
-        <div class="admin-card">
-            <div class="card-header-custom" style="display:flex;justify-content:space-between;align-items:center;">
-                <h6><i class="bi bi-chat-left-text"></i> Consultas desde la web</h6>
-                <a href="{% url 'patients:lead_inbox' %}" class="btn-admin-outline" style="font-size:0.75rem;padding:4px 10px;">
-                    Ver todas <i class="bi bi-arrow-right"></i>
-                </a>
-            </div>
-            <div class="card-body-custom p-0">
-                {% if leads %}
-                <ul class="upcoming-list" style="margin:0;">
-                    {% for lead in leads %}
-                    <li class="lead-item">
-                        <div class="lead-header">
-                            <span class="lead-name"><i class="bi bi-person"></i> {{ lead.name }}</span>
-                            <span class="lead-date">{{ lead.created_at|date:"d/m H:i" }}</span>
-                        </div>
-                        {% if lead.email or lead.phone %}
-                        <div class="lead-contact">
-                            {% if lead.email %}<i class="bi bi-envelope"></i>{{ lead.email }}<br>{% endif %}
-                            {% if lead.phone %}<i class="bi bi-telephone"></i>{{ lead.phone }}{% endif %}
-                        </div>
-                        {% endif %}
-                        {% if lead.message %}
-                        <div class="lead-msg">{{ lead.message }}</div>
-                        {% endif %}
-                        <div class="lead-footer">
-                            <span class="lead-source">{{ lead.source }}</span>
-                            {% if lead.email %}
-                            <a class="lead-mailto" href="mailto:{{ lead.email }}"><i class="bi bi-reply"></i> Responder</a>
-                            {% endif %}
-                        </div>
-                    </li>
-                    {% endfor %}
-                </ul>
-                {% else %}
-                <p class="lead-empty">No hay consultas desde la web todavía.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Calendar -->
+        <!-- Calendar -->
     <div class="col-lg-8">
         <div class="calendar-wrap">
             <div id="adminCalendar"></div>

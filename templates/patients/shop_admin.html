@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block title %}Gestión de Tienda — Microbiota y Salud{% endblock %}
+{% block main_class %}admin-main-content{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -107,6 +108,85 @@
         align-items: center; justify-content: center;
         font-size: 0.7rem; color: #f59e0b;
     }
+
+    /* ─── Section cards (Categorías / Productos) ─── */
+    .admin-card.shop-section {
+        background: #fff;
+        border: 1px solid #eef0f4;
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        border-top: 4px solid transparent;
+    }
+    .admin-card.shop-section .card-header-custom {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #f0f0f0;
+        background: #fafbfc;
+    }
+    .admin-card.shop-section .card-header-custom h6 {
+        margin: 0;
+        font-weight: 700;
+        color: #222;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .admin-card.shop-section .card-header-custom h6 .section-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+        font-size: 0.95rem;
+    }
+    .admin-card.shop-section .card-header-custom h6 .section-count {
+        margin-left: auto;
+        background: #f0f0f0;
+        color: #666;
+        padding: 2px 12px;
+        border-radius: 50px;
+        font-size: 0.72rem;
+        font-weight: 600;
+    }
+    /* Categorías: púrpura */
+    .admin-card.shop-section.section-categorias { border-top-color: var(--brand); }
+    .admin-card.shop-section.section-categorias .section-chip { background: rgba(130,69,157,0.12); color: var(--brand); }
+    /* Productos: verde */
+    .admin-card.shop-section.section-productos { border-top-color: #16a34a; }
+    .admin-card.shop-section.section-productos .section-chip { background: rgba(22,163,74,0.12); color: #16a34a; }
+    /* Mercado Pago: celeste */
+    .admin-card.shop-section.section-mp { border-top-color: #009EE3; }
+    .admin-card.shop-section.section-mp .section-chip { background: rgba(0,158,227,0.12); color: #009EE3; }
+    .section-mp .btn-mp {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 22px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-decoration: none;
+        color: #fff;
+        background: #009EE3;
+        transition: all 0.2s ease;
+    }
+    .section-mp .btn-mp:hover {
+        background: #0078b8;
+        transform: translateY(-1px);
+    }
+    .section-mp .mp-connected {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 600;
+        font-size: 0.88rem;
+        margin-bottom: 8px;
+    }
 </style>
 {% endblock %}
 
@@ -165,6 +245,30 @@
     </div>
 </div>
 
+<!-- Mercado Pago -->
+<div class="admin-card shop-section section-mp mb-3">
+    <div class="card-header-custom">
+        <h6 style="margin:0;"><span class="section-chip"><i class="bi bi-credit-card"></i></span> Mercado Pago</h6>
+    </div>
+    <div class="card-body-custom">
+        {% if mp_is_connected %}
+        <p class="mp-connected" style="color:#00A650;">
+            <i class="bi bi-check-circle"></i> Cuenta conectada
+        </p>
+        <a href="{% url 'patients:mp_connect' %}" class="btn-mp">
+            <i class="bi bi-arrow-repeat"></i> Reconectar
+        </a>
+        {% else %}
+        <p style="color:#666;margin-bottom:8px;font-size:0.88rem;">
+            Conectá tu cuenta para cobrar con Checkout Pro.
+        </p>
+        <a href="{% url 'patients:mp_connect' %}" class="btn-mp">
+            <i class="bi bi-link-45deg"></i> Conectar Mercado Pago
+        </a>
+        {% endif %}
+    </div>
+</div>
+
 {% if best_sellers %}
 <div class="admin-card mb-3">
     <div class="card-header-custom">
@@ -197,9 +301,63 @@
 </div>
 {% endif %}
 
-<div class="admin-card">
+<div class="admin-card shop-section section-categorias">
     <div class="card-header-custom d-flex justify-content-between align-items-center">
-        <h6 style="margin:0;"><i class="bi bi-box"></i> Productos</h6>
+        <h6 style="margin:0;"><span class="section-chip"><i class="bi bi-tags"></i></span> Categorías
+            <span class="section-count">{{ categories|length }}</span>
+        </h6>
+    </div>
+    <div class="card-body-custom p-0">
+        <div class="table-responsive">
+            <table class="shop-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Slug</th>
+                        <th>Orden</th>
+                        <th>Productos</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in categories %}
+                    <tr>
+                        <td class="prod-name">{{ c.name }}</td>
+                        <td><code style="font-size:0.75rem;color:#888;">{{ c.slug }}</code></td>
+                        <td>{{ c.order }}</td>
+                        <td>{{ c.products.count }}</td>
+                        <td>{% if c.is_active %}<span class="badge-active">✓ Activa</span>{% else %}<span class="badge-inactive">✗ Inactiva</span>{% endif %}</td>
+                        <td class="text-end">
+                            <button class="btn-shop btn-shop-outline btn-shop-sm edit-category" data-bs-toggle="modal" data-bs-target="#modalCategory" data-id="{{ c.id }}"
+                                data-name="{{ c.name }}" data-slug="{{ c.slug }}"
+                                data-order="{{ c.order }}" data-ativo="{{ c.is_active|lower }}"
+                                data-descripcion="{{ c.description }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn-shop btn-shop-danger btn-shop-sm delete-category" data-bs-toggle="modal" data-bs-target="#modalDelete" data-id="{{ c.id }}" data-name="{{ c.name }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align:center;padding:2rem;color:#999;">
+                            No hay categorías todavía. <a href="#" class="new-category-trigger" data-bs-toggle="modal" data-bs-target="#modalCategory" style="color:var(--brand);font-weight:600;">Crear la primera</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="admin-card shop-section section-productos mt-3">
+    <div class="card-header-custom d-flex justify-content-between align-items-center">
+        <h6 style="margin:0;"><span class="section-chip"><i class="bi bi-box"></i></span> Productos
+            <span class="section-count">{{ products|length }}</span>
+        </h6>
     </div>
     <div class="card-body-custom p-0">
         <div class="table-responsive">
@@ -253,56 +411,6 @@
                     <tr>
                         <td colspan="6" style="text-align:center;padding:2rem;color:#999;">
                             No hay productos todavía. <a href="#" class="new-product-trigger" data-bs-toggle="modal" data-bs-target="#modalProduct" style="color:var(--brand);font-weight:600;">Crear el primero</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<div class="admin-card mt-3">
-    <div class="card-header-custom d-flex justify-content-between align-items-center">
-        <h6 style="margin:0;"><i class="bi bi-tags"></i> Categorías</h6>
-    </div>
-    <div class="card-body-custom p-0">
-        <div class="table-responsive">
-            <table class="shop-table">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Slug</th>
-                        <th>Orden</th>
-                        <th>Productos</th>
-                        <th>Estado</th>
-                        <th class="text-end">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for c in categories %}
-                    <tr>
-                        <td class="prod-name">{{ c.name }}</td>
-                        <td><code style="font-size:0.75rem;color:#888;">{{ c.slug }}</code></td>
-                        <td>{{ c.order }}</td>
-                        <td>{{ c.products.count }}</td>
-                        <td>{% if c.is_active %}<span class="badge-active">✓ Activa</span>{% else %}<span class="badge-inactive">✗ Inactiva</span>{% endif %}</td>
-                        <td class="text-end">
-                            <button class="btn-shop btn-shop-outline btn-shop-sm edit-category" data-bs-toggle="modal" data-bs-target="#modalCategory" data-id="{{ c.id }}"
-                                data-name="{{ c.name }}" data-slug="{{ c.slug }}"
-                                data-order="{{ c.order }}" data-ativo="{{ c.is_active|lower }}"
-                                data-descripcion="{{ c.description }}">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn-shop btn-shop-danger btn-shop-sm delete-category" data-bs-toggle="modal" data-bs-target="#modalDelete" data-id="{{ c.id }}" data-name="{{ c.name }}">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" style="text-align:center;padding:2rem;color:#999;">
-                            No hay categorías todavía. <a href="#" class="new-category-trigger" data-bs-toggle="modal" data-bs-target="#modalCategory" style="color:var(--brand);font-weight:600;">Crear la primera</a>
                         </td>
                     </tr>
                     {% endfor %}

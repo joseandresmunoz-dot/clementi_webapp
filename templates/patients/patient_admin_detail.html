@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Paciente — {{ profile.user.get_full_name|default:profile.user.email }}{% endblock %}
+{% block main_class %}admin-main-content{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">

@@ -159,6 +159,82 @@
                 padding: 10px 14px !important;
             }
         }
+
+        /* ─── Admin Sidebar ─── */
+        .admin-sidebar {
+            position: fixed;
+            top: 62px;
+            left: 0;
+            width: 240px;
+            height: calc(100vh - 62px);
+            background: #fff;
+            border-right: 1px solid #f0f0f0;
+            box-shadow: 2px 0 12px rgba(0,0,0,.04);
+            overflow-y: auto;
+            z-index: 1040;
+            padding: 1rem 0;
+        }
+        .admin-sidebar-section {
+            margin-bottom: 0.5rem;
+        }
+        .admin-sidebar-label {
+            display: block;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #999;
+            padding: 8px 20px 4px;
+            font-weight: 700;
+        }
+        .admin-sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            color: #444;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: all 0.15s;
+            border-left: 3px solid transparent;
+        }
+        .admin-sidebar-link:hover {
+            background: var(--brand-bg);
+            color: var(--brand-dark);
+        }
+        .admin-sidebar-link.active {
+            background: var(--brand-bg);
+            color: var(--brand-dark);
+            border-left-color: var(--brand);
+            font-weight: 600;
+        }
+        .admin-sidebar-link i {
+            font-size: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+        .admin-sidebar-divider {
+            border: none;
+            border-top: 1px solid #f0f0f0;
+            margin: 0.5rem 20px;
+        }
+        .admin-main-content {
+            margin-left: 240px;
+            padding: 1.5rem;
+        }
+        @media (max-width: 991px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1060;
+            }
+            .admin-sidebar.show {
+                transform: translateX(0);
+            }
+            .admin-main-content {
+                margin-left: 0;
+            }
+        }
     </style>
 
     {% block extra_css %}{% endblock %}
@@ -176,6 +252,7 @@
 
             <div class="collapse navbar-collapse" id="navbarMain">
                 <ul class="navbar-nav me-auto">
+                    {% if not user.is_staff %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'patients:home' %}">
                             <i class="bi bi-house"></i> Inicio
@@ -198,27 +275,6 @@
                         </a>
                     </li>
                     {% endif %}
-                    {% if user.is_staff %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'patients:patients_admin_list' %}">
-                            <i class="bi bi-people"></i> Pacientes
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'patients:admin_panel' %}">
-                            <i class="bi bi-gear"></i> Administración
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'patients:shop_admin' %}">
-                            <i class="bi bi-shop"></i> Tienda
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'patients:microbiota_admin' %}">
-                            <i class="bi bi-clipboard2-pulse"></i> Microbiota
-                        </a>
-                    </li>
                     {% endif %}
                 </ul>
 
@@ -257,6 +313,44 @@
             </div>
         </div>
     </nav>
+
+    {% if user.is_staff %}
+    <aside class="admin-sidebar">
+        <nav class="admin-sidebar-nav">
+            <div class="admin-sidebar-section">
+                <span class="admin-sidebar-label">Administración</span>
+                <a href="{% url 'patients:patients_admin_list' %}" class="admin-sidebar-link {% if request.resolver_match.url_name == 'patients_admin_list' or request.resolver_match.url_name == 'patient_admin_detail' %}active{% endif %}">
+                    <i class="bi bi-people"></i> Pacientes
+                </a>
+                <a href="{% url 'patients:admin_panel' %}" class="admin-sidebar-link {% if request.resolver_match.url_name == 'admin_panel' %}active{% endif %}">
+                    <i class="bi bi-gear"></i> Administración
+                </a>
+                <a href="{% url 'patients:shop_admin' %}" class="admin-sidebar-link {% if request.resolver_match.url_name == 'shop_admin' %}active{% endif %}">
+                    <i class="bi bi-shop"></i> Tienda
+                </a>
+                <a href="{% url 'patients:microbiota_admin' %}" class="admin-sidebar-link {% if request.resolver_match.url_name == 'microbiota_admin' %}active{% endif %}">
+                    <i class="bi bi-clipboard2-pulse"></i> Microbiota
+                </a>
+                <a href="{% url 'patients:lead_inbox' %}" class="admin-sidebar-link {% if request.resolver_match.url_name == 'lead_inbox' or request.resolver_match.url_name == 'lead_detail' %}active{% endif %}">
+                    <i class="bi bi-inbox"></i> Consultas
+                </a>
+            </div>
+            <hr class="admin-sidebar-divider">
+            <div class="admin-sidebar-section">
+                <span class="admin-sidebar-label">Navegación</span>
+                <a href="{% url 'patients:home' %}" class="admin-sidebar-link">
+                    <i class="bi bi-house"></i> Inicio
+                </a>
+                <a href="{% url 'patients:calendar' %}" class="admin-sidebar-link {% if request.resolver_match.url_name == 'calendar' %}active{% endif %}">
+                    <i class="bi bi-calendar3"></i> Turnos
+                </a>
+                <a href="{% url 'patients:microbiota_quiz' %}" class="admin-sidebar-link" style="display:none;">
+                    <i class="bi bi-clipboard2-pulse"></i> Evaluar Microbiota
+                </a>
+            </div>
+        </nav>
+    </aside>
+    {% endif %}
 
     <!-- Messages -->
     {% if messages %}

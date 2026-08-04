@@ -292,6 +292,8 @@ def shop_admin(request):
         "total_revenue": total_revenue,
         "best_sellers": best_sellers,
         "orders_by_status": orders_by_status,
+        "mp_is_connected": hasattr(request.user, "mp_credentials")
+        and request.user.mp_credentials.is_connected,
     })
 
 
@@ -900,7 +902,7 @@ def mp_connect(request):
             "Falta configurar MP_CLIENT_ID y MP_CLIENT_SECRET en el .env "
             "para poder conectar la cuenta de Mercado Pago.",
         )
-        return redirect("patients:admin_panel")
+        return redirect("patients:shop_admin")
 
     state = secrets.token_urlsafe(32)
     request.session["mp_oauth_state"] = state
@@ -928,15 +930,15 @@ def mp_callback(request):
 
     if error:
         messages.error(request, f"La conexión fue rechazada por Mercado Pago: {error}")
-        return redirect("patients:admin_panel")
+        return redirect("patients:shop_admin")
 
     if not code:
         messages.error(request, "Mercado Pago no devolvió un código de autorización.")
-        return redirect("patients:admin_panel")
+        return redirect("patients:shop_admin")
 
     if state != request.session.pop("mp_oauth_state", None):
         messages.error(request, "El estado de la autorización no coincide.")
-        return redirect("patients:admin_panel")
+        return redirect("patients:shop_admin")
 
     data = {
         "grant_type": "authorization_code",
@@ -950,7 +952,7 @@ def mp_callback(request):
         response = requests.post(settings.MP_TOKEN_URL, data=data, timeout=30)
     except requests.RequestException as exc:
         messages.error(request, f"No se pudo contactar a Mercado Pago: {exc}")
-        return redirect("patients:admin_panel")
+        return redirect("patients:shop_admin")
 
     if response.status_code != 200:
         messages.error(
@@ -959,7 +961,7 @@ def mp_callback(request):
             f"(HTTP {response.status_code}). Verificá CLIENT_ID, "
             "CLIENT_SECRET y REDIRECT_URI.",
         )
-        return redirect("patients:admin_panel")
+        return redirect("patients:shop_admin")
 
     credentials, _ = MercadoPagoCredentials.objects.get_or_create(user=request.user)
     credentials.update_from_token(response.json())
@@ -967,7 +969,7 @@ def mp_callback(request):
     messages.success(
         request, "Tu cuenta de Mercado Pago se conectó correctamente."
     )
-    return redirect("patients:admin_panel")
+    return redirect("patients:shop_admin")
 
 
 def _google_oauth_app():

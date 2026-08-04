@@ -430,3 +430,29 @@
     </div>
 </div>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var form = document.querySelector('.detail-reply-form form');
+    if (!form) return;
+
+    form.addEventListener('submit', function (e) {
+        var textarea = form.querySelector('textarea[name="message"]');
+        var message = (textarea && textarea.value.trim()) || '';
+        if (!message) return;
+
+        var to = "{{ lead.email }}";
+        var subject = "Re: Tu consulta en Microbiota y Salud";
+        var body = "Hola {{ lead.name }}:\n\n" + message;
+
+        var gmailUrl = "https://mail.google.com/mail/?view=cm&fs=1&to="
+            + encodeURIComponent(to)
+            + "&su=" + encodeURIComponent(subject)
+            + "&body=" + encodeURIComponent(body);
+
+        window.open(gmailUrl, "_blank");
+    });
+});
+</script>
+{% endblock %}
