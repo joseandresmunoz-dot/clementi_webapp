@@ -1,21 +1,21 @@
 /* ============================================================
    MI ESPECIALIDAD — Flipbox 3D (desktop) → Card estática (mobile)
-   Identidad de marca: violeta orquídea #82459D, índigo #4D4099,
-   rosa magenta #CE4888 sobre lavanda #F8F5FA
+   Identidad de marca: violeta orquídea #7004af, índigo #741d8c,
+   rosa magenta #ff66c4 sobre lavanda #efe4f4
    ============================================================ */
 
 .mi-especialidad {
-  --mi-violet: #82459D;
-  --mi-indigo: #4D4099;
-  --mi-magenta: #CE4888;
-  --mi-lavender: #F1E9F8;
-  --mi-pink: #FAEFF5;
-  --mi-text: #251833;
-  --mi-muted: #6E5B7D;
+  --mi-violet: #7004af;
+  --mi-indigo: #741d8c;
+  --mi-magenta: #ff66c4;
+  --mi-lavender: #f7d7ea;
+  --mi-pink: #f7d7ea;
+  --mi-text: #741d8c;
+  --mi-muted: #741d8c;
   --mi-surface: #ffffff;
-  --mi-bg: #F8F5FA;
+  --mi-bg: #efe4f4;
   --mi-radius: 18px;
-  --mi-shadow: 0 12px 32px rgba(130, 69, 157, 0.14);
+  --mi-shadow: 0 12px 32px rgba(112, 4, 175, 0.14);
 
   padding: 56px 16px;
   background: var(--mi-bg);
@@ -84,7 +84,7 @@
   flex-shrink: 0;
   white-space: nowrap;
   padding: 10px 20px;
-  border: 1px solid rgba(130, 69, 157, 0.25);
+  border: 1px solid rgba(112, 4, 175, 0.25);
   border-radius: 999px;
   background: var(--mi-surface);
   color: var(--mi-muted);
@@ -105,11 +105,11 @@
   background: linear-gradient(135deg, var(--mi-violet), var(--mi-magenta));
   border-color: transparent;
   color: #ffffff;
-  box-shadow: 0 6px 16px rgba(130, 69, 157, 0.35);
+  box-shadow: 0 6px 16px rgba(112, 4, 175, 0.35);
 }
 
 .mi-filter:focus-visible {
-  outline: 3px solid rgba(206, 72, 136, 0.50);
+  outline: 3px solid rgba(255, 102, 196, 0.50);
   outline-offset: 2px;
 }
 
@@ -187,7 +187,7 @@
 /* Cara frontal: solo la imagen limpia */
 .mi-front {
   background: var(--mi-surface);
-  border: 1px solid rgba(130, 69, 157, 0.20);
+  border: 1px solid rgba(112, 4, 175, 0.20);
   box-shadow: var(--mi-shadow);
   padding: 0;
 }
@@ -201,7 +201,7 @@
 
 /* Cara trasera: fondo sólido + descripción + acción */
 .mi-back {
-  background: linear-gradient(160deg, #4D4099 0%, #82459D 55%, #CE4888 100%);
+  background: linear-gradient(160deg, #741d8c 0%, #7004af 55%, #ff66c4 100%);
   color: #ffffff;
   transform: rotateY(180deg);
 }
@@ -373,17 +373,17 @@
     font-size: 0.92rem;
     font-weight: 700;
     text-decoration: none;
-    box-shadow: 0 8px 20px rgba(130, 69, 157, 0.30);
+    box-shadow: 0 8px 20px rgba(112, 4, 175, 0.30);
     transition: transform 0.25s ease, box-shadow 0.25s ease;
   }
 
   .mi-more:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 24px rgba(130, 69, 157, 0.40);
+    box-shadow: 0 12px 24px rgba(112, 4, 175, 0.40);
   }
 
   .mi-more:focus-visible {
-    outline: 3px solid rgba(206, 72, 136, 0.50);
+    outline: 3px solid rgba(255, 102, 196, 0.50);
     outline-offset: 2px;
   }
 }

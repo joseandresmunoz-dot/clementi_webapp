@@ -18,9 +18,9 @@
         html { scroll-behavior: smooth; scroll-padding-top: 76px; }
         body {
             font-family: 'Inter', sans-serif;
-            color: #251833;
+            color: #741d8c;
             line-height: 1.6;
-            background: #F8F5FA;
+            background: #efe4f4;
         }
         h1, h2, h3, h4 { font-family: 'Montserrat', sans-serif; line-height: 1.2; }
         a { text-decoration: none; color: inherit; transition: all 0.3s; }
@@ -28,18 +28,18 @@
         .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
         :root {
-            --brand: #82459D;                    /* Violeta orquídea — primario (30%) */
-            --brand-dark: #4D4099;               /* Índigo profundo — hover/footer */
-            --brand-light: #E4D5F5;              /* Lavanda claro — links sobre oscuro */
-            --brand-bg: #F8F5FA;                 /* Lavanda suave — fondo general (60%) */
-            --brand-tint: #F1E9F8;               /* Tinte violeta — chips e iconos */
-            --brand-gradient: linear-gradient(135deg, #4D4099 0%, #82459D 50%, #CE4888 100%);
-            --accent: #CE4888;                   /* Rosa magenta — CTA (10%) */
-            --accent-dark: #B1376F;              /* Rosa oscuro — hover de CTA */
-            --text-dark: #251833;                /* Ciruela oscuro */
-            --text-muted: #6E5B7D;               /* Ciruela apagado */
-            --card-shadow: 0 8px 30px rgba(130, 69, 157, 0.12);
-            --card-hover-shadow: 0 16px 48px rgba(130, 69, 157, 0.20);
+            --brand: #7004af;                    /* Violeta orquídea — primario (30%) */
+            --brand-dark: #741d8c;               /* Índigo profundo — hover/footer */
+            --brand-light: #f7d7ea;              /* Lavanda claro — links sobre oscuro */
+            --brand-bg: #efe4f4;                 /* Lavanda suave — fondo general (60%) */
+            --brand-tint: #f7d7ea;               /* Tinte violeta — chips e iconos */
+            --brand-gradient: linear-gradient(135deg, #741d8c 0%, #7004af 50%, #ff66c4 100%);
+            --accent: #ff66c4;                   /* Rosa magenta — CTA (10%) */
+            --accent-dark: #741d8c;              /* Rosa oscuro — hover de CTA */
+            --text-dark: #741d8c;                /* Ciruela oscuro */
+            --text-muted: #741d8c;               /* Ciruela apagado */
+            --card-shadow: 0 8px 30px rgba(112, 4, 175, 0.12);
+            --card-hover-shadow: 0 16px 48px rgba(112, 4, 175, 0.20);
         }
 
         /* ===== MOBILE FIRST — BASE STYLES ===== */
@@ -52,7 +52,7 @@
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(130,69,157,0.12);
+            border-bottom: 1px solid rgba(112, 4, 175,0.12);
         }
         .navbar .logo img { height: 36px; width: auto; }
         .navbar .nav-links {
@@ -130,7 +130,7 @@
             background: var(--accent); color: #fff;
             padding: 14px 28px; border-radius: 12px; font-weight: 600;
             font-size: 0.95rem;
-            box-shadow: 0 6px 20px rgba(206,72,136,0.35);
+            box-shadow: 0 6px 20px rgba(255, 102, 196,0.35);
             border: none; cursor: pointer;
         }
         .hero-text .cta-group .btn-primary:hover {
@@ -235,7 +235,7 @@
         .servicio-card {
             text-align: center; padding: 24px 14px;
             border-radius: 18px;
-            border: 1px solid rgba(130,69,157,0.14);
+            border: 1px solid rgba(112, 4, 175,0.14);
         }
         .servicio-card .icon {
             width: 56px; height: 56px; margin: 0 auto 12px;
@@ -315,7 +315,7 @@
             padding: 14px 28px; border: none; border-radius: 12px;
             font-size: 0.95rem; font-weight: 600; cursor: pointer;
             width: 100%;
-            box-shadow: 0 6px 20px rgba(206,72,136,0.35);
+            box-shadow: 0 6px 20px rgba(255, 102, 196,0.35);
             transition: all 0.3s;
         }
         .contacto-form .btn-submit:hover {
@@ -449,7 +449,7 @@
             .navbar .nav-links a:hover::after { width: 100%; }
             .navbar .nav-links .btn-primary-nav {
                 padding: 10px 22px; font-size: 0.9rem;
-                box-shadow: 0 4px 14px rgba(130,69,157,0.35);
+                box-shadow: 0 4px 14px rgba(112, 4, 175,0.35);
             }
             .navbar .nav-links .btn-primary-nav:hover {
                 background: var(--brand-dark); transform: translateY(-2px);

@@ -3,19 +3,21 @@
    =================================================== */
 
 :root {
-    --primary: #3a7ca5;
-    --primary-dark: #2c5f7c;
-    --accent: #81c3d7;
+    --primary: #7004af;
+    --primary-dark: #741d8c;
+    --accent: #ff66c4;
     --success-green: #28a745;
     --booked-red: #dc3545;
     --own-blue: #007bff;
     --muted-gray: #6c757d;
-    --bg-light: #f0f4f8;
+    --bg-light: #efe4f4;
     --card-shadow: 0 2px 12px rgba(0,0,0,.08);
 }
 
 /* Override Bootstrap primary */
 .bg-primary { background-color: var(--primary) !important; }
+.text-primary { color: var(--primary) !important; }
+.border-primary { border-color: var(--primary) !important; }
 .btn-primary {
     background-color: var(--primary);
     border-color: var(--primary);
@@ -23,6 +25,31 @@
 .btn-primary:hover {
     background-color: var(--primary-dark);
     border-color: var(--primary-dark);
+}
+.btn-outline-primary {
+    color: var(--primary);
+    border-color: var(--primary);
+}
+.btn-outline-primary:hover {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+.form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+.page-link {
+    color: var(--primary);
+}
+.page-link.active,
+.page-item.active .page-link {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.25rem rgba(112, 4, 175, 0.15);
 }
 
 /* General */
@@ -73,7 +100,7 @@ main { flex: 1; }
     border-color: var(--primary-dark);
 }
 .fc .fc-daygrid-day.fc-day-today {
-    background-color: rgba(58,124,165,.08);
+    background-color: rgba(112, 4, 175,.08);
 }
 
 .fc .fc-daygrid-day.calendar-day-past {

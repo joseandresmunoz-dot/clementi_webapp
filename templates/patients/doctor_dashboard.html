@@ -19,7 +19,7 @@
     .ds-card {
         background: #fff;
         border-radius: 16px;
-        box-shadow: 0 10px 25px rgba(153, 153, 255, 0.15);
+        box-shadow: 0 10px 25px rgba(112, 4, 175, 0.15);
         padding: 1.25rem;
         height: 100%;
         display: flex;
@@ -30,7 +30,7 @@
     }
     a.ds-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 14px 30px rgba(153, 153, 255, 0.25);
+        box-shadow: 0 14px 30px rgba(112, 4, 175, 0.25);
     }
     .ds-icon {
         width: 52px;
@@ -43,13 +43,13 @@
         color: #fff;
         flex-shrink: 0;
     }
-    .ds-icon.purple { background: linear-gradient(135deg, #82459D, #4D4099); }
+    .ds-icon.purple { background: linear-gradient(135deg, #7004af, #741d8c); }
     .ds-icon.orange { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
     .ds-icon.green { background: linear-gradient(135deg, #4ade80, #22c55e); }
     .ds-icon.blue { background: linear-gradient(135deg, #60a5fa, #3b82f6); }
     .ds-icon.red { background: linear-gradient(135deg, #f87171, #ef4444); }
     .ds-icon.teal { background: linear-gradient(135deg, #2dd4bf, #14b8a6); }
-    .ds-icon.pink { background: linear-gradient(135deg, #f472b6, #ec4899); }
+    .ds-icon.pink { background: linear-gradient(135deg, #ff66c4, #741d8c); }
 
     .ds-num {
         font-size: 1.7rem;
@@ -76,7 +76,7 @@
         background: #fff;
         border: none;
         border-radius: 16px;
-        box-shadow: 0 10px 25px rgba(153, 153, 255, 0.15);
+        box-shadow: 0 10px 25px rgba(112, 4, 175, 0.15);
         margin-bottom: 1.25rem;
         overflow: hidden;
     }
@@ -231,7 +231,7 @@
                                 {% elif apt.status == "AVAILABLE" %}
                                     <span class="badge-status" style="background:#e0f2fe;color:#0284c7;">Disponible</span>
                                 {% elif apt.status == "COMPLETED" %}
-                                    <span class="badge-status" style="background:#ede9fe;color:#7c3aed;">Completado</span>
+                                    <span class="badge-status" style="background:#f7d7ea;color:#741d8c;">Completado</span>
                                 {% endif %}
                             </td>
                         </tr>
