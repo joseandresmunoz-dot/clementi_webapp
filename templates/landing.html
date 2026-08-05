@@ -73,6 +73,12 @@
             padding: 12px 20px; border-radius: 10px; font-weight: 600;
             text-align: center;
         }
+        .navbar .nav-links .btn-secondary-nav {
+            color: var(--brand) !important;
+            border: 2px solid var(--brand);
+            padding: 10px 20px; border-radius: 10px; font-weight: 600;
+            text-align: center;
+        }
         .hamburger { display: flex; flex-direction: column; cursor: pointer; gap: 5px; padding: 4px; }
         .hamburger span { width: 26px; height: 3px; background: var(--text-dark); border-radius: 3px; }
         #nav-toggle { display: none; }
@@ -449,6 +455,14 @@
                 background: var(--brand-dark); transform: translateY(-2px);
             }
             .navbar .nav-links .btn-primary-nav::after { display: none; }
+            .navbar .nav-links .btn-secondary-nav {
+                padding: 8px 22px; font-size: 0.9rem;
+            }
+            .navbar .nav-links .btn-secondary-nav:hover {
+                background: var(--brand); color: #fff !important;
+                transform: translateY(-2px);
+            }
+            .navbar .nav-links .btn-secondary-nav::after { display: none; }
             .hamburger { display: none !important; }
 
             /* Hero: full background */
@@ -568,7 +582,8 @@
             {% else %}
             <li><a href="{% url 'account_login' %}" class="btn-ingresar">Ingresar</a></li>
             {% endif %}
-            <li><a href="#contacto" class="btn-primary-nav">Agendar consulta</a></li>
+            <li><a href="{% url 'patients:calendar' %}" class="btn-secondary-nav">Sacá tu turno</a></li>
+            <li><a href="#contacto" class="btn-primary-nav">Realizar una consulta</a></li>
         </ul>
     </nav>
 
@@ -584,7 +599,8 @@
                     en tu salud física, mental y emocional.
                 </p>
                 <div class="cta-group">
-                    <a href="#contacto" class="btn-primary">Agendar una consulta</a>
+                    <a href="{% url 'patients:calendar' %}" class="btn-primary">Sacá tu turno</a>
+                    <a href="#contacto" class="btn-secondary">Realizar una consulta</a>
                     <a href="{% url 'patients:microbiota_quiz' %}" class="btn-secondary">Evaluá tu microbiota</a>
                 </div>
                 <div class="hero-stats">
@@ -642,7 +658,7 @@
                 <div class="step-card">
                     <div class="step-number">1</div>
                     <h3>Consulta inicial</h3>
-                    <p>Agendá una consulta online para conocer tu caso y definir el mejor enfoque.</p>
+                    <p>Realizá una consulta online para conocer tu caso y definir el mejor enfoque.</p>
                 </div>
                 <div class="step-card">
                     <div class="step-number">2</div>
@@ -774,7 +790,7 @@
         <div class="container">
             <div class="text-center">
                 <span class="section-tag" style="color: rgba(255,255,255,0.7);">Contacto</span>
-                <h2 class="section-title">Agendá tu consulta</h2>
+                <h2 class="section-title">Realizá tu consulta</h2>
                 <p class="section-subtitle mx-auto">
                     Dejanos tus datos y te contactaremos para coordinar una consulta personalizada
                 </p>
@@ -785,7 +801,7 @@
                     <p>Consultas online. Respondemos a la brevedad.</p>
                     <div class="contact-item">
                         <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-                        <span>microbiotaysaludintegralr@gmail.com</span>
+                        <span>microbiotaysaludintegralrc@gmail.com</span>
                     </div>
                     <div class="contact-item">
                         <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
@@ -802,7 +818,7 @@
                 </div>
 
                 <div class="contacto-form">
-                    <h3>Pedí tu consulta</h3>
+                    <h3>Realizá tu consulta</h3>
                     <form method="post" action="{% url 'patients:capture_lead' %}">
                         {% csrf_token %}
                         <input type="hidden" name="source" value="landing_form">

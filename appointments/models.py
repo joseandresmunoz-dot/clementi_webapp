@@ -30,6 +30,17 @@ class Appointment(models.Model):
         related_name="appointments",
         verbose_name="Paciente",
     )
+    guest_name = models.CharField(
+        "Nombre y apellido (invitado)",
+        max_length=200,
+        blank=True,
+    )
+    guest_email = models.EmailField("Email (invitado)", blank=True)
+    guest_age = models.PositiveIntegerField(
+        "Edad (invitado)",
+        null=True,
+        blank=True,
+    )
     date = models.DateField("Fecha")
     start_time = models.TimeField("Hora de inicio")
     end_time = models.TimeField("Hora de fin")
@@ -68,6 +79,8 @@ class Appointment(models.Model):
         patient_name = "Libre"
         if self.patient:
             patient_name = self.patient.get_full_name() or self.patient.email
+        elif self.guest_name:
+            patient_name = f"{self.guest_name} (invitado)"
         return f"{self.date} {self.start_time}-{self.end_time} | {patient_name}"
 
     @property

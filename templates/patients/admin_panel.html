@@ -5,7 +5,6 @@
 {% block main_class %}admin-main-content{% endblock %}
 
 {% block extra_css %}
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
 <style>
     .page-title {
         font-weight: 700;
@@ -248,15 +247,6 @@
         font-size: 0.88rem;
     }
 
-    /* Calendar container */
-    .calendar-wrap {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 10px 25px rgba(153, 153, 255, 0.15);
-        padding: 1.25rem;
-        overflow: hidden;
-    }
-
     /* Files table */
     .files-table {
         width: 100%;
@@ -347,6 +337,68 @@
         outline: none;
     }
 
+    /* Patient picker */
+    .patient-picker {
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        max-height: 180px;
+        overflow-y: auto;
+        margin-top: 6px;
+        display: none;
+        background: #fff;
+    }
+    .patient-picker.show {
+        display: block;
+    }
+    .patient-option {
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        color: #444;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    .patient-option:hover {
+        background: rgba(153,153,255,0.06);
+    }
+    .patient-option small {
+        color: #999;
+    }
+    .patient-option.selected {
+        background: rgba(153,153,255,0.1);
+        color: var(--brand);
+        font-weight: 600;
+    }
+    .patient-empty {
+        padding: 10px 12px;
+        font-size: 0.8rem;
+        color: #999;
+    }
+    .selected-patients {
+        margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .selected-patient-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(153,153,255,0.1);
+        color: var(--brand);
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    .selected-patient-tag .remove-patient {
+        cursor: pointer;
+        font-weight: 700;
+        opacity: 0.7;
+    }
+    .selected-patient-tag .remove-patient:hover {
+        opacity: 1;
+    }
+
     /* Modal */
     .modal-brand .modal-content {
         border: none;
@@ -393,39 +445,6 @@
         margin: 1.5rem 0;
     }
 
-    /* FullCalendar overrides */
-    #adminCalendar {
-        font-family: 'Montserrat', sans-serif;
-    }
-    #adminCalendar .fc-toolbar-title {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #222;
-    }
-    #adminCalendar .fc-button-primary {
-        background: var(--brand);
-        border-color: var(--brand);
-        border-radius: 10px;
-        font-weight: 500;
-        font-size: 0.8rem;
-        padding: 6px 14px;
-        transition: all 0.2s;
-    }
-    #adminCalendar .fc-button-primary:hover {
-        background: var(--brand-dark);
-        border-color: var(--brand-dark);
-    }
-    #adminCalendar .fc-button-primary.fc-button-active {
-        background: var(--brand-dark);
-        border-color: var(--brand-dark);
-    }
-    #adminCalendar .fc-daygrid-day.fc-day-today {
-        background: rgba(153,153,255,0.06);
-    }
-    #adminCalendar .fc-timegrid-slot {
-        height: 2.5rem;
-    }
-
     @media (max-width: 768px) {
         .page-title {
             font-size: 1.2rem;
@@ -442,9 +461,6 @@
             padding: 0.7rem 0.8rem;
             font-size: 0.78rem;
         }
-        .calendar-wrap {
-            padding: 0.75rem;
-        }
     }
 </style>
 {% endblock %}
@@ -459,157 +475,6 @@
         <a href="{% url 'admin:index' %}" class="btn-admin-outline">
             <i class="bi bi-box-arrow-up-right"></i> Django
         </a>
-    </div>
-</div>
-
-<div class="row g-4">
-    <!-- Sidebar -->
-    <div class="col-lg-4">
-
-        <!-- Stats -->
-        <div class="admin-card">
-            <div class="card-body-custom p-0">
-                <div class="admin-stats">
-                    <div>
-                        <div class="stat-num">{{ total_patients }}</div>
-                        <div class="stat-label">Pacientes</div>
-                    </div>
-                    <div>
-                        <div class="stat-num">{{ today_appointments }}</div>
-                        <div class="stat-label">Hoy</div>
-                    </div>
-                    <div>
-                        <div class="stat-num">{{ week_booked }}</div>
-                        <div class="stat-label">Semana</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Google Calendar -->
-        <div class="admin-card">
-            <div class="card-header-custom">
-                <h6><i class="bi bi-calendar-event"></i> Google Calendar</h6>
-            </div>
-            <div class="card-body-custom admin-form">
-                {% if google_calendar_is_connected %}
-                <p class="small" style="color:var(--success,#198754);font-weight:600;margin-bottom:8px;">
-                    <i class="bi bi-check-circle"></i>
-                    {% if request.user.google_calendar_credentials.google_email %}
-                    Conectado ({{ request.user.google_calendar_credentials.google_email }})
-                    {% else %}
-                    Calendario conectado
-                    {% endif %}
-                </p>
-                <a href="{% url 'patients:disconnect_google_calendar' %}" class="btn-danger-custom" style="display:block;text-align:center;">
-                    <i class="bi bi-unlink"></i> Desconectar
-                </a>
-                {% else %}
-                <p class="small text-muted" style="margin-bottom:8px;">
-                    Conectá tu Google Calendar para que los turnos creen eventos con Meet automáticamente.
-                </p>
-                <a href="{% url 'patients:connect_google_calendar' %}" class="btn-submit" style="display:block;text-align:center;">
-                    <i class="bi bi-link-45deg"></i> Conectar Google Calendar
-                </a>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Crear Turnos -->
-        <div class="admin-card">
-            <div class="card-header-custom">
-                <h6><i class="bi bi-plus-circle"></i> Crear Turno</h6>
-            </div>
-            <div class="card-body-custom admin-form">
-                <form id="createSlotForm">
-                    <div class="mb-2">
-                        <label class="form-label">Fecha</label>
-                        <input type="date" class="form-control" id="slotDate" required>
-                    </div>
-                    <div class="row g-2 mb-3">
-                        <div class="col">
-                            <label class="form-label">Inicio</label>
-                            <input type="time" class="form-control" id="slotStart" value="09:00" required>
-                        </div>
-                        <div class="col">
-                            <label class="form-label">Fin</label>
-                            <input type="time" class="form-control" id="slotEnd" value="09:30" required>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-submit"><i class="bi bi-plus-lg"></i> Crear Turno</button>
-                </form>
-
-                <hr>
-
-                <h6 class="small" style="color:#999;margin-bottom:12px;">Crear varios turnos de una vez</h6>
-                <form id="bulkSlotForm">
-                    <div class="mb-2">
-                        <label class="form-label">Fecha</label>
-                        <input type="date" class="form-control" id="bulkDate" required>
-                    </div>
-                    <div class="row g-2 mb-2">
-                        <div class="col">
-                            <label class="form-label">Desde</label>
-                            <input type="time" class="form-control" id="bulkStart" value="08:00" required>
-                        </div>
-                        <div class="col">
-                            <label class="form-label">Hasta</label>
-                            <input type="time" class="form-control" id="bulkEnd" value="13:00" required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Duración (min)</label>
-                        <select class="form-select" id="bulkDuration">
-                            <option value="15">15 min</option>
-                            <option value="30" selected>30 min</option>
-                            <option value="45">45 min</option>
-                            <option value="60">60 min</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-outline-submit"><i class="bi bi-collection"></i> Crear en Lote</button>
-                </form>
-                <div id="slotFeedback" class="mt-2"></div>
-            </div>
-        </div>
-
-        <!-- Próximas Citas -->
-        <div class="admin-card">
-            <div class="card-header-custom">
-                <h6><i class="bi bi-list-check"></i> Próximas Citas</h6>
-            </div>
-            <div class="card-body-custom p-0">
-                {% if upcoming_appointments %}
-                <ul class="upcoming-list">
-                    {% for apt in upcoming_appointments %}
-                    <li>
-                        <div class="apt-header">
-                            <span class="apt-time">{{ apt.date|date:"d/m" }} {{ apt.start_time|time:"H:i" }}</span>
-                            <span class="apt-badge {% if apt.status == 'BOOKED' %}booked{% else %}available{% endif %}">
-                                {{ apt.get_status_display }}
-                            </span>
-                        </div>
-                        {% if apt.patient %}
-                        <div class="apt-patient"><i class="bi bi-person"></i> {{ apt.patient.get_full_name|default:apt.patient.email }}</div>
-                        {% if apt.google_meet_link %}
-                        <a href="{{ apt.google_meet_link }}" target="_blank" class="apt-meet">
-                            <i class="bi bi-camera-video"></i> Meet
-                        </a>
-                        {% endif %}
-                        {% endif %}
-                    </li>
-                    {% endfor %}
-                </ul>
-                {% else %}
-                <p class="empty-apt">No hay citas próximas.</p>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Calendar -->
-    <div class="col-lg-8">
-        <div class="calendar-wrap">
-            <div id="adminCalendar"></div>
-        </div>
     </div>
 </div>
 
@@ -641,24 +506,22 @@
                         <label class="form-label">Archivo</label>
                         <input type="file" class="form-control" id="fileInput" required>
                     </div>
-                    <div class="row g-2 mb-3">
-                        <div class="col">
-                            <label class="form-label">Tipo</label>
-                            <select class="form-select" id="fileType">
-                                <option value="PDF">PDF</option>
-                                <option value="IMAGE">Imagen</option>
-                                <option value="VIDEO">Video</option>
-                                <option value="OTHER">Otro</option>
-                            </select>
+                    <input type="hidden" id="fileType">
+                    <div class="mb-3">
+                        <label class="form-label">Visibilidad</label>
+                        <select class="form-select" id="fileVisibility">
+                            <option value="REGISTERED" selected>Todos los pacientes registrados</option>
+                            <option value="PRIVATE">Solo pacientes seleccionados</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="patientPickerWrap" style="display:none;">
+                        <label class="form-label">Pacientes</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" id="patientSearch" placeholder="Buscar por nombre o email...">
                         </div>
-                        <div class="col">
-                            <label class="form-label">Visibilidad</label>
-                            <select class="form-select" id="fileVisibility">
-                                <option value="PUBLIC">Público</option>
-                                <option value="REGISTERED" selected>Registrados</option>
-                                <option value="PRIVATE">Privado</option>
-                            </select>
-                        </div>
+                        <div id="patientPicker" class="patient-picker"></div>
+                        <div id="selectedPatients" class="selected-patients"></div>
                     </div>
                     <button type="submit" class="btn-submit"><i class="bi bi-upload"></i> Subir</button>
                 </form>
@@ -674,7 +537,6 @@
                 <h6 style="margin:0;"><i class="bi bi-files"></i> Archivos Subidos</h6>
                 <select class="filter-select" id="filterVisibility">
                     <option value="">Todos</option>
-                    <option value="PUBLIC">Públicos</option>
                     <option value="REGISTERED">Registrados</option>
                     <option value="PRIVATE">Privados</option>
                 </select>
@@ -731,129 +593,9 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const csrfToken = '{{ csrf_token }}';
-
-    // ── Admin Calendar ──
-    const calEl = document.getElementById('adminCalendar');
-    const calendar = new FullCalendar.Calendar(calEl, {
-        locale: 'es',
-        initialView: 'timeGridWeek',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay',
-        },
-        slotMinTime: '07:00:00',
-        slotMaxTime: '21:00:00',
-        allDaySlot: false,
-        nowIndicator: true,
-        height: 'auto',
-        dayCellClassNames: function(arg) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const cellDate = new Date(arg.date);
-            cellDate.setHours(0, 0, 0, 0);
-            if (cellDate < today) return ['calendar-day-past'];
-            return [];
-        },
-        events: { url: '/api/appointments/slots/calendar/' },
-        datesSet: function() { updatePastTimeOverlay(); },
-        eventClick: function(info) {
-            const p = info.event.extendedProps;
-            let msg = `${info.event.title}\n`;
-            if (p.patient_email) msg += `Email: ${p.patient_email}\n`;
-            if (p.meet_link) msg += `Meet: ${p.meet_link}\n`;
-            alert(msg);
-        },
-    });
-    calendar.render();
-    updatePastTimeOverlay();
-
-    function updatePastTimeOverlay() {
-        document.querySelectorAll('.fc-timegrid-col-past-hours').forEach(el => el.remove());
-        const viewType = calendar.view ? calendar.view.type : '';
-        if (viewType !== 'timeGridWeek' && viewType !== 'timeGridDay') return;
-        const now = new Date();
-        const currentDateKey = now.toISOString().slice(0, 10);
-        const currentHour = now.getHours();
-        const currentMinutes = now.getMinutes();
-        const pastHeight = ((currentHour * 60) + currentMinutes) / (24 * 60) * 100;
-        const cols = calEl.querySelectorAll('.fc-timegrid-col[data-date]');
-        cols.forEach(col => {
-            if (col.getAttribute('data-date') !== currentDateKey) return;
-            const overlay = document.createElement('div');
-            overlay.className = 'fc-timegrid-col-past-hours';
-            overlay.style.height = `${pastHeight}%`;
-            col.appendChild(overlay);
-        });
-    }
-    setInterval(updatePastTimeOverlay, 60000);
-
-    // ── Crear slot individual ──
-    document.getElementById('createSlotForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const data = {
-            date: document.getElementById('slotDate').value,
-            start_time: document.getElementById('slotStart').value,
-            end_time: document.getElementById('slotEnd').value,
-            status: 'AVAILABLE',
-        };
-        fetch('/api/appointments/slots/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-            body: JSON.stringify(data),
-        })
-        .then(r => r.json().then(d => ({status: r.status, data: d})))
-        .then(({status, data}) => {
-            if (status === 201) {
-                calendar.refetchEvents();
-                showFeedback('Turno creado.', 'success');
-            } else {
-                showFeedback(JSON.stringify(data), 'danger');
-            }
-        });
-    });
-
-    // ── Crear slots en lote ──
-    document.getElementById('bulkSlotForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const date = document.getElementById('bulkDate').value;
-        const startStr = document.getElementById('bulkStart').value;
-        const endStr = document.getElementById('bulkEnd').value;
-        const duration = parseInt(document.getElementById('bulkDuration').value);
-        const slots = [];
-        let [sh, sm] = startStr.split(':').map(Number);
-        const [eh, em] = endStr.split(':').map(Number);
-        const endMinutes = eh * 60 + em;
-        while (sh * 60 + sm + duration <= endMinutes) {
-            const start = `${String(sh).padStart(2,'0')}:${String(sm).padStart(2,'0')}`;
-            sm += duration;
-            if (sm >= 60) { sh += Math.floor(sm / 60); sm = sm % 60; }
-            const end = `${String(sh).padStart(2,'0')}:${String(sm).padStart(2,'0')}`;
-            slots.push({ date, start_time: start, end_time: end, status: 'AVAILABLE' });
-        }
-        if (!slots.length) { showFeedback('El rango no genera turnos.', 'warning'); return; }
-        fetch('/api/appointments/slots/bulk-create/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-            body: JSON.stringify({ slots }),
-        })
-        .then(r => r.json().then(d => ({status: r.status, data: d})))
-        .then(({status, data}) => {
-            calendar.refetchEvents();
-            if (data.created_count) showFeedback(`${data.created_count} turnos creados.`, 'success');
-            if (data.errors && data.errors.length) showFeedback(`${data.errors.length} errores (duplicados?).`, 'warning');
-        });
-    });
-
-    function showFeedback(msg, type) {
-        const el = document.getElementById('slotFeedback');
-        el.innerHTML = `<div class="alert alert-${type} py-1 small" style="border-radius:10px;">${msg}</div>`;
-        setTimeout(() => el.innerHTML = '', 4000);
-    }
 
     // ═══════════════ GESTIÓN DE ARCHIVOS ═══════════════
 
@@ -908,14 +650,29 @@ document.addEventListener('DOMContentLoaded', function() {
         return d.innerHTML;
     }
 
+    function detectFileType(file) {
+        if (!file) return 'OTHER';
+        const name = file.name.toLowerCase();
+        if (name.endsWith('.pdf')) return 'PDF';
+        if (/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/.test(name)) return 'IMAGE';
+        if (/\.(mp4|mov|avi|webm|mkv|m4v)$/.test(name)) return 'VIDEO';
+        return 'OTHER';
+    }
+
     document.getElementById('uploadFileForm').addEventListener('submit', function(e) {
         e.preventDefault();
+        const visibility = document.getElementById('fileVisibility').value;
+        if (visibility === 'PRIVATE' && !selectedPatientIds.size) {
+            showFileFeedback('Elegí al menos un paciente para subir el archivo como privado.', 'danger');
+            return;
+        }
         const formData = new FormData();
         formData.append('title', document.getElementById('fileTitle').value);
         formData.append('description', document.getElementById('fileDescription').value);
         formData.append('file', document.getElementById('fileInput').files[0]);
-        formData.append('file_type', document.getElementById('fileType').value);
-        formData.append('visibility', document.getElementById('fileVisibility').value);
+        formData.append('file_type', detectFileType(document.getElementById('fileInput').files[0]));
+        formData.append('visibility', visibility);
+        Array.from(selectedPatientIds).forEach(id => formData.append('patient_ids', id));
         fetch('/api/files/', {
             method: 'POST',
             headers: { 'X-CSRFToken': csrfToken },
@@ -926,6 +683,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (status === 201) {
                 showFileFeedback('Archivo subido correctamente.', 'success');
                 document.getElementById('uploadFileForm').reset();
+                selectedPatientIds.clear();
+                renderSelectedPatients();
+                patientPicker.classList.remove('show');
+                pickerWrap.style.display = 'none';
+                document.getElementById('fileVisibility').value = 'REGISTERED';
                 loadFiles(document.getElementById('filterVisibility').value);
             } else {
                 showFileFeedback(JSON.stringify(data), 'danger');
@@ -937,7 +699,99 @@ document.addEventListener('DOMContentLoaded', function() {
         loadFiles(this.value);
     });
 
+    // ── Selector de pacientes para archivos privados ──
+    let selectedPatientIds = new Set();
+    const pickerWrap = document.getElementById('patientPickerWrap');
+    const patientSearch = document.getElementById('patientSearch');
+    const patientPicker = document.getElementById('patientPicker');
+
+    document.getElementById('fileVisibility').addEventListener('change', function() {
+        pickerWrap.style.display = this.value === 'PRIVATE' ? '' : 'none';
+        if (this.value === 'PRIVATE') {
+            patientSearch.value = '';
+            renderSelectedPatients();
+            patientPicker.classList.remove('show');
+        } else {
+            selectedPatientIds.clear();
+            renderSelectedPatients();
+        }
+    });
+
+    let searchTimer = null;
+    patientSearch.addEventListener('input', function() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            const q = this.value.trim();
+            fetch(`/api/files/patients/?q=${encodeURIComponent(q)}`, { headers: { 'X-CSRFToken': csrfToken } })
+            .then(r => r.json())
+            .then(patients => {
+                const filtered = q ? patients : patients.slice(0, 20);
+                renderPicker(filtered);
+            });
+        }, 250);
+    });
+
+    function renderPicker(patients) {
+        if (!patients.length) {
+            patientPicker.innerHTML = '<div class="patient-empty">Sin resultados.</div>';
+            patientPicker.classList.add('show');
+            return;
+        }
+        patientPicker.innerHTML = patients.map(p => {
+            const name = [p.first_name, p.last_name].filter(Boolean).join(' ');
+            const sel = selectedPatientIds.has(p.id) ? ' selected' : '';
+            return `<div class="patient-option${sel}" data-id="${p.id}">
+                        ${name ? escapeHtml(name) + ' <small>(' + escapeHtml(p.email) + ')</small>' : escapeHtml(p.email)}
+                    </div>`;
+        }).join('');
+        patientPicker.classList.add('show');
+        patientPicker.querySelectorAll('.patient-option').forEach(opt => {
+            opt.addEventListener('click', function() {
+                const id = parseInt(this.dataset.id);
+                if (selectedPatientIds.has(id)) selectedPatientIds.delete(id);
+                else selectedPatientIds.add(id);
+                this.classList.toggle('selected', selectedPatientIds.has(id));
+                renderSelectedPatients();
+            });
+        });
+    }
+
+    function renderSelectedPatients() {
+        const container = document.getElementById('selectedPatients');
+        if (!selectedPatientIds.size) {
+            container.innerHTML = '';
+            return;
+        }
+        const allPatients = window.__allPatients || [];
+        container.innerHTML = Array.from(selectedPatientIds).map(id => {
+            const p = allPatients.find(x => x.id === id) || {};
+            const name = [p.first_name, p.last_name].filter(Boolean).join(' ') || p.email;
+            return `<span class="selected-patient-tag">${escapeHtml(name)} <span class="remove-patient" data-id="${id}">&times;</span></span>`;
+        }).join('');
+        container.querySelectorAll('.remove-patient').forEach(btn => {
+            btn.addEventListener('click', function() {
+                selectedPatientIds.delete(parseInt(this.dataset.id));
+                renderSelectedPatients();
+                patientPicker.querySelectorAll('.patient-option').forEach(opt => {
+                    opt.classList.toggle('selected', selectedPatientIds.has(parseInt(opt.dataset.id)));
+                });
+            });
+        });
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!patientPicker.contains(e.target) && e.target !== patientSearch) {
+            patientPicker.classList.remove('show');
+        }
+    });
+
+    // Precargar lista completa de pacientes (para el render de tags)
+    fetch('/api/files/patients/', { headers: { 'X-CSRFToken': csrfToken } })
+    .then(r => r.json())
+    .then(patients => { window.__allPatients = patients; });
+
     let currentAssignFileId = null;
+    const assignModal = new bootstrap.Modal(document.getElementById('assignModal'));
 
     function openAssignModal(fileId, fileTitle) {
         currentAssignFileId = fileId;
@@ -974,7 +828,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
         });
-        new bootstrap.Modal(document.getElementById('assignModal')).show();
+        assignModal.show();
     }
 
     document.getElementById('assignBtn').addEventListener('click', function() {

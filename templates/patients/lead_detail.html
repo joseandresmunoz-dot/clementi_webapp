@@ -136,6 +136,81 @@
         word-break: break-word;
     }
 
+    /* Reporte de cuestionario (microbiota) */
+    .quiz-report {
+        font-size: 0.9rem;
+        line-height: 1.5;
+        white-space: normal;
+    }
+    .quiz-report .qr-block {
+        margin-bottom: 1.25rem;
+    }
+    .quiz-report .qr-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--brand);
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.35rem;
+        border-bottom: 1px solid rgba(130, 69, 157, 0.18);
+    }
+    .quiz-report .qr-dato {
+        padding: 0.15rem 0;
+        font-size: 0.85rem;
+        color: #333;
+    }
+    .quiz-report .qr-dato span,
+    .quiz-report .qr-score span,
+    .quiz-report .qr-ans-label {
+        color: var(--brand-dark);
+        font-weight: 600;
+    }
+    .quiz-report .qr-section {
+        margin-bottom: 1rem;
+    }
+    .quiz-report .qr-sec-title {
+        font-weight: 600;
+        color: #fff;
+        background: var(--brand);
+        display: inline-block;
+        padding: 0.2rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        margin-bottom: 0.45rem;
+    }
+    .quiz-report .qr-q {
+        padding: 0.5rem 0.65rem;
+        margin-bottom: 0.35rem;
+        background: #fff;
+        border: 1px solid #eee;
+        border-left: 3px solid var(--brand-light);
+        border-radius: 8px;
+    }
+    .quiz-report .qr-q-text {
+        font-size: 0.84rem;
+        color: #333;
+        margin-bottom: 0.15rem;
+    }
+    .quiz-report .qr-q-ans {
+        font-size: 0.82rem;
+        color: #444;
+    }
+    .quiz-report .qr-q-ans strong {
+        color: #2e7d32;
+    }
+    .quiz-report .qr-total {
+        font-weight: 700;
+        color: var(--brand-dark);
+        font-size: 0.95rem;
+        margin-top: 0.5rem;
+    }
+    .quiz-report .qr-diagnosis {
+        margin-top: 0.35rem;
+        font-size: 0.9rem;
+        color: #333;
+    }
+
     /* Contact info */
     .detail-contact {
         padding: 1rem 1.5rem;
@@ -376,7 +451,7 @@
     <!-- Message -->
     <div class="detail-message">
         <h3>Mensaje</h3>
-        <div class="detail-message-text">{{ lead.message|default:"(Sin mensaje)" }}</div>
+        <div class="detail-message-text">{% if lead.message_html %}{{ lead.message_html|safe }}{% else %}{{ lead.message|default:"(Sin mensaje)" }}{% endif %}</div>
     </div>
 
     <!-- Replies timeline -->

@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 from appointments.models import Appointment
 from files_manager.models import FilePermission, SharedFile
-from patients import services
+from patients import notifications, services
 from patients.forms import CategoryForm, LeadReplyForm, ProductForm
 from patients.models import (
     AnswerOption,
@@ -34,6 +34,8 @@ from patients.models import (
     Lead,
     LeadReply,
     MercadoPagoCredentials,
+    Notification,
+    NotificationPreference,
     Order,
     PatientProfile,
     Product,
@@ -325,6 +327,50 @@ def _notify_staff_new_lead(lead):
         except Exception:
             logger.debug("No se pudo enviar push a %s", user.username)
 
+    notifications.notify_staff(
+        f"Nueva consulta de {lead.name}",
+        (lead.message[:120] + "...") if lead.message else "Te contactaron desde la web",
+        "/consultas/",
+    )
+
+
+@login_required
+def notifications_data(request):
+    """Datos de notificaciones para la campanita del usuario."""
+    pref = NotificationPreference.objects.filter(user=request.user).first()
+    enabled = pref.enabled if pref else True
+    unread = request.user.notifications.filter(is_read=False).count()
+    items = [
+        {
+            "id": n.id,
+            "title": n.title,
+            "message": n.message,
+            "url": n.url,
+            "is_read": n.is_read,
+            "created_at": n.created_at.strftime("%d/%m/%Y %H:%M"),
+        }
+        for n in request.user.notifications.select_related("user")[:30]
+    ]
+    return JsonResponse({"enabled": enabled, "unread": unread, "notifications": items})
+
+
+@require_POST
+@login_required
+def notifications_mark_read(request):
+    request.user.notifications.filter(is_read=False).update(is_read=True)
+    return JsonResponse({"ok": True})
+
+
+@require_POST
+@login_required
+def notifications_toggle(request):
+    pref, _ = NotificationPreference.objects.get_or_create(
+        user=request.user, defaults={"enabled": True}
+    )
+    pref.enabled = request.POST.get("enabled") == "1"
+    pref.save(update_fields=["enabled"])
+    return JsonResponse({"ok": True, "enabled": pref.enabled})
+
 
 @require_POST
 def capture_lead(request):
@@ -440,6 +486,7 @@ def submit_quiz_results(request):
     email = request.POST.get("email", "").strip()
     telefono = request.POST.get("telefono", "").strip()
     detalles = request.POST.get("detalles", "")
+    detalles_html = request.POST.get("detalles_html", "")
     total = request.POST.get("total", "0")
     mensaje = request.POST.get("mensaje", "")
 
@@ -456,6 +503,7 @@ def submit_quiz_results(request):
                 f"{detalles}\n"
                 f"Total: {total}\n"
                 f"Diagnóstico: {mensaje}",
+        message_html=detalles_html,
         source="microbiota_quiz",
     )
 
@@ -473,6 +521,7 @@ def submit_quiz_results(request):
                 f"Puntuación total: {total}\n"
                 f"Diagnóstico: {mensaje}\n"
             ),
+            details_html=detalles_html,
             created_by=matching_user,
         )
 
@@ -495,6 +544,7 @@ def submit_quiz_results(request):
         settings.DEFAULT_FROM_EMAIL,
         [settings.DEFAULT_FROM_EMAIL],
         fail_silently=True,
+        html_message=detalles_html or None,
     )
 
     return JsonResponse({"ok": True})
@@ -635,9 +685,17 @@ def microbiota_admin(request):
     })
 
 
-@login_required
 def calendar_view(request):
-    return render(request, "patients/calendar.html")
+    return render(
+        request,
+        "patients/calendar.html",
+        {
+            "google_calendar_is_connected": hasattr(
+                request.user, "google_calendar_credentials"
+            )
+            and request.user.google_calendar_credentials.is_connected,
+        },
+    )
 
 
 def _is_patient_approved(user):
@@ -730,8 +788,21 @@ def pending_approval(request):
 def patients_admin_list(request):
     patients_qs = PatientProfile.objects.select_related("user").filter(user__is_staff=False)
 
+    search_query = (request.GET.get("q") or "").strip()
+    filtered_qs = patients_qs
+    if search_query:
+        filtered_qs = filtered_qs.filter(
+            Q(user__first_name__icontains=search_query)
+            | Q(user__last_name__icontains=search_query)
+            | Q(user__email__icontains=search_query)
+        )
+
     if request.method == "POST":
         action = request.POST.get("action")
+        qs_redirect = (
+            f"?q={search_query}" if search_query else ""
+        )
+        redirect_url = reverse("patients:patients_admin_list") + qs_redirect
 
         if action == "create_patient":
             email = (request.POST.get("email") or "").strip().lower()
@@ -768,7 +839,7 @@ def patients_admin_list(request):
                     f"Paciente {first_name or last_name or email} creado y aprobado correctamente.",
                 )
 
-            return redirect("patients:patients_admin_list")
+            return redirect(redirect_url)
 
         profile_id = request.POST.get("profile_id")
         profile = get_object_or_404(patients_qs, id=profile_id)
@@ -790,11 +861,12 @@ def patients_admin_list(request):
             profile.user.delete()
             messages.warning(request, f"Paciente rechazado y eliminado: {user_email}")
 
-        return redirect("patients:patients_admin_list")
+        return redirect(redirect_url)
 
     context = {
-        "pending_profiles": patients_qs.filter(is_approved=False).order_by("created_at"),
-        "approved_profiles": patients_qs.filter(is_approved=True).order_by("user__last_name", "user__first_name"),
+        "search_query": search_query,
+        "pending_profiles": filtered_qs.filter(is_approved=False).order_by("created_at"),
+        "approved_profiles": filtered_qs.filter(is_approved=True).order_by("user__last_name", "user__first_name"),
     }
     return render(request, "patients/patients_admin_list.html", context)
 
@@ -811,6 +883,9 @@ def patient_admin_detail(request, profile_id):
         action = request.POST.get("action")
 
         if action == "update_profile_note":
+            profile.user.first_name = (request.POST.get("first_name") or "").strip()
+            profile.user.last_name = (request.POST.get("last_name") or "").strip()
+            profile.user.save(update_fields=["first_name", "last_name"])
             profile.phone = (request.POST.get("phone") or "").strip()
             profile.locality = (request.POST.get("locality") or "").strip()
             dob_raw = (request.POST.get("date_of_birth") or "").strip()
@@ -845,11 +920,16 @@ def patient_admin_detail(request, profile_id):
 
     appointments = Appointment.objects.filter(patient=profile.user).order_by("-date", "-start_time")
     timeline_entries = ClinicalTimelineEntry.objects.filter(patient=profile.user).select_related("created_by", "appointment")
+    patient_files = SharedFile.objects.filter(
+        visibility=SharedFile.Visibility.PRIVATE,
+        permissions__patient=profile.user,
+    ).distinct().order_by("-created_at")
 
     context = {
         "profile": profile,
         "appointments": appointments,
         "timeline_entries": timeline_entries,
+        "patient_files": patient_files,
         "patient_age": _calculate_age(profile.date_of_birth),
     }
     return render(request, "patients/patient_admin_detail.html", context)

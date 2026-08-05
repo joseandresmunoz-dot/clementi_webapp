@@ -88,7 +88,7 @@ class AppointmentAdminSerializer(serializers.ModelSerializer):
     """
 
     patient_name = serializers.SerializerMethodField()
-    patient_email = serializers.CharField(source="patient.email", read_only=True, default="")
+    patient_email = serializers.SerializerMethodField()
 
     class Meta:
         model = Appointment
@@ -101,6 +101,9 @@ class AppointmentAdminSerializer(serializers.ModelSerializer):
             "patient",
             "patient_name",
             "patient_email",
+            "guest_name",
+            "guest_email",
+            "guest_age",
             "google_event_id",
             "google_meet_link",
             "notes",
@@ -118,11 +121,20 @@ class AppointmentAdminSerializer(serializers.ModelSerializer):
     def get_patient_name(self, obj):
         if obj.patient:
             return obj.patient.get_full_name() or obj.patient.email
-        return ""
+        return obj.guest_name or ""
+
+    def get_patient_email(self, obj):
+        if obj.patient:
+            return obj.patient.email
+        return obj.guest_email or ""
 
 
 class BookAppointmentSerializer(serializers.Serializer):
-    """Serializer para que un paciente reserve un turno disponible."""
+    """Serializer para reservar un turno disponible (paciente autenticado o invitado)."""
 
     appointment_id = serializers.UUIDField()
     notes = serializers.CharField(required=False, allow_blank=True, max_length=500)
+    first_name = serializers.CharField(required=False, allow_blank=True, max_length=100)
+    last_name = serializers.CharField(required=False, allow_blank=True, max_length=100)
+    email = serializers.EmailField(required=False, allow_blank=True)
+    age = serializers.IntegerField(required=False, min_value=1, max_value=130)

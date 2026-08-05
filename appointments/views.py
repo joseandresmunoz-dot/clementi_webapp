@@ -4,6 +4,8 @@ from django.utils import timezone
 
 from django.db import transaction
 from django.db.models import Q
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -76,12 +78,14 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     @action(
         detail=False,
         methods=["post"],
-        permission_classes=[permissions.IsAuthenticated],
+        permission_classes=[permissions.AllowAny],
         url_path="book",
     )
     def book(self, request):
         """
-        Un paciente autenticado reserva un turno disponible.
+        Reserva un turno disponible.
+        - Autenticado: lo asocia a su cuenta.
+        - Invitado (sin cuenta): requiere nombre, apellido, edad y email.
         Crea automáticamente un evento en Google Calendar con Meet link.
         """
         serializer = BookAppointmentSerializer(data=request.data)
@@ -89,6 +93,23 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 
         appointment_id = serializer.validated_data["appointment_id"]
         notes = serializer.validated_data.get("notes", "")
+
+        guest = request.user.is_anonymous
+        if guest:
+            first_name = serializer.validated_data.get("first_name", "").strip()
+            last_name = serializer.validated_data.get("last_name", "").strip()
+            email = serializer.validated_data.get("email", "").strip()
+            age = serializer.validated_data.get("age")
+            if not first_name or not last_name or not email:
+                return Response(
+                    {"error": "Completá tu nombre, apellido y correo para reservar."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            guest_name = f"{first_name} {last_name}".strip()
+        else:
+            guest_name = ""
+            email = ""
+            age = None
 
         with transaction.atomic():
             try:
@@ -118,10 +139,22 @@ class AppointmentViewSet(viewsets.ModelViewSet):
                 )
 
             # Reservar
-            appointment.patient = request.user
             appointment.status = Appointment.Status.BOOKED
             appointment.notes = notes
-            appointment.save(update_fields=["patient", "status", "notes", "updated_at"])
+            if guest:
+                appointment.patient = None
+                appointment.guest_name = guest_name
+                appointment.guest_email = email
+                appointment.guest_age = age
+            else:
+                appointment.patient = request.user
+                appointment.guest_name = ""
+                appointment.guest_email = ""
+                appointment.guest_age = None
+            appointment.save(update_fields=[
+                "patient", "status", "notes", "guest_name",
+                "guest_email", "guest_age", "updated_at",
+            ])
 
         # Crear evento en Google Calendar (fuera del lock)
         event_id, meet_link = create_calendar_event(appointment)
@@ -129,6 +162,28 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             appointment.google_event_id = event_id
             appointment.google_meet_link = meet_link or ""
             appointment.save(update_fields=["google_event_id", "google_meet_link", "updated_at"])
+
+        from patients.notifications import notify_patient, notify_staff
+
+        if appointment.patient:
+            patient_name = (
+                appointment.patient.get_full_name() or appointment.patient.email
+            )
+            notify_patient(
+                appointment.patient,
+                "Turno confirmado",
+                f"Tu turno quedó reservado para el {appointment.date.strftime('%d/%m/%Y')} "
+                f"a las {appointment.start_time.strftime('%H:%M')}.",
+                "/mi-panel/",
+            )
+        else:
+            patient_name = appointment.guest_name or appointment.guest_email
+        notify_staff(
+            "Nuevo turno reservado",
+            f"{patient_name} reservó el {appointment.date.strftime('%d/%m/%Y')} "
+            f"a las {appointment.start_time.strftime('%H:%M')}.",
+            "/turnos/",
+        )
 
         # Responder con el serializer adecuado
         out_serializer = AppointmentPublicSerializer(
@@ -229,9 +284,10 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     @action(
         detail=False,
         methods=["get"],
-        permission_classes=[permissions.IsAuthenticated],
+        permission_classes=[permissions.AllowAny],
         url_path="calendar",
     )
+    @method_decorator(never_cache)
     def calendar_events(self, request):
         """
         Devuelve slots en formato compatible con FullCalendar.js.
@@ -263,11 +319,16 @@ class AppointmentViewSet(viewsets.ModelViewSet):
                     and apt.patient_id == request.user.id
                 )
                 if request.user.is_authenticated and request.user.is_staff:
-                    name = apt.patient.get_full_name() if apt.patient else "?"
+                    if apt.patient:
+                        name = apt.patient.get_full_name() or apt.patient.email
+                    elif apt.guest_name:
+                        name = f"{apt.guest_name} (invitado)"
+                    else:
+                        name = "?"
                     event["title"] = f"Reservado — {name}"
                     event["color"] = "#dc3545"
                     event["extendedProps"] = {
-                        "patient_email": apt.patient.email if apt.patient else "",
+                        "patient_email": apt.patient.email if apt.patient else (apt.guest_email or ""),
                         "meet_link": apt.google_meet_link,
                     }
                 elif is_own:

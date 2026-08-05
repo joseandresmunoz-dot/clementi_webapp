@@ -97,6 +97,138 @@
         .navbar-custom .dropdown-item.text-danger:hover {
             background: rgba(220, 53, 69, 0.08);
         }
+        /* Notification bell */
+        .navbar-custom .notif-toggle {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            color: #333;
+            font-size: 1.15rem;
+            border: none;
+            background: transparent;
+            transition: all 0.2s ease;
+        }
+        .navbar-custom .notif-toggle:hover {
+            color: var(--brand);
+            background: rgba(153, 153, 255, 0.1);
+        }
+        .notif-badge {
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            min-width: 17px;
+            height: 17px;
+            padding: 0 4px;
+            background: #dc3545;
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            border-radius: 10px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .notif-badge.show {
+            display: inline-flex;
+        }
+        .notif-panel {
+            width: 340px;
+            max-width: 90vw;
+            border: none;
+            border-radius: 14px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.14);
+            padding: 0;
+            overflow: hidden;
+        }
+        .notif-panel .notif-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            background: #fff;
+        }
+        .notif-panel .notif-head h6 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .notif-panel .notif-head .notif-mark-read {
+            border: none;
+            background: none;
+            color: var(--brand);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .notif-panel .notif-head .notif-mark-read:hover {
+            text-decoration: underline;
+        }
+        .notif-list {
+            max-height: 360px;
+            overflow-y: auto;
+        }
+        .notif-item {
+            display: block;
+            padding: 10px 16px;
+            border-bottom: 1px solid #f5f5f5;
+            text-decoration: none;
+            color: #333;
+            transition: background 0.2s;
+        }
+        .notif-item:hover {
+            background: rgba(153, 153, 255, 0.06);
+        }
+        .notif-item.unread {
+            background: rgba(130, 69, 157, 0.07);
+            border-left: 3px solid var(--brand);
+        }
+        .notif-item .notif-title {
+            font-size: 0.83rem;
+            font-weight: 600;
+            color: #333;
+            display: block;
+        }
+        .notif-item .notif-msg {
+            font-size: 0.76rem;
+            color: #666;
+            display: block;
+            margin-top: 2px;
+            line-height: 1.35;
+        }
+        .notif-item .notif-date {
+            font-size: 0.7rem;
+            color: #aaa;
+            display: block;
+            margin-top: 4px;
+        }
+        .notif-empty {
+            padding: 28px 16px;
+            text-align: center;
+            color: #aaa;
+            font-size: 0.8rem;
+        }
+        .notif-foot {
+            padding: 10px 16px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.78rem;
+            color: #666;
+            background: #fff;
+        }
+        .notif-foot .form-check-input:checked {
+            background-color: var(--brand);
+            border-color: var(--brand);
+        }
+        .notif-foot .notif-switch-label {
+            cursor: pointer;
+            user-select: none;
+        }
         /* Footer matching landing */
         .footer-custom {
             background: #fff;
@@ -222,6 +354,19 @@
             margin-left: 240px;
             padding: 1.5rem;
         }
+        .nav-section-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #999;
+            font-weight: 700;
+            padding: 0;
+        }
+        .navbar-custom .nav-section-divider {
+            border: none;
+            border-top: 1px solid #f0f0f0;
+            margin: 0.5rem 0;
+        }
         @media (max-width: 991px) {
             .admin-sidebar {
                 transform: translateX(-100%);
@@ -276,9 +421,86 @@
                     </li>
                     {% endif %}
                     {% endif %}
+
+                    {% if user.is_staff %}
+                    <ul class="navbar-nav me-auto d-lg-none">
+                        <li class="nav-item" style="padding: 10px 14px 0;">
+                            <span class="nav-section-label">Administración</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'patients:patients_admin_list' %}">
+                                <i class="bi bi-people"></i> Pacientes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'patients:admin_panel' %}">
+                                <i class="bi bi-folder2-open"></i> Gestión de archivos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'patients:shop_admin' %}">
+                                <i class="bi bi-shop"></i> Tienda
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'patients:microbiota_admin' %}">
+                                <i class="bi bi-clipboard2-pulse"></i> Microbiota
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'patients:lead_inbox' %}">
+                                <i class="bi bi-inbox"></i> Consultas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'patients:doctor_dashboard' %}">
+                                <i class="bi bi-graph-up-arrow"></i> Estadísticas
+                            </a>
+                        </li>
+                        <li class="nav-item" style="padding: 0 14px;">
+                            <hr class="nav-section-divider">
+                        </li>
+                        <li class="nav-item" style="padding: 0 14px;">
+                            <span class="nav-section-label">Navegación</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'patients:home' %}">
+                                <i class="bi bi-house"></i> Inicio
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'patients:calendar' %}">
+                                <i class="bi bi-calendar3"></i> Turnos
+                            </a>
+                        </li>
+                    </ul>
+                    {% endif %}
                 </ul>
 
                 <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item dropdown" id="notifDropdown">
+                        <button type="button" class="notif-toggle" id="notifBell" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notificaciones">
+                            <i class="bi bi-bell"></i>
+                            <span class="notif-badge" id="notifBadge">0</span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end notif-panel" aria-labelledby="notifBell">
+                            <div class="notif-head">
+                                <h6><i class="bi bi-bell"></i> Notificaciones</h6>
+                                <button type="button" class="notif-mark-read" id="notifMarkRead">Marcar leídas</button>
+                            </div>
+                            <div class="notif-list" id="notifList">
+                                <div class="notif-empty">Cargando...</div>
+                            </div>
+                            <div class="notif-foot">
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="notifSwitch">
+                                    <label class="form-check-label notif-switch-label" for="notifSwitch">Notificaciones activadas</label>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    {% endif %}
                     {% if user.is_authenticated %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -323,7 +545,7 @@
                     <i class="bi bi-people"></i> Pacientes
                 </a>
                 <a href="{% url 'patients:admin_panel' %}" class="admin-sidebar-link {% if request.resolver_match.url_name == 'admin_panel' %}active{% endif %}">
-                    <i class="bi bi-gear"></i> Administración
+                    <i class="bi bi-folder2-open"></i> Gestión de archivos
                 </a>
                 <a href="{% url 'patients:shop_admin' %}" class="admin-sidebar-link {% if request.resolver_match.url_name == 'shop_admin' %}active{% endif %}">
                     <i class="bi bi-shop"></i> Tienda
@@ -391,6 +613,87 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    {% if user.is_authenticated %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const bell = document.getElementById('notifBell');
+        if (!bell) return;
+
+        function getCookie(name) {
+            const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+            return v ? v.pop() : '';
+        }
+        const csrf = getCookie('csrftoken');
+        const badge = document.getElementById('notifBadge');
+        const listEl = document.getElementById('notifList');
+        const markReadBtn = document.getElementById('notifMarkRead');
+        const switchEl = document.getElementById('notifSwitch');
+
+        function escapeHtml(text) {
+            const d = document.createElement('div');
+            d.textContent = text == null ? '' : String(text);
+            return d.innerHTML;
+        }
+
+        function render(data) {
+            badge.textContent = data.unread;
+            badge.classList.toggle('show', data.unread > 0);
+            switchEl.checked = data.enabled;
+
+            if (!data.notifications.length) {
+                listEl.innerHTML = '<div class="notif-empty">No tenés notificaciones.</div>';
+                return;
+            }
+            listEl.innerHTML = data.notifications.map(function(n) {
+                const url = n.url || '#';
+                const body = '<span class="notif-title">' + escapeHtml(n.title) + '</span>' +
+                    (n.message ? '<span class="notif-msg">' + escapeHtml(n.message) + '</span>' : '') +
+                    '<span class="notif-date">' + escapeHtml(n.created_at) + '</span>';
+                return '<a href="' + url + '" class="notif-item' + (n.is_read ? '' : ' unread') + '">' + body + '</a>';
+            }).join('');
+        }
+
+        function loadNotifications() {
+            fetch('/notificaciones/datos/', { headers: { 'X-CSRFToken': csrf } })
+            .then(function(r) { return r.json(); })
+            .then(function(data) { if (!data.error) render(data); })
+            .catch(function() {});
+        }
+
+        function markAllRead() {
+            fetch('/notificaciones/marcar-leidas/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrf },
+            }).then(function() { loadNotifications(); });
+        }
+
+        // Marcar leídas al abrir el panel
+        bell.addEventListener('shown.bs.dropdown', function() {
+            markAllRead();
+        });
+
+        markReadBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            markAllRead();
+        });
+
+        switchEl.addEventListener('change', function() {
+            const body = new URLSearchParams();
+            body.append('enabled', switchEl.checked ? '1' : '0');
+            fetch('/notificaciones/toggle/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrf },
+                body: body,
+            }).catch(function() { loadNotifications(); });
+        });
+
+        loadNotifications();
+        setInterval(loadNotifications, 30000);
+    });
+    </script>
+    {% endif %}
 
     {% block extra_js %}{% endblock %}
 

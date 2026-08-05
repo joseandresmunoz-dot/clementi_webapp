@@ -5,17 +5,175 @@
 
 {% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+<style>
+    .staff-panel {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(153, 153, 255, 0.15);
+        padding: 1.25rem;
+        height: 100%;
+    }
+    .staff-panel h6 {
+        font-weight: 600;
+        color: #222;
+        font-size: 0.9rem;
+    }
+    .staff-panel h6 i {
+        color: var(--brand);
+        margin-right: 8px;
+    }
+    .staff-panel .form-label {
+        font-weight: 500;
+        color: #333;
+        font-size: 0.8rem;
+        margin-bottom: 4px;
+    }
+    .staff-panel .btn-brand {
+        background: var(--brand);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: 8px 16px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+    .staff-panel .btn-brand:hover {
+        background: var(--brand-dark);
+        color: #fff;
+    }
+    .staff-panel .btn-outline-brand {
+        background: #fff;
+        color: var(--brand);
+        border: 1px solid var(--brand);
+        border-radius: 10px;
+        padding: 8px 16px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        width: 100%;
+        transition: all 0.3s ease;
+        text-align: center;
+        display: block;
+        text-decoration: none;
+    }
+    .staff-panel .btn-outline-brand:hover {
+        background: var(--brand);
+        color: #fff;
+    }
+    .staff-panel hr {
+        border-color: #f0f0f0;
+        margin: 1rem 0;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="bi bi-calendar3"></i> Calendario de Turnos</h2>
     {% if not user.is_authenticated %}
-    <a href="{% url 'account_login' %}" class="btn btn-primary">
-        <i class="bi bi-box-arrow-in-right"></i> Ingresá para reservar
+    <a href="{% url 'account_login' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-box-arrow-in-right"></i> Ya tengo cuenta
     </a>
     {% endif %}
 </div>
+
+{% if not user.is_authenticated %}
+<div class="alert alert-info small py-2 mb-4" style="border-radius:12px;">
+    <i class="bi bi-info-circle"></i>
+    Elegí un turno en verde y reservalo sin necesidad de crear una cuenta: solo vas a
+    completar tus datos (nombre, apellido, edad y correo).
+</div>
+{% endif %}
+
+{% if user.is_staff %}
+<div class="row g-3 mb-4">
+    <!-- Google Calendar -->
+    <div class="col-md-6 col-lg-4">
+        <div class="staff-panel">
+            <h6><i class="bi bi-calendar-event"></i> Google Calendar</h6>
+            {% if google_calendar_is_connected %}
+            <p class="small mb-2" style="color:#198754;font-weight:600;">
+                <i class="bi bi-check-circle"></i>
+                {% if request.user.google_calendar_credentials.google_email %}
+                Conectado ({{ request.user.google_calendar_credentials.google_email }})
+                {% else %}
+                Calendario conectado
+                {% endif %}
+            </p>
+            <a href="{% url 'patients:disconnect_google_calendar' %}" class="btn-outline-brand" style="color:#dc2626;border-color:#dc2626;">
+                <i class="bi bi-unlink"></i> Desconectar
+            </a>
+            {% else %}
+            <p class="small text-muted mb-2">
+                Conectá tu Google Calendar para que los turnos creen eventos con Meet automáticamente.
+            </p>
+            <a href="{% url 'patients:connect_google_calendar' %}" class="btn-brand">
+                <i class="bi bi-link-45deg"></i> Conectar Google Calendar
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Crear Turno -->
+    <div class="col-md-6 col-lg-4">
+        <div class="staff-panel">
+            <h6><i class="bi bi-plus-circle"></i> Crear Turno</h6>
+            <form id="createSlotForm">
+                <div class="mb-2">
+                    <label class="form-label">Fecha</label>
+                    <input type="date" class="form-control" id="slotDate" required>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col">
+                        <label class="form-label">Inicio</label>
+                        <input type="time" class="form-control" id="slotStart" value="09:00" required>
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Fin</label>
+                        <input type="time" class="form-control" id="slotEnd" value="09:30" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-brand"><i class="bi bi-plus-lg"></i> Crear Turno</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Crear en Lote -->
+    <div class="col-md-12 col-lg-4">
+        <div class="staff-panel">
+            <h6><i class="bi bi-collection"></i> Crear varios turnos</h6>
+            <form id="bulkSlotForm">
+                <div class="mb-2">
+                    <label class="form-label">Fecha</label>
+                    <input type="date" class="form-control" id="bulkDate" required>
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col">
+                        <label class="form-label">Desde</label>
+                        <input type="time" class="form-control" id="bulkStart" value="08:00" required>
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Hasta</label>
+                        <input type="time" class="form-control" id="bulkEnd" value="13:00" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Duración (min)</label>
+                    <select class="form-select" id="bulkDuration">
+                        <option value="15">15 min</option>
+                        <option value="30" selected>30 min</option>
+                        <option value="45">45 min</option>
+                        <option value="60">60 min</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-outline-brand"><i class="bi bi-collection"></i> Crear en Lote</button>
+            </form>
+            <div id="slotFeedback" class="mt-2"></div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <!-- Leyenda -->
 <div class="d-flex gap-3 mb-3 flex-wrap small">
@@ -41,6 +199,32 @@
             <div class="modal-body">
                 <p><strong>Fecha:</strong> <span id="bookDate"></span></p>
                 <p><strong>Horario:</strong> <span id="bookTime"></span></p>
+                <div id="guestFields" class="d-none">
+                    <div class="alert alert-warning small py-2" style="border-radius:10px;">
+                        <i class="bi bi-person-plus"></i> Reserva sin cuenta: completá tus datos y
+                        te llega el enlace de Meet por email.
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col">
+                            <label for="guestFirstName" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="guestFirstName" autocomplete="given-name">
+                        </div>
+                        <div class="col">
+                            <label for="guestLastName" class="form-label">Apellido</label>
+                            <input type="text" class="form-control" id="guestLastName" autocomplete="family-name">
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col">
+                            <label for="guestAge" class="form-label">Edad</label>
+                            <input type="number" class="form-control" id="guestAge" min="1" max="130" inputmode="numeric">
+                        </div>
+                        <div class="col">
+                            <label for="guestEmail" class="form-label">Correo electrónico</label>
+                            <input type="email" class="form-control" id="guestEmail" autocomplete="email">
+                        </div>
+                    </div>
+                </div>
                 <div class="mb-3">
                     <label for="bookNotes" class="form-label">Notas (opcional)</label>
                     <textarea class="form-control" id="bookNotes" rows="2"
@@ -94,6 +278,95 @@ document.addEventListener('DOMContentLoaded', function() {
     const csrfToken = '{{ csrf_token }}';
     let selectedEventId = null;
 
+    {% if user.is_staff %}
+    // ── Staff: crear turnos ────────────────────────────────────
+    const createSlotForm = document.getElementById('createSlotForm');
+    if (createSlotForm) {
+        createSlotForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = {
+                date: document.getElementById('slotDate').value,
+                start_time: document.getElementById('slotStart').value,
+                end_time: document.getElementById('slotEnd').value,
+                status: 'AVAILABLE',
+            };
+            fetch('/api/appointments/slots/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify(data),
+            })
+            .then(r => r.json().then(d => ({status: r.status, data: d})))
+            .then(({status, data}) => {
+                if (status === 201) {
+                    calendar.addEvent({
+                        id: String(data.id),
+                        title: 'Disponible',
+                        start: `${data.date}T${data.start_time}`,
+                        end: `${data.date}T${data.end_time}`,
+                        allDay: false,
+                        color: '#28a745',
+                        extendedProps: { bookable: true },
+                    });
+                    showSlotFeedback('Turno creado.', 'success');
+                } else {
+                    showSlotFeedback(JSON.stringify(data), 'danger');
+                }
+            });
+        });
+    }
+
+    const bulkSlotForm = document.getElementById('bulkSlotForm');
+    if (bulkSlotForm) {
+        bulkSlotForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const date = document.getElementById('bulkDate').value;
+            const startStr = document.getElementById('bulkStart').value;
+            const endStr = document.getElementById('bulkEnd').value;
+            const duration = parseInt(document.getElementById('bulkDuration').value);
+            const slots = [];
+            let [sh, sm] = startStr.split(':').map(Number);
+            const [eh, em] = endStr.split(':').map(Number);
+            const endMinutes = eh * 60 + em;
+            while (sh * 60 + sm + duration <= endMinutes) {
+                const start = `${String(sh).padStart(2,'0')}:${String(sm).padStart(2,'0')}`;
+                sm += duration;
+                if (sm >= 60) { sh += Math.floor(sm / 60); sm = sm % 60; }
+                const end = `${String(sh).padStart(2,'0')}:${String(sm).padStart(2,'0')}`;
+                slots.push({ date, start_time: start, end_time: end, status: 'AVAILABLE' });
+            }
+            if (!slots.length) { showSlotFeedback('El rango no genera turnos.', 'warning'); return; }
+            fetch('/api/appointments/slots/bulk-create/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({ slots }),
+            })
+            .then(r => r.json().then(d => ({status: r.status, data: d})))
+            .then(({status, data}) => {
+                (data.created || []).forEach(function(slot) {
+                    calendar.addEvent({
+                        id: String(slot.id),
+                        title: 'Disponible',
+                        start: `${slot.date}T${slot.start_time}`,
+                        end: `${slot.date}T${slot.end_time}`,
+                        allDay: false,
+                        color: '#28a745',
+                        extendedProps: { bookable: true },
+                    });
+                });
+                if (data.created_count) showSlotFeedback(`${data.created_count} turnos creados.`, 'success');
+                if (data.errors && data.errors.length) showSlotFeedback(`${data.errors.length} errores (duplicados?).`, 'warning');
+            });
+        });
+    }
+
+    function showSlotFeedback(msg, type) {
+        const el = document.getElementById('slotFeedback');
+        if (!el) return;
+        el.innerHTML = `<div class="alert alert-${type} py-1 small" style="border-radius:10px;">${msg}</div>`;
+        setTimeout(() => el.innerHTML = '', 4000);
+    }
+    {% endif %}
+
     // ── Calendar init ────────────────────────────────────────────
     const calendarEl = document.getElementById('calendar');
     const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -145,19 +418,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Slot disponible → abrir modal de reserva
-            if (props.bookable && isAuthenticated) {
+            if (props.bookable) {
                 selectedEventId = event.id;
                 document.getElementById('bookDate').textContent = formatDate(event.start);
                 document.getElementById('bookTime').textContent = formatTime(event.start, event.end);
                 document.getElementById('bookNotes').value = '';
                 document.getElementById('bookError').classList.add('d-none');
-                new bootstrap.Modal(document.getElementById('bookModal')).show();
-                return;
-            }
 
-            // Slot disponible pero no autenticado
-            if (props.bookable && !isAuthenticated) {
-                window.location.href = '{% url "account_login" %}';
+                const guestFields = document.getElementById('guestFields');
+                if (isAuthenticated) {
+                    guestFields.classList.add('d-none');
+                } else {
+                    guestFields.classList.remove('d-none');
+                    document.getElementById('guestFirstName').value = '';
+                    document.getElementById('guestLastName').value = '';
+                    document.getElementById('guestAge').value = '';
+                    document.getElementById('guestEmail').value = '';
+                }
+                new bootstrap.Modal(document.getElementById('bookModal')).show();
                 return;
             }
 
@@ -214,16 +492,24 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Reservando...';
 
+        const body = {
+            appointment_id: selectedEventId,
+            notes: document.getElementById('bookNotes').value,
+        };
+        if (!isAuthenticated) {
+            body.first_name = document.getElementById('guestFirstName').value;
+            body.last_name = document.getElementById('guestLastName').value;
+            body.age = document.getElementById('guestAge').value || null;
+            body.email = document.getElementById('guestEmail').value;
+        }
+
         fetch('/api/appointments/slots/book/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrfToken,
             },
-            body: JSON.stringify({
-                appointment_id: selectedEventId,
-                notes: document.getElementById('bookNotes').value,
-            }),
+            body: JSON.stringify(body),
         })
         .then(r => r.json().then(data => ({status: r.status, data})))
         .then(({status, data}) => {

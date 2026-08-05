@@ -12,4 +12,13 @@ def create_patient_profile(sender, instance, created, **kwargs):
     Solo para usuarios NO staff (pacientes).
     """
     if created and not instance.is_staff:
-        PatientProfile.objects.get_or_create(user=instance)
+        profile, profile_created = PatientProfile.objects.get_or_create(user=instance)
+        if profile_created:
+            from patients.notifications import notify_staff
+
+            name = instance.get_full_name() or instance.email
+            notify_staff(
+                "Nuevo paciente registrado",
+                f"{name} se registró en la web.",
+                "/administracion/pacientes/",
+            )

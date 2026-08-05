@@ -59,6 +59,7 @@ class ClinicalTimelineEntry(models.Model):
     )
     subject = models.CharField("Asunto", max_length=200)
     details = models.TextField("Detalle clínico")
+    details_html = models.TextField("Detalle clínico HTML", blank=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -254,6 +255,7 @@ class Lead(models.Model):
     email = models.EmailField("Email")
     phone = models.CharField("Teléfono", max_length=20, blank=True)
     message = models.TextField("Mensaje", blank=True)
+    message_html = models.TextField("Mensaje HTML", blank=True)
     source = models.CharField("Origen", max_length=100, default="landing")
     is_subscribed = models.BooleanField("Suscrito a newsletter", default=True)
     status = models.CharField(
@@ -296,6 +298,49 @@ class LeadReply(models.Model):
 
     def __str__(self):
         return f"Respuesta de {self.sent_by} a {self.lead.name}"
+
+
+class Notification(models.Model):
+    """Notificación del sistema (campanita del panel)."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="notifications",
+        verbose_name="Usuario",
+    )
+    title = models.CharField("Título", max_length=200)
+    message = models.TextField("Mensaje", blank=True)
+    url = models.CharField("URL", max_length=500, blank=True)
+    is_read = models.BooleanField("Leído", default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Notificación"
+        verbose_name_plural = "Notificaciones"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.email} — {self.title}"
+
+
+class NotificationPreference(models.Model):
+    """Preferencia de activar/desactivar notificaciones por usuario."""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="notification_pref",
+        verbose_name="Usuario",
+    )
+    enabled = models.BooleanField("Notificaciones activadas", default=True)
+
+    class Meta:
+        verbose_name = "Preferencia de notificación"
+        verbose_name_plural = "Preferencias de notificación"
+
+    def __str__(self):
+        return f"{self.user.email} — {'activadas' if self.enabled else 'desactivadas'}"
 
 
 class MercadoPagoError(Exception):

@@ -53,4 +53,7 @@ urlpatterns = [
     path("consultas/<int:pk>/responder/", views.lead_reply, name="lead_reply"),
     path("consultas/<int:pk>/estado/", views.lead_update_status, name="lead_update_status"),
     path("consultas/<int:pk>/eliminar/", views.lead_delete, name="lead_delete"),
+    path("notificaciones/datos/", views.notifications_data, name="notifications_data"),
+    path("notificaciones/marcar-leidas/", views.notifications_mark_read, name="notifications_mark_read"),
+    path("notificaciones/toggle/", views.notifications_toggle, name="notifications_toggle"),
 ]

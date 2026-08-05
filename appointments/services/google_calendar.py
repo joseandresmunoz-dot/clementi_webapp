@@ -112,6 +112,9 @@ def create_calendar_event(appointment):
     if appointment.patient:
         patient_name = appointment.patient.get_full_name() or appointment.patient.email
         patient_email = appointment.patient.email
+    elif appointment.guest_name:
+        patient_name = appointment.guest_name
+        patient_email = appointment.guest_email
 
     event_body = {
         "summary": f"Consulta — {patient_name}",

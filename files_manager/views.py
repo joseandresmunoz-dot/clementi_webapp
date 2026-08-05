@@ -23,7 +23,7 @@ User = get_user_model()
 
 
 def _notify_new_document(patient, shared_file):
-    """Envía un push al paciente cuando la Dra. le comparte un documento."""
+    """Notifica al paciente que la Dra. le compartió un documento (push + campanita)."""
     try:
         send_user_notification(
             patient,
@@ -38,6 +38,18 @@ def _notify_new_document(patient, shared_file):
         )
     except Exception:
         logger.warning("No se pudo enviar push a %s por archivo %s", patient, shared_file.pk, exc_info=True)
+
+    try:
+        from patients.notifications import notify_patient
+
+        notify_patient(
+            patient,
+            "Nuevo documento de tu doctora",
+            shared_file.title,
+            "/mi-panel/",
+        )
+    except Exception:
+        logger.warning("No se pudo registrar notificación a %s por archivo %s", patient, shared_file.pk, exc_info=True)
 
 
 class IsStaffPermission(permissions.BasePermission):
@@ -105,9 +117,20 @@ class SharedFileViewSet(viewsets.ModelViewSet):
         return self.get_paginated_response(data)
 
     def perform_create(self, serializer):
+        patient_ids = serializer.validated_data.pop("patient_ids", None)
         instance = serializer.save(uploaded_by=self.request.user)
-        for perm in instance.permissions.select_related("patient"):
-            _notify_new_document(perm.patient, instance)
+
+        # Si visibilidad PRIVATE y vienen pacientes, asignar permisos directos
+        if patient_ids:
+            patients = User.objects.filter(
+                id__in=patient_ids, is_staff=False
+            )
+            for patient in patients:
+                perm, created = FilePermission.objects.get_or_create(
+                    shared_file=instance, patient=patient
+                )
+                if created:
+                    _notify_new_document(patient, instance)
 
     # ── Asignar permiso a paciente (archivo PRIVATE) ─────────────
     @action(detail=True, methods=["post"], url_path="assign")
@@ -179,7 +202,17 @@ class SharedFileViewSet(viewsets.ModelViewSet):
         patients = User.objects.filter(
             is_staff=False,
             patient_profile__is_approved=True,
-        ).values(
+        )
+
+        q = request.query_params.get("q", "").strip()
+        if q:
+            patients = patients.filter(
+                Q(first_name__icontains=q)
+                | Q(last_name__icontains=q)
+                | Q(email__icontains=q)
+            )
+
+        patients = patients.order_by("first_name", "last_name").values(
             "id", "email", "first_name", "last_name"
         )
         return Response(list(patients))

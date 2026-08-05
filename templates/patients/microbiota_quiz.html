@@ -590,6 +590,12 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // ── Guardar resultados en la bandeja de consultas del admin ──
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
     function buildResultsPayload() {
         const nombre = document.getElementById('dNombre').value.trim();
         const email = document.getElementById('dEmail').value.trim();
@@ -600,22 +606,102 @@ document.addEventListener('DOMContentLoaded', function() {
             return { error: 'Completá tu email en la sección de datos primero.' };
         }
 
+        const val = function(id) { return (document.getElementById(id).value || '').trim(); };
+        const sexo = { F: 'Femenino', M: 'Masculino' }[val('dSexo')] || '—';
+
+        // ── Datos personales completos (como pares etiqueta/valor) ──
+        const datos = [
+            ['Nombre y apellido', nombre],
+            ['Email', email],
+            ['Teléfono', val('dTelefono') || '—'],
+            ['Edad', (val('dEdad') || '—') + ' años'],
+            ['Sexo biológico', sexo],
+            ['Profesión', val('dProfesion') || '—'],
+            ['Peso', val('dPeso') ? val('dPeso') + ' kg' : '—'],
+            ['Altura', val('dAltura') ? val('dAltura') + ' cm' : '—'],
+            ['Fumador', val('dFumador') || '—'],
+            ['Patologías de base', val('dPatologias') || '—'],
+            ['Medicamentos a cronicidad', val('dMedicamentos') || '—'],
+            ['Alergias alimenticias', val('dAlergias') || '—'],
+            ['Actividad diaria', val('dActividad') || '—'],
+            ['Práctica de meditación', val('dMeditacion') || '—'],
+        ];
+
+        // ── Todas las preguntas con las respuestas del paciente ──
+        const preguntas = [];
+        document.querySelectorAll('.quiz-section').forEach(function(sec) {
+            if (!sec.querySelector('.question-row')) return;
+            const secNameEl = sec.querySelector('.section-header h5');
+            const secName = secNameEl ? secNameEl.textContent.trim() : 'Sección';
+            const items = [];
+            sec.querySelectorAll('.question-row').forEach(function(row) {
+                const qText = row.querySelector('span').textContent.replace(/^\d+\)\s*/, '').trim();
+                const checked = row.querySelector('input.quiz-radio:checked');
+                let ansText = '(sin responder)';
+                if (checked) {
+                    const lbl = checked.closest('.form-check').querySelector('.form-check-label');
+                    if (lbl) ansText = lbl.textContent.trim();
+                }
+                items.push([qText, ansText]);
+            });
+            preguntas.push({ nombre: secName, items: items });
+        });
+
+        // ── Puntajes por sección ──
         const scores = calcAllSections();
         let total = 0;
-        let detalles = '';
+        const resumen = [];
         sectionSlugs.forEach(function(slug) {
-            const s = scores[slug];
-            total += s;
-            detalles += slug + ': ' + s + '\n';
+            total += scores[slug];
+            resumen.push([slug, scores[slug]]);
         });
+        const diagnostico = document.getElementById('resMessage').textContent;
+
+        // ── Versión de texto plano (WhatsApp / email / historia clínica) ──
+        let detalles =
+            '— DATOS DEL PACIENTE —\n' +
+            datos.map(function(d) { return d[0] + ': ' + d[1]; }).join('\n') + '\n' +
+            '\n— RESPUESTAS DEL CUESTIONARIO —\n';
+        preguntas.forEach(function(sec) {
+            detalles += '\n■ ' + sec.nombre + '\n';
+            sec.items.forEach(function(it) {
+                detalles += '• ' + it[0] + '\n   Respuesta: ' + it[1] + '\n';
+            });
+        });
+        detalles += '\n— PUNTUACIÓN POR SECCIÓN —\n' +
+            resumen.map(function(r) { return r[0] + ': ' + r[1] + ' pts'; }).join('\n');
+
+        // ── Versión HTML diferenciada (bandeja de consultas) ──
+        let html =
+            '<div class="quiz-report">' +
+            '<div class="qr-block"><div class="qr-title">Datos del paciente</div>' +
+            datos.map(function(d) { return '<div class="qr-dato"><span>' + esc(d[0]) + ':</span> ' + esc(d[1]) + '</div>'; }).join('') +
+            '</div>' +
+            '<div class="qr-block"><div class="qr-title">Cuestionario</div>';
+        preguntas.forEach(function(sec) {
+            html += '<div class="qr-section"><div class="qr-sec-title">' + esc(sec.nombre) + '</div>';
+            sec.items.forEach(function(it) {
+                html += '<div class="qr-q"><div class="qr-q-text">' + esc(it[0]) + '</div>' +
+                        '<div class="qr-q-ans"><span class="qr-ans-label">Respuesta:</span> <strong>' + esc(it[1]) + '</strong></div></div>';
+            });
+            html += '</div>';
+        });
+        html += '</div>' +
+            '<div class="qr-block"><div class="qr-title">Puntuación por sección</div>' +
+            resumen.map(function(r) { return '<div class="qr-score"><span>' + esc(r[0]) + ':</span> ' + r[1] + ' pts</div>'; }).join('') +
+            '<div class="qr-total">Puntuación total: <strong>' + total + '</strong></div>' +
+            '<div class="qr-diagnosis"><span class="qr-ans-label">Diagnóstico:</span> <strong>' + esc(diagnostico) + '</strong></div>' +
+            '</div>' +
+            '</div>';
 
         const data = new URLSearchParams();
         data.append('nombre', nombre);
         data.append('email', email);
-        data.append('telefono', document.getElementById('dTelefono').value.trim());
+        data.append('telefono', val('dTelefono'));
         data.append('detalles', detalles);
+        data.append('detalles_html', html);
         data.append('total', total);
-        data.append('mensaje', document.getElementById('resMessage').textContent);
+        data.append('mensaje', diagnostico);
 
         return { nombre: nombre, email: email, total: total, detalles: detalles, data: data };
     }

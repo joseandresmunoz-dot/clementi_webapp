@@ -3,6 +3,85 @@
 {% block title %}Paciente — {{ profile.user.get_full_name|default:profile.user.email }}{% endblock %}
 {% block main_class %}admin-main-content{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Reporte de cuestionario (microbiota) */
+    .quiz-report {
+        font-size: 0.9rem;
+        line-height: 1.5;
+        white-space: normal;
+    }
+    .quiz-report .qr-block {
+        margin-bottom: 1.25rem;
+    }
+    .quiz-report .qr-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--brand);
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.35rem;
+        border-bottom: 1px solid rgba(130, 69, 157, 0.18);
+    }
+    .quiz-report .qr-dato {
+        padding: 0.15rem 0;
+        font-size: 0.85rem;
+        color: #333;
+    }
+    .quiz-report .qr-dato span,
+    .quiz-report .qr-score span,
+    .quiz-report .qr-ans-label {
+        color: var(--brand-dark);
+        font-weight: 600;
+    }
+    .quiz-report .qr-section {
+        margin-bottom: 1rem;
+    }
+    .quiz-report .qr-sec-title {
+        font-weight: 600;
+        color: #fff;
+        background: var(--brand);
+        display: inline-block;
+        padding: 0.2rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        margin-bottom: 0.45rem;
+    }
+    .quiz-report .qr-q {
+        padding: 0.5rem 0.65rem;
+        margin-bottom: 0.35rem;
+        background: #fff;
+        border: 1px solid #eee;
+        border-left: 3px solid var(--brand-light);
+        border-radius: 8px;
+    }
+    .quiz-report .qr-q-text {
+        font-size: 0.84rem;
+        color: #333;
+        margin-bottom: 0.15rem;
+    }
+    .quiz-report .qr-q-ans {
+        font-size: 0.82rem;
+        color: #444;
+    }
+    .quiz-report .qr-q-ans strong {
+        color: #2e7d32;
+    }
+    .quiz-report .qr-total {
+        font-weight: 700;
+        color: var(--brand-dark);
+        font-size: 0.95rem;
+        margin-top: 0.5rem;
+    }
+    .quiz-report .qr-diagnosis {
+        margin-top: 0.35rem;
+        font-size: 0.9rem;
+        color: #333;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-0"><i class="bi bi-person-vcard"></i> {{ profile.user.get_full_name|default:profile.user.email }}</h2>
@@ -11,29 +90,106 @@
 
 <div class="row g-4">
     <div class="col-lg-4">
-        <div class="card h-100">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Datos del paciente</h5>
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white py-2">
+                <h6 class="mb-0">Datos del paciente</h6>
+            </div>
+            <div class="card-body py-2" style="font-size:0.8rem;">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <small class="text-muted d-block">Nombre y apellido</small>
+                        <strong style="font-size:0.75rem;word-break:break-word;">{{ profile.user.get_full_name|default:"—" }}</strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Email</small>
+                        <strong style="font-size:0.75rem;word-break:break-word;">{{ profile.user.email }}</strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Teléfono</small>
+                        <strong>{{ profile.phone|default:"-" }}</strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Nacimiento</small>
+                        <strong>{{ profile.date_of_birth|date:"d/m/Y"|default:"-" }}</strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Edad</small>
+                        <strong>{% if patient_age is not None %}{{ patient_age }}{% else %}-{% endif %}</strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Localidad</small>
+                        <strong>{{ profile.locality|default:"-" }}</strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Estado</small>
+                        <strong>
+                            {% if profile.is_approved %}
+                            <span class="badge bg-success">Aprobado</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark">Pendiente</span>
+                            {% endif %}
+                        </strong>
+                    </div>
+                </div>
+                <a href="#historiaGeneral" class="btn btn-sm btn-outline-primary w-100 mt-3">
+                    <i class="bi bi-pencil-square"></i> Editar datos del paciente
+                </a>
+            </div>
+        </div>
+
+        <!-- Gestión de archivos -->
+        <div class="card">
+            <div class="card-header bg-primary text-white py-2">
+                <h6 class="mb-0"><i class="bi bi-folder2-open"></i> Gestión de archivos</h6>
             </div>
             <div class="card-body">
-                <p class="mb-1"><strong>Email:</strong> {{ profile.user.email }}</p>
-                <p class="mb-1"><strong>Teléfono:</strong> {{ profile.phone|default:"-" }}</p>
-                <p class="mb-1"><strong>Nacimiento:</strong> {{ profile.date_of_birth|date:"d/m/Y"|default:"-" }}</p>
-                <p class="mb-1"><strong>Edad:</strong> {% if patient_age is not None %}{{ patient_age }}{% else %}-{% endif %}</p>
-                <p class="mb-1"><strong>Localidad:</strong> {{ profile.locality|default:"-" }}</p>
-                <p class="mb-1"><strong>Estado:</strong>
-                    {% if profile.is_approved %}
-                    <span class="badge bg-success">Aprobado</span>
-                    {% else %}
-                    <span class="badge bg-warning text-dark">Pendiente</span>
-                    {% endif %}
-                </p>
+                <div id="ptFileFeedback"></div>
+                <form id="ptUploadForm">
+                    {% csrf_token %}
+                    <div class="mb-2">
+                        <label class="form-label small mb-1">Título *</label>
+                        <input type="text" id="ptFileTitle" class="form-control" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small mb-1">Descripción</label>
+                        <textarea id="ptFileDescription" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small mb-1">Archivo *</label>
+                        <input type="file" id="ptFileInput" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm w-100" id="ptUploadBtn">
+                        <i class="bi bi-upload"></i> Subir para este paciente
+                    </button>
+                </form>
+
+                <hr>
+                <h6 class="text-muted small text-uppercase mb-2">Archivos de este paciente</h6>
+                <div id="ptFileList">
+                    {% for file in patient_files %}
+                    <div class="d-flex justify-content-between align-items-center border rounded p-2 mb-2">
+                        <div class="d-flex align-items-center" style="min-width:0;">
+                            {% if file.file_type == "PDF" %}<i class="bi bi-file-earmark-pdf text-danger me-2"></i>
+                            {% elif file.file_type == "VIDEO" %}<i class="bi bi-play-circle text-primary me-2"></i>
+                            {% elif file.file_type == "IMAGE" %}<i class="bi bi-image text-success me-2"></i>
+                            {% else %}<i class="bi bi-file-earmark text-secondary me-2"></i>{% endif %}
+                            <div style="min-width:0;">
+                                <a href="{{ file.file.url }}" target="_blank" class="text-decoration-none" style="font-size:0.85rem;word-break:break-word;"><strong>{{ file.title }}</strong></a>
+                                <div><small class="text-muted">{{ file.created_at|date:"d/m/Y" }}</small></div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger pt-del-file ms-2" data-id="{{ file.id }}" title="Eliminar"><i class="bi bi-trash"></i></button>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted small mb-0" id="ptFileListEmpty">Este paciente todavía no tiene archivos asignados.</p>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
 
     <div class="col-lg-8">
-        <div class="card mb-4">
+        <div class="card mb-4" id="historiaGeneral">
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">Historia clínica general</h5>
             </div>
@@ -42,6 +198,14 @@
                     {% csrf_token %}
                     <input type="hidden" name="action" value="update_profile_note">
                     <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" name="first_name" class="form-control" value="{{ profile.user.first_name }}" autocomplete="off">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Apellido</label>
+                            <input type="text" name="last_name" class="form-control" value="{{ profile.user.last_name }}" autocomplete="off">
+                        </div>
                         <div class="col-md-4">
                             <label class="form-label">Teléfono</label>
                             <input type="text" name="phone" class="form-control" value="{{ profile.phone }}">
@@ -54,7 +218,7 @@
                             <label class="form-label">Edad</label>
                             <input id="agePreviewInput" type="text" class="form-control" value="{% if patient_age is not None %}{{ patient_age }}{% endif %}" readonly>
                         </div>
-                        <div class="col-12">
+                        <div class="col-md-4">
                             <label class="form-label">Localidad</label>
                             <input type="text" name="locality" class="form-control" value="{{ profile.locality }}">
                         </div>
@@ -120,7 +284,7 @@
                         <div id="adminTimelineCollapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
                              aria-labelledby="adminTimelineHeading{{ forloop.counter }}" data-bs-parent="#adminTimelineAccordion">
                             <div class="accordion-body">
-                                <p class="mb-2">{{ entry.details|linebreaksbr }}</p>
+                                <p class="mb-2">{% if entry.details_html %}{{ entry.details_html|safe }}{% else %}{{ entry.details|linebreaksbr }}{% endif %}</p>
                                 <small class="text-muted d-block">
                                     Registrado por {% if entry.created_by %}{{ entry.created_by.get_full_name|default:entry.created_by.email }}{% else %}Administrador{% endif %}
                                     {% if entry.appointment %}
@@ -168,6 +332,85 @@
     dobInput.addEventListener('change', updateAge);
     dobInput.addEventListener('input', updateAge);
     updateAge();
+})();
+
+(function () {
+    const form = document.getElementById('ptUploadForm');
+    if (!form) return;
+    const csrf = '{{ csrf_token }}';
+    const patientId = {{ profile.user.id }};
+    const feedback = document.getElementById('ptFileFeedback');
+
+    function showFeedback(msg, type) {
+        feedback.innerHTML = '<div class="alert alert-' + type + ' py-1 small" style="border-radius:8px;">' + msg + '</div>';
+        setTimeout(function () { feedback.innerHTML = ''; }, 4000);
+    }
+
+    function detectFileType(file) {
+        if (!file) return 'OTHER';
+        const name = file.name.toLowerCase();
+        if (name.endsWith('.pdf')) return 'PDF';
+        if (/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/.test(name)) return 'IMAGE';
+        if (/\.(mp4|mov|avi|webm|mkv|m4v)$/.test(name)) return 'VIDEO';
+        return 'OTHER';
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const title = document.getElementById('ptFileTitle').value.trim();
+        const fileInput = document.getElementById('ptFileInput');
+        if (!title) { showFeedback('Completá el título.', 'warning'); return; }
+        if (!fileInput.files[0]) { showFeedback('Elegí un archivo.', 'warning'); return; }
+
+        const btn = document.getElementById('ptUploadBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Subiendo...';
+
+        const fd = new FormData();
+        fd.append('title', title);
+        fd.append('description', document.getElementById('ptFileDescription').value);
+        fd.append('file', fileInput.files[0]);
+        fd.append('file_type', detectFileType(fileInput.files[0]));
+        fd.append('visibility', 'PRIVATE');
+        fd.append('patient_ids', String(patientId));
+
+        fetch('/api/files/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrf },
+            body: fd,
+        })
+        .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+        .then(function (res) {
+            if (res.status === 201) {
+                showFeedback('Archivo subido y asignado a este paciente.', 'success');
+                form.reset();
+                setTimeout(function () { window.location.reload(); }, 800);
+            } else {
+                showFeedback(JSON.stringify(res.data), 'danger');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-upload"></i> Subir para este paciente';
+            }
+        })
+        .catch(function () {
+            showFeedback('Error de conexión. Intentá de nuevo.', 'danger');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-upload"></i> Subir para este paciente';
+        });
+    });
+
+    document.querySelectorAll('.pt-del-file').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            if (!confirm('¿Eliminar este archivo?')) return;
+            fetch('/api/files/' + btn.dataset.id + '/', {
+                method: 'DELETE',
+                headers: { 'X-CSRFToken': csrf },
+            })
+            .then(function (r) {
+                if (r.ok) { window.location.reload(); }
+                else { alert('Error al eliminar el archivo.'); }
+            });
+        });
+    });
 })();
 </script>
 {% endblock %}

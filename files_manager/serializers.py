@@ -77,7 +77,28 @@ class SharedFileDetailSerializer(serializers.ModelSerializer):
 class SharedFileUploadSerializer(serializers.ModelSerializer):
     """Serializer para subida de archivos (staff)."""
 
+    patient_ids = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True, required=False
+    )
+
     class Meta:
         model = SharedFile
-        fields = ["id", "title", "description", "file", "file_type", "visibility"]
+        fields = [
+            "id",
+            "title",
+            "description",
+            "file",
+            "file_type",
+            "visibility",
+            "patient_ids",
+        ]
         read_only_fields = ["id"]
+
+    def validate(self, attrs):
+        visibility = attrs.get("visibility")
+        patient_ids = attrs.get("patient_ids") or []
+        if visibility == SharedFile.Visibility.PRIVATE and not patient_ids:
+            raise serializers.ValidationError(
+                {"patient_ids": "Elegí al menos un paciente para un archivo privado."}
+            )
+        return attrs
