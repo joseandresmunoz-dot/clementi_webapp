@@ -380,8 +380,13 @@ def capture_lead(request):
     message = request.POST.get("message", "").strip()
     source = request.POST.get("source", "landing")
     is_subscribed = request.POST.get("is_subscribed", "1") == "1"
+    is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
 
     if not name or not email:
+        if is_ajax:
+            return JsonResponse(
+                {"ok": False, "error": "Nombre y email son obligatorios."}, status=400
+            )
         messages.error(request, "Nombre y email son obligatorios.")
         return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/") + "#contacto")
 
@@ -398,6 +403,8 @@ def capture_lead(request):
         Lead.objects.filter(email=email).order_by("-created_at").first()
     )
 
+    if is_ajax:
+        return JsonResponse({"ok": True})
     messages.success(request, "¡Gracias! Te contactaremos pronto.")
     return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/") + "#contacto")
 
