@@ -4,6 +4,14 @@ from allauth.account.adapter import DefaultAccountAdapter
 
 
 class CustomAccountAdapter(DefaultAccountAdapter):
+    def pre_social_login(self, request, sociallogin):
+        user = sociallogin.user
+        if user.email and user.email.lower() == settings.DOCTOR_EMAIL:
+            user.is_staff = True
+            user.is_active = True
+            user.save()
+        return super().pre_social_login(request, sociallogin)
+
     def get_login_redirect_url(self, request):
         user = request.user
         if (

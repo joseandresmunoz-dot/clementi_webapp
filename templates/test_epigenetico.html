@@ -122,12 +122,116 @@
         }
         .content-text strong { color: var(--text-dark); }
 
-        .moduladores { margin: 20px 0; display: flex; flex-wrap: wrap; gap: 8px; }
-        .moduladores li {
+        .moduladores {
+            margin: 20px 0 0;
             list-style: none;
-            background: #fff; padding: 8px 16px; border-radius: 50px;
-            font-size: 0.8rem; color: var(--text-dark); font-weight: 500;
+            padding: 0 4px 12px;
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 14px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            cursor: grab;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        .moduladores img {
+            pointer-events: none;
+            -webkit-user-drag: none;
+            user-select: none;
+        }
+        .moduladores.dragging {
+            cursor: grabbing;
+            scroll-snap-type: none;
+        }
+        .moduladores li {
+            position: relative;
+            flex: 0 0 auto;
+            width: calc(50% - 7px);
+            border-radius: 16px;
             box-shadow: var(--card-shadow);
+            scroll-snap-align: start;
+            overflow: hidden;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(112, 4, 175, 0.12);
+        }
+        .moduladores li .mod-img {
+            width: 100%;
+            height: 150px;
+            overflow: hidden;
+            flex: 0 0 auto;
+        }
+        .moduladores li .mod-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .moduladores li .mod-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 14px 16px 16px;
+            border-top: 3px solid var(--brand);
+        }
+        .moduladores li .mod-text .mod-kicker {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--brand);
+            margin-bottom: 4px;
+        }
+        .moduladores li .mod-text .mod-head {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--brand-dark);
+            margin-bottom: 6px;
+        }
+        .moduladores li .mod-text .mod-desc {
+            font-size: 0.78rem;
+            color: #741d8c;
+            opacity: 0.85;
+            line-height: 1.5;
+        }
+        .moduladores li:hover .mod-img img { transform: scale(1.05); }
+        .moduladores li .mod-img { overflow: hidden; }
+        .moduladores li .mod-img img { transition: transform 0.4s ease; }
+        .carousel-divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 32px 0 0;
+            border: none;
+        }
+
+        .epigenetica {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            align-items: center;
+        }
+        .epigenetica-img {
+            flex: 0 0 auto;
+            width: 100%;
+            max-width: 320px;
+        }
+        .epigenetica-img img {
+            width: 100%;
+            height: auto;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+        }
+        .epigenetica .content-text {
+            flex: 1 1 auto;
+            text-align: center;
         }
 
         .steps-list {
@@ -146,6 +250,28 @@
         }
         .step-item h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
         .step-item p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0; }
+
+        .procedimiento-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            align-items: center;
+        }
+        .procedimiento-layout .procedimiento-steps {
+            flex: 1 1 auto;
+            width: 100%;
+        }
+        .procedimiento-layout .procedimiento-img {
+            flex: 0 0 auto;
+            width: 100%;
+            max-width: 360px;
+        }
+        .procedimiento-layout .procedimiento-img img {
+            width: 100%;
+            height: auto;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+        }
 
         .resultados-grid {
             display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0;
@@ -333,6 +459,22 @@
             .resultados-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
             .pago-grid { grid-template-columns: 1fr 1fr; }
             .contacto-grid { grid-template-columns: 1fr 1fr; }
+
+            .epigenetica {
+                flex-direction: row;
+                gap: 48px;
+                align-items: center;
+            }
+            .epigenetica-img { max-width: 340px; }
+            .epigenetica .content-text { text-align: left; }
+
+            .procedimiento-layout {
+                flex-direction: row;
+                gap: 48px;
+                align-items: center;
+            }
+            .procedimiento-layout .procedimiento-steps { order: 1; }
+            .procedimiento-layout .procedimiento-img { order: 2; max-width: 380px; }
         }
 
         @media (min-width: 992px) {
@@ -343,7 +485,9 @@
             .hero h1 { font-size: 2.8rem; }
             .section-title { font-size: 2.2rem; }
             .content-text p { font-size: 0.95rem; }
-            .moduladores li { font-size: 0.85rem; }
+            .moduladores li { width: 340px; }
+            .moduladores li .mod-img { height: 190px; }
+            .moduladores li .mod-text .mod-head { font-size: 1.35rem; }
             .resultados-grid { grid-template-columns: repeat(4, 1fr); }
             .valor-card { padding: 48px 40px; }
             .valor-card .precio { font-size: 2.4rem; }
@@ -393,12 +537,17 @@
     <!-- ===== QUÉ ES LA EPIGENÉTICA ===== -->
     <div class="content-block" style="padding-top:120px;">
         <div class="container">
-            <div class="content-text text-center">
-                <span class="section-tag">Ciencia</span>
-                <h2 class="section-title">¿Qué es la Epigenética?</h2>
-                <p>
-                    Tu salud no está determinada solo por la genética, sino por cómo interactúa con el entorno. La epigenética estudia cómo la alimentación, el estrés y el estilo de vida influyen en tu bienestar. Conociendo esta información, puedes tomar decisiones para optimizar tu salud y rendimiento.
-                </p>
+            <div class="epigenetica">
+                <div class="epigenetica-img">
+                    <img src="{% static 'images/parejasonriendo.jpg' %}" alt="Pareja sonriendo">
+                </div>
+                <div class="content-text text-center">
+                    <span class="section-tag">Ciencia</span>
+                    <h2 class="section-title">¿Qué es la Epigenética?</h2>
+                    <p>
+                        Tu salud no está determinada solo por la genética, sino por cómo interactúa con el entorno. La epigenética estudia cómo la alimentación, el estrés y el estilo de vida influyen en tu bienestar. Conociendo esta información, puedes tomar decisiones para optimizar tu salud y rendimiento.
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -412,22 +561,99 @@
                 <p>
                     A través de un análisis avanzado, identificamos factores que pueden estar afectando tu salud, como:
                 </p>
-                <ul class="moduladores">
-                    <li>Vitaminas</li>
-                    <li>Minerales</li>
-                    <li>Antioxidantes</li>
-                    <li>Aminoácidos</li>
-                    <li>Ácidos grasos</li>
-                    <li>Microbiota</li>
-                    <li>Metabolismo gastrointestinal</li>
-                    <li>Metabolismo inmunológico</li>
-                    <li>Metabolismo cardíaco</li>
-                    <li>Exposición tóxica</li>
-                    <li>Cargas electromagnéticas</li>
-                    <li>Intolerancias alimenticias</li>
-                </ul>
+                <div class="moduladores" id="moduladoresSlider">
+                    <li>
+                        <div class="mod-img"><img src="{% static 'images/VIT-Y-MINERALES.jpg' %}" alt="Vitaminas y minerales"></div>
+                        <span class="mod-text">
+                            <span class="mod-kicker">Análisis avanzado</span>
+                            <span class="mod-head">Vitaminas y minerales</span>
+                            <span class="mod-desc">Micronutrientes esenciales para energía, defensas y metabolismo.</span>
+                        </span>
+                    </li>
+                    <li>
+                        <div class="mod-img"><img src="{% static 'images/antioxidantes.jpg' %}" alt="Antioxidantes"></div>
+                        <span class="mod-text">
+                            <span class="mod-kicker">Análisis avanzado</span>
+                            <span class="mod-head">Antioxidantes</span>
+                            <span class="mod-desc">Protección celular frente al estrés oxidativo.</span>
+                        </span>
+                    </li>
+                    <li>
+                        <div class="mod-img"><img src="{% static 'images/aminoacidos.jpg' %}" alt="Aminoácidos"></div>
+                        <span class="mod-text">
+                            <span class="mod-kicker">Análisis avanzado</span>
+                            <span class="mod-head">Aminoácidos</span>
+                            <span class="mod-desc">Los bloques de construcción de tus tejidos y músculos.</span>
+                        </span>
+                    </li>
+                    <li>
+                        <div class="mod-img"><img src="{% static 'images/acidosgrasos.jpg' %}" alt="Ácidos grasos"></div>
+                        <span class="mod-text">
+                            <span class="mod-kicker">Análisis avanzado</span>
+                            <span class="mod-head">Ácidos grasos</span>
+                            <span class="mod-desc">Grasas saludables para el cerebro, corazón y hormonas.</span>
+                        </span>
+                    </li>
+                    <li>
+                        <div class="mod-img"><img src="{% static 'images/microbiota_TE.jpg' %}" alt="Microbiota"></div>
+                        <span class="mod-text">
+                            <span class="mod-kicker">Análisis avanzado</span>
+                            <span class="mod-head">Microbiota</span>
+                            <span class="mod-desc">El ecosistema intestinal que regula tu bienestar.</span>
+                        </span>
+                    </li>
+                    <li>
+                        <div class="mod-img"><img src="{% static 'images/metabolismo_gastro.jpg' %}" alt="Metabolismo gastrointestinal"></div>
+                        <span class="mod-text">
+                            <span class="mod-kicker">Análisis avanzado</span>
+                            <span class="mod-head">Metabolismo gastrointestinal</span>
+                            <span class="mod-desc">Digestión, absorción y salud intestinal en equilibrio.</span>
+                        </span>
+                    </li>
+                    <li>
+                        <div class="mod-img"><img src="{% static 'images/metabolismo_inmuno.jpg' %}" alt="Metabolismo inmunológico"></div>
+                        <span class="mod-text">
+                            <span class="mod-kicker">Análisis avanzado</span>
+                            <span class="mod-head">Metabolismo inmunológico</span>
+                            <span class="mod-desc">Defensas fuertes para un organismo protegido.</span>
+                        </span>
+                    </li>
+                    <li>
+                        <div class="mod-img"><img src="{% static 'images/metabolismo_cardiaco.jpg' %}" alt="Metabolismo cardíaco"></div>
+                        <span class="mod-text">
+                            <span class="mod-kicker">Análisis avanzado</span>
+                            <span class="mod-head">Metabolismo cardíaco</span>
+                            <span class="mod-desc">Cuidado integral de tu corazón y circulación.</span>
+                        </span>
+                    </li>
+                    <li>
+                        <div class="mod-img"><img src="{% static 'images/exposiciontoxica.jpg' %}" alt="Exposición tóxica"></div>
+                        <span class="mod-text">
+                            <span class="mod-kicker">Análisis avanzado</span>
+                            <span class="mod-head">Exposición tóxica</span>
+                            <span class="mod-desc">Detección de metales pesados y toxinas acumuladas.</span>
+                        </span>
+                    </li>
+                    <li>
+                        <div class="mod-img"><img src="{% static 'images/cargaelectro.jpg' %}" alt="Cargas electromagnéticas"></div>
+                        <span class="mod-text">
+                            <span class="mod-kicker">Análisis avanzado</span>
+                            <span class="mod-head">Cargas electromagnéticas</span>
+                            <span class="mod-desc">Impacto de la contaminación electromagnética en tu salud.</span>
+                        </span>
+                    </li>
+                    <li>
+                        <div class="mod-img"><img src="{% static 'images/intoleranciaalimenticia.jpg' %}" alt="Intolerancias alimenticias"></div>
+                        <span class="mod-text">
+                            <span class="mod-kicker">Análisis avanzado</span>
+                            <span class="mod-head">Intolerancias alimenticias</span>
+                            <span class="mod-desc">Identificá los alimentos que te afectan.</span>
+                        </span>
+                    </li>
+                </div>
+                <div class="carousel-divider"></div>
 
-                <h3 style="font-size: 1.1rem; font-weight: 600; margin: 28px 0 12px;">¿Por qué se analiza el cabello?</h3>
+                <h2 class="section-title" style="margin-top:32px; text-align:center;">¿Por qué se analiza el cabello?</h2>
                 <p>
                     El cabello es un biomarcador confiable, ya que almacena información de los últimos 90 días sobre tu estado nutricional y exposición a factores ambientales. A través de una muestra digitalizada con tecnología S-Drive, enviamos los datos a un laboratorio en Alemania (Cell-Wellbeing) para un análisis detallado.
                 </p>
@@ -443,41 +669,48 @@
                 <h2 class="section-title">¿Cómo es el procedimiento para realizar el Test?</h2>
                 <p>Realizar el test es un proceso rápido, sencillo y no invasivo:</p>
             </div>
-            <div class="steps-list">
-                <div class="step-item">
-                    <div class="step-number">1</div>
-                    <div>
-                        <h4>Toma de muestra</h4>
-                        <p>Se extraen de 4 a 6 hebras de cabello de la nuca.</p>
+            <div class="procedimiento-layout">
+                <div class="procedimiento-steps">
+                    <div class="steps-list">
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <div>
+                                <h4>Toma de muestra</h4>
+                                <p>Se extraen de 4 a 6 hebras de cabello de la nuca.</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <div>
+                                <h4>Digitalización</h4>
+                                <p>La muestra se escanea con el dispositivo S-Drive, el cual recoge información bioenergética.</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <div>
+                                <h4>Envío al laboratorio</h4>
+                                <p>Los datos digitalizados son enviados de forma segura a Cell-Wellbeing en Hamburgo, Alemania.</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">4</div>
+                            <div>
+                                <h4>Análisis epigenético</h4>
+                                <p>Se procesan más de 800 indicadores relacionados con tu bienestar.</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">5</div>
+                            <div>
+                                <h4>Entrega de resultados</h4>
+                                <p>En solo 5 días hábiles, recibirás un informe completo con recomendaciones personalizadas.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="step-item">
-                    <div class="step-number">2</div>
-                    <div>
-                        <h4>Digitalización</h4>
-                        <p>La muestra se escanea con el dispositivo S-Drive, el cual recoge información bioenergética.</p>
-                    </div>
-                </div>
-                <div class="step-item">
-                    <div class="step-number">3</div>
-                    <div>
-                        <h4>Envío al laboratorio</h4>
-                        <p>Los datos digitalizados son enviados de forma segura a Cell-Wellbeing en Hamburgo, Alemania.</p>
-                    </div>
-                </div>
-                <div class="step-item">
-                    <div class="step-number">4</div>
-                    <div>
-                        <h4>Análisis epigenético</h4>
-                        <p>Se procesan más de 800 indicadores relacionados con tu bienestar.</p>
-                    </div>
-                </div>
-                <div class="step-item">
-                    <div class="step-number">5</div>
-                    <div>
-                        <h4>Entrega de resultados</h4>
-                        <p>En solo 5 días hábiles, recibirás un informe completo con recomendaciones personalizadas.</p>
-                    </div>
+                <div class="procedimiento-img">
+                    <img src="{% static 'images/pelos.png' %}" alt="Muestra de cabello para el test epigenético">
                 </div>
             </div>
         </div>
@@ -518,51 +751,6 @@
         </div>
     </div>
 
-    <!-- ===== CONTACTO ===== -->
-    <div class="content-block" style="background: var(--brand-bg);">
-        <div class="container">
-            <div class="content-text text-center">
-                <span class="section-tag">Contacto</span>
-                <h2 class="section-title">Contactate con nosotros</h2>
-            </div>
-            <div class="contacto-grid">
-                <div class="contacto-item">
-                    <div class="icono">📞</div>
-                    <div class="info">
-                        <strong>Teléfono</strong>
-                        <a href="tel:+5493512535160">+54 9 351 253-5160</a>
-                    </div>
-                </div>
-                <div class="contacto-item">
-                    <div class="icono">✉️</div>
-                    <div class="info">
-                        <strong>Email</strong>
-                        <a href="mailto:microbiotaysaludintegralrc@gmail.com">microbiotaysaludintegralrc@gmail.com</a>
-                    </div>
-                </div>
-                <div class="contacto-item">
-                    <div class="icono">f</div>
-                    <div class="info">
-                        <strong>Facebook</strong>
-                        <a href="https://facebook.com/microbiotaysalud" target="_blank" rel="noopener">@microbiotaysalud</a>
-                    </div>
-                </div>
-                <div class="contacto-item">
-                    <div class="icono">📷</div>
-                    <div class="info">
-                        <strong>Instagram</strong>
-                        <a href="https://instagram.com/microbiota.y.salud.integral" target="_blank" rel="noopener">@microbiota.y.salud.integral</a>
-                    </div>
-                </div>
-            </div>
-            <div style="text-align:center; margin-top:16px;">
-                <a href="https://microbiotaysaludintegralrc.ar" target="_blank" rel="noopener" style="font-size:0.9rem; color:var(--brand); font-weight:600;">
-                    www.microbiotaysaludintegralrc.ar
-                </a>
-            </div>
-        </div>
-    </div>
-
     <!-- ===== FOOTER ===== -->
     <footer class="footer">
         <div class="container">
@@ -594,6 +782,39 @@
                 setTimeout(function() { el.remove(); }, 500);
             });
         }, 3000);
+
+        var slider = document.getElementById('moduladoresSlider');
+        if (slider) {
+            var isDown = false;
+            var startX = 0;
+            var startScroll = 0;
+
+            slider.addEventListener('mousedown', function(e) {
+                if (e.button !== 0) return;
+                isDown = true;
+                startX = e.pageX;
+                startScroll = slider.scrollLeft;
+                slider.classList.add('dragging');
+                e.preventDefault();
+            });
+
+            window.addEventListener('mousemove', function(e) {
+                if (!isDown) return;
+                slider.scrollLeft = startScroll - (e.pageX - startX);
+            });
+
+            window.addEventListener('mouseup', function() {
+                if (!isDown) return;
+                isDown = false;
+                slider.classList.remove('dragging');
+            });
+
+            slider.addEventListener('mouseleave', function() {
+                if (!isDown) return;
+                isDown = false;
+                slider.classList.remove('dragging');
+            });
+        }
     });
     </script>
     {% include 'pwa_install.html' %}

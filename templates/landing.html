@@ -72,6 +72,7 @@
             background: var(--brand); color: #fff !important;
             padding: 12px 20px; border-radius: 10px; font-weight: 600;
             text-align: center;
+            margin-top: 8px;
         }
         .navbar .nav-links .btn-secondary-nav {
             color: var(--brand) !important;
@@ -450,6 +451,7 @@
             .navbar .nav-links .btn-primary-nav {
                 padding: 10px 22px; font-size: 0.9rem;
                 box-shadow: 0 4px 14px rgba(112, 4, 175,0.35);
+                margin-top: 0;
             }
             .navbar .nav-links .btn-primary-nav:hover {
                 background: var(--brand-dark); transform: translateY(-2px);
@@ -570,6 +572,7 @@
             <li><a href="#sobre-mi">Sobre mí</a></li>
             <li><a href="#especialidades">Especialidades</a></li>
             <li><a href="{% url 'patients:test_epigenetico' %}">Test Epigenético</a></li>
+            <li><a href="{% url 'patients:microbiota_quiz' %}">Evaluá tu Microbiota</a></li>
             <li><a href="{% url 'patients:shop' %}">Tienda</a></li>
             {% if user.is_authenticated %}
             <li><a href="{% url 'patients:dashboard' %}">Mi Panel</a></li>
