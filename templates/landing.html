@@ -423,50 +423,6 @@
             .container { padding: 0 32px; }
             section { padding: 64px 0; }
 
-            /* Navbar: desktop layout */
-            .navbar { padding: 14px 32px; }
-            .navbar .logo img { height: 42px; }
-            .navbar .nav-links {
-                display: flex !important;
-                flex-direction: row;
-                position: static;
-                background: none;
-                backdrop-filter: none;
-                box-shadow: none;
-                padding: 0;
-                gap: 28px;
-                align-items: center;
-            }
-            .navbar .nav-links a {
-                font-size: 0.9rem; color: var(--text-muted);
-                padding: 6px 0; position: relative;
-            }
-            .navbar .nav-links a::after {
-                content: ''; position: absolute; bottom: 0; left: 0;
-                width: 0; height: 2px; background: var(--brand);
-                transition: width 0.3s;
-            }
-            .navbar .nav-links a:hover { color: var(--brand); }
-            .navbar .nav-links a:hover::after { width: 100%; }
-            .navbar .nav-links .btn-primary-nav {
-                padding: 10px 22px; font-size: 0.9rem;
-                box-shadow: 0 4px 14px rgba(112, 4, 175,0.35);
-                margin-top: 0;
-            }
-            .navbar .nav-links .btn-primary-nav:hover {
-                background: var(--brand-dark); transform: translateY(-2px);
-            }
-            .navbar .nav-links .btn-primary-nav::after { display: none; }
-            .navbar .nav-links .btn-secondary-nav {
-                padding: 8px 22px; font-size: 0.9rem;
-            }
-            .navbar .nav-links .btn-secondary-nav:hover {
-                background: var(--brand); color: #fff !important;
-                transform: translateY(-2px);
-            }
-            .navbar .nav-links .btn-secondary-nav::after { display: none; }
-            .hamburger { display: none !important; }
-
             /* Hero: full background */
             .hero { padding: 120px 0 60px; }
             .hero-text { text-align: center; }
@@ -538,6 +494,52 @@
             .contacto-grid { gap: 48px; }
             .cursos-teaser { grid-template-columns: repeat(3, 1fr); gap: 28px; }
 
+        }
+
+        /* ===== NAVBAR DESKTOP ≥ 1024px ===== */
+        @media (min-width: 1024px) {
+            .navbar { padding: 14px 32px; }
+            .navbar .logo img { height: 42px; }
+            .navbar .nav-links {
+                display: flex !important;
+                flex-direction: row;
+                position: static;
+                background: none;
+                backdrop-filter: none;
+                box-shadow: none;
+                padding: 0;
+                gap: 24px;
+                align-items: center;
+            }
+            .navbar .nav-links a {
+                font-size: 0.9rem; color: var(--text-muted);
+                padding: 6px 0; position: relative;
+            }
+            .navbar .nav-links a::after {
+                content: ''; position: absolute; bottom: 0; left: 0;
+                width: 0; height: 2px; background: var(--brand);
+                transition: width 0.3s;
+            }
+            .navbar .nav-links a:hover { color: var(--brand); }
+            .navbar .nav-links a:hover::after { width: 100%; }
+            .navbar .nav-links .btn-primary-nav {
+                padding: 10px 22px; font-size: 0.9rem;
+                box-shadow: 0 4px 14px rgba(112, 4, 175,0.35);
+                margin-top: 0;
+            }
+            .navbar .nav-links .btn-primary-nav:hover {
+                background: var(--brand-dark); transform: translateY(-2px);
+            }
+            .navbar .nav-links .btn-primary-nav::after { display: none; }
+            .navbar .nav-links .btn-secondary-nav {
+                padding: 8px 22px; font-size: 0.9rem;
+            }
+            .navbar .nav-links .btn-secondary-nav:hover {
+                background: var(--brand); color: #fff !important;
+                transform: translateY(-2px);
+            }
+            .navbar .nav-links .btn-secondary-nav::after { display: none; }
+            .hamburger { display: none !important; }
         }
 
         /* ===== LARGE ≥ 1200px ===== */
