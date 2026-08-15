@@ -279,6 +279,37 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         )
 
     # ------------------------------------------------------------------
+    # DRA: Eliminar slots disponibles de un día completo
+    # ------------------------------------------------------------------
+    @action(
+        detail=False,
+        methods=["post"],
+        permission_classes=[permissions.IsAdminUser],
+        url_path="bulk-delete",
+    )
+    def bulk_delete(self, request):
+        """
+        Elimina TODOS los slots AVAILABLE de una fecha (no toca reservados).
+        Body: { "date": "2026-04-10" }
+        """
+        date_str = request.data.get("date", "").strip()
+        if not date_str:
+            return Response(
+                {"error": "Enviá la fecha en el campo 'date'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        deleted, _ = Appointment.objects.filter(
+            date=date_str,
+            status=Appointment.Status.AVAILABLE,
+        ).delete()
+
+        return Response(
+            {"deleted_count": deleted},
+            status=status.HTTP_200_OK,
+        )
+
+    # ------------------------------------------------------------------
     # ENDPOINT para FullCalendar.js (público, sin paginación)
     # ------------------------------------------------------------------
     @action(

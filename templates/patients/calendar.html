@@ -172,6 +172,27 @@
             <div id="slotFeedback" class="mt-2"></div>
         </div>
     </div>
+
+    <!-- Eliminar Turnos -->
+    <div class="col-md-6 col-lg-4">
+        <div class="staff-panel">
+            <h6><i class="bi bi-trash3"></i> Eliminar Turnos</h6>
+            <form id="deleteDayForm">
+                <div class="mb-2">
+                    <label class="form-label">Fecha (día completo)</label>
+                    <input type="date" class="form-control" id="deleteDate" required>
+                </div>
+                <button type="submit" class="btn-outline-brand" style="color:#dc2626;border-color:#dc2626;">
+                    <i class="bi bi-calendar-x"></i> Eliminar día completo
+                </button>
+            </form>
+            <div id="deleteFeedback" class="mt-2"></div>
+            <p class="small text-muted mt-2 mb-0">
+                <i class="bi bi-info-circle"></i> Solo se eliminan turnos <strong>disponibles</strong>.
+                Los reservados no se tocan.
+            </p>
+        </div>
+    </div>
 </div>
 {% endif %}
 
@@ -234,6 +255,11 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                {% if user.is_staff %}
+                <button type="button" class="btn btn-danger" id="deleteSlotBtn">
+                    <i class="bi bi-trash3"></i> Eliminar turno
+                </button>
+                {% endif %}
                 <button type="button" class="btn btn-primary" id="confirmBookBtn">
                     <i class="bi bi-check-lg"></i> Confirmar Reserva
                 </button>
@@ -379,6 +405,58 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!el) return;
         el.innerHTML = `<div class="alert alert-${type} py-1 small" style="border-radius:10px;">${msg}</div>`;
         setTimeout(() => el.innerHTML = '', 4000);
+    }
+
+    // ── Staff: eliminar turnos ──────────────────────────────────
+    const deleteDayForm = document.getElementById('deleteDayForm');
+    if (deleteDayForm) {
+        deleteDayForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const date = document.getElementById('deleteDate').value;
+            if (!date) return;
+            if (!confirm(`¿Eliminar todos los turnos disponibles de ${date}?`)) return;
+            fetch('/api/appointments/slots/bulk-delete/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({ date }),
+            })
+            .then(r => r.json().then(d => ({status: r.status, data: d})))
+            .then(({status, data}) => {
+                calendar.refetchEvents();
+                const el = document.getElementById('deleteFeedback');
+                if (status === 200) {
+                    el.innerHTML = `<div class="alert alert-success py-1 small" style="border-radius:10px;">${data.deleted_count} turnos eliminados.</div>`;
+                } else {
+                    el.innerHTML = `<div class="alert alert-danger py-1 small" style="border-radius:10px;">${data.error || 'Error al eliminar.'}</div>`;
+                }
+                setTimeout(() => el.innerHTML = '', 4000);
+            });
+        });
+    }
+
+    const deleteSlotBtn = document.getElementById('deleteSlotBtn');
+    if (deleteSlotBtn) {
+        deleteSlotBtn.addEventListener('click', function() {
+            if (!selectedEventId) return;
+            if (!confirm('¿Eliminar este turno disponible?')) return;
+            const btn = this;
+            btn.disabled = true;
+            fetch(`/api/appointments/slots/${selectedEventId}/`, {
+                method: 'DELETE',
+                headers: { 'X-CSRFToken': csrfToken },
+            })
+            .then(r => r.json().then(d => ({status: r.status, data: d})).catch(() => ({status: r.status, data: {}})))
+            .then(({status, data}) => {
+                bootstrap.Modal.getInstance(document.getElementById('bookModal')).hide();
+                calendar.refetchEvents();
+                if (status === 204 || status === 200) {
+                    showToast('Turno eliminado.', 'success');
+                } else {
+                    showToast(data.error || 'Error al eliminar.', 'danger');
+                }
+            })
+            .finally(() => { btn.disabled = false; });
+        });
     }
     {% endif %}
 
