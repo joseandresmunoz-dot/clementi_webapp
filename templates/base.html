@@ -590,7 +590,7 @@
     {% endif %}
 
     <!-- Content -->
-    <main class="{% block main_class %}container py-4{% endblock %}">
+    <main class="{% block main_class %}{% if user.is_staff %}admin-main-content{% else %}container py-4{% endif %}{% endblock %}">
         {% block content %}{% endblock %}
     </main>
 
