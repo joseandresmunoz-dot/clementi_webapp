@@ -496,8 +496,8 @@
 
         }
 
-        /* ===== NAVBAR DESKTOP ≥ 1024px ===== */
-        @media (min-width: 1024px) {
+        /* ===== NAVBAR DESKTOP ≥ 1200px ===== */
+        @media (min-width: 1200px) {
             .navbar { padding: 14px 32px; }
             .navbar .logo img { height: 42px; }
             .navbar .nav-links {
@@ -508,12 +508,13 @@
                 backdrop-filter: none;
                 box-shadow: none;
                 padding: 0;
-                gap: 24px;
+                gap: 18px;
                 align-items: center;
             }
             .navbar .nav-links a {
-                font-size: 0.9rem; color: var(--text-muted);
+                font-size: 0.85rem; color: var(--text-muted);
                 padding: 6px 0; position: relative;
+                white-space: nowrap;
             }
             .navbar .nav-links a::after {
                 content: ''; position: absolute; bottom: 0; left: 0;
@@ -523,7 +524,7 @@
             .navbar .nav-links a:hover { color: var(--brand); }
             .navbar .nav-links a:hover::after { width: 100%; }
             .navbar .nav-links .btn-primary-nav {
-                padding: 10px 22px; font-size: 0.9rem;
+                padding: 10px 18px; font-size: 0.85rem;
                 box-shadow: 0 4px 14px rgba(112, 4, 175,0.35);
                 margin-top: 0;
             }
@@ -532,7 +533,7 @@
             }
             .navbar .nav-links .btn-primary-nav::after { display: none; }
             .navbar .nav-links .btn-secondary-nav {
-                padding: 8px 22px; font-size: 0.9rem;
+                padding: 8px 18px; font-size: 0.85rem;
             }
             .navbar .nav-links .btn-secondary-nav:hover {
                 background: var(--brand); color: #fff !important;
@@ -586,9 +587,9 @@
             </li>
             {% else %}
             <li><a href="{% url 'account_login' %}" class="btn-ingresar">Ingresar</a></li>
-            {% endif %}
             <li><a href="{% url 'patients:calendar' %}" class="btn-secondary-nav">Sacá tu turno</a></li>
             <li><a href="#contacto" class="btn-primary-nav">Realizar una consulta</a></li>
+            {% endif %}
         </ul>
     </nav>
 
