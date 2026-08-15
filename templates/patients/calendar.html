@@ -331,15 +331,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(r => r.json().then(d => ({status: r.status, data: d})))
             .then(({status, data}) => {
                 if (status === 201) {
-                    calendar.addEvent({
-                        id: String(data.id),
-                        title: 'Disponible',
-                        start: `${data.date}T${data.start_time}`,
-                        end: `${data.date}T${data.end_time}`,
-                        allDay: false,
-                        color: '#28a745',
-                        extendedProps: { bookable: true },
-                    });
+                    calendar.refetchEvents();
                     showSlotFeedback('Turno creado.', 'success');
                 } else {
                     showSlotFeedback(JSON.stringify(data), 'danger');
@@ -375,17 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(r => r.json().then(d => ({status: r.status, data: d})))
             .then(({status, data}) => {
-                (data.created || []).forEach(function(slot) {
-                    calendar.addEvent({
-                        id: String(slot.id),
-                        title: 'Disponible',
-                        start: `${slot.date}T${slot.start_time}`,
-                        end: `${slot.date}T${slot.end_time}`,
-                        allDay: false,
-                        color: '#28a745',
-                        extendedProps: { bookable: true },
-                    });
-                });
+                calendar.refetchEvents();
                 if (data.created_count) showSlotFeedback(`${data.created_count} turnos creados.`, 'success');
                 if (data.errors && data.errors.length) showSlotFeedback(`${data.errors.length} errores (duplicados?).`, 'warning');
             });
