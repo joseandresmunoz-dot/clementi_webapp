@@ -112,6 +112,24 @@
                 <i class="bi bi-link-45deg"></i> Conectar Google Calendar
             </a>
             {% endif %}
+
+            <hr>
+
+            <h6><i class="bi bi-trash3"></i> Eliminar Turnos</h6>
+            <form id="deleteDayForm">
+                <div class="mb-2">
+                    <label class="form-label">Fecha (día completo)</label>
+                    <input type="date" class="form-control" id="deleteDate" required>
+                </div>
+                <button type="submit" class="btn-outline-brand" style="color:#dc2626;border-color:#dc2626;">
+                    <i class="bi bi-calendar-x"></i> Eliminar día completo
+                </button>
+            </form>
+            <div id="deleteFeedback" class="mt-2"></div>
+            <p class="small text-muted mt-2 mb-0">
+                <i class="bi bi-info-circle"></i> Solo se eliminan turnos <strong>disponibles</strong>.
+                Los reservados no se tocan.
+            </p>
         </div>
     </div>
 
@@ -170,27 +188,6 @@
                 <button type="submit" class="btn-outline-brand"><i class="bi bi-collection"></i> Crear en Lote</button>
             </form>
             <div id="slotFeedback" class="mt-2"></div>
-        </div>
-    </div>
-
-    <!-- Eliminar Turnos -->
-    <div class="col-md-6 col-lg-4">
-        <div class="staff-panel">
-            <h6><i class="bi bi-trash3"></i> Eliminar Turnos</h6>
-            <form id="deleteDayForm">
-                <div class="mb-2">
-                    <label class="form-label">Fecha (día completo)</label>
-                    <input type="date" class="form-control" id="deleteDate" required>
-                </div>
-                <button type="submit" class="btn-outline-brand" style="color:#dc2626;border-color:#dc2626;">
-                    <i class="bi bi-calendar-x"></i> Eliminar día completo
-                </button>
-            </form>
-            <div id="deleteFeedback" class="mt-2"></div>
-            <p class="small text-muted mt-2 mb-0">
-                <i class="bi bi-info-circle"></i> Solo se eliminan turnos <strong>disponibles</strong>.
-                Los reservados no se tocan.
-            </p>
         </div>
     </div>
 </div>
