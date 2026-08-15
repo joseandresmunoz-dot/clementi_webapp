@@ -330,34 +330,52 @@ En la parte superior hay un panel de **"Google Calendar"**:
 - Si ve el botón **"Conectar Google Calendar"**, tóquelo, elija la cuenta de Google `romina.c.clementi@gmail.com` y acepte el permiso. Luego vuelve a la página y queda conectado.
 - Para sacarlo, toque **"Desconectar"**.
 
+Debajo de ese panel hay una sección **"Eliminar Turnos"** para borrar turnos que todavía nadie reservó (ver punto 13.5).
+
 > **📷 CAPTURA:** *el panel de Google Calendar con el botón "Conectar".*
 
 ### 13.2 Crear un turno (uno solo)
 
 1. En el panel **"Crear Turno"** elija la **fecha**.
 2. Ponga la hora de **Inicio** (ej: 09:00) y de **Fin** (ej: 09:30).
-3. Toque **"Crear Turno"**. Aparece en verde en el calendario como disponible.
+3. Toque **"Crear Turno"**. Aparece en verde en el calendario como disponible, **al instante**, sin necesidad de recargar la página.
 
 ### 13.3 Crear varios turnos a la vez (en lote)
 
 1. En el panel **"Crear varios turnos"** elija la **fecha**.
 2. Ponga el horario **"Desde"** (ej: 08:00) y **"Hasta"** (ej: 13:00).
 3. Elija la **duración** de cada turno (15, 30, 45 o 60 minutos).
-4. Toque **"Crear en Lote"**. El sistema genera todos los turnos de ese rango de una sola vez.
+4. Toque **"Crear en Lote"**. El sistema genera todos los turnos de ese rango de una sola vez y los muestra en el calendario **al instante**.
 
 > **Ejemplo:** desde 08:00 hasta 13:00 con 30 min genera turnos a las 08:00, 08:30, 09:00… hasta las 12:30.
 
 > **📷 CAPTURA:** *el panel "Crear varios turnos" con los campos completados.*
 
-### 13.4 Ver quién reservó
+### 13.4 Ver quién reservó y sus datos
 
 Cuando el calendario está en vista de **mes** o **semana**, los turnos reservados (rojo) muestran el nombre del paciente (por ejemplo "Reservado — María Pérez"). Si fue sin cuenta, muestra "(invitado)" junto al nombre.
 
-> **📷 CAPTURA:** *una semana del calendario con turnos verdes y rojos con nombres.*
+Si **toca un turno reservado**, se abre una ventana con los datos completos del paciente:
 
-### 13.5 El enlace de videollamada (Meet)
+- Nombre y apellido.
+- Correo electrónico.
+- Teléfono (si lo cargó).
+- Edad y localidad (si las tiene registradas).
+- Notas que el paciente escribió al reservar.
+- El enlace de **Google Meet** para entrar a la videollamada.
 
-Cada turno reservado genera un enlace de **Google Meet**. El paciente lo ve en "Mi Panel". En el calendario, como administradora, usted también puede ver el enlace de Meet de cada turno reservado.
+> **📷 CAPTURA:** *la ventana de un turno reservado con los datos del paciente.*
+
+### 13.5 Eliminar turnos disponibles
+
+Solo puede eliminar turnos que **todavía no se reservaron** (los verdes). Los reservados no se tocan. Hay dos formas:
+
+- **De a uno:** toque un turno verde (disponible) y en la ventana que se abre toque **"Eliminar turno"**. Confirme y el turno desaparece del calendario al instante.
+- **Día completo:** en el panel **"Eliminar Turnos"** (debajo de Google Calendar) elija la **fecha** y toque **"Eliminar día completo"**. Se borran todos los turnos disponibles de ese día. El sistema le avisa cuántos eliminó.
+
+### 13.6 El enlace de videollamada (Meet)
+
+Cada turno reservado genera un enlace de **Google Meet**. El paciente lo ve en "Mi Panel". En el calendario, como administradora, al tocar un turno reservado también puede ver y entrar al enlace de Meet (ver punto 13.4).
 
 ---
 
@@ -678,6 +696,9 @@ Revise en **Pacientes** que su cuenta esté en la lista de **aprobados**. Si est
 
 **¿Cómo creo turnos para la semana?**
 Use **"Crear varios turnos"**: elija fecha, horario desde/hasta y duración, y toque **"Crear en Lote"**.
+
+**¿Cómo elimino un turno que creé y nadie reservó?**
+Toque el turno verde (disponible) en el calendario y elija **"Eliminar turno"**, o borre todos los disponibles de un día desde el panel **"Eliminar Turnos"** (debajo de Google Calendar). Los turnos reservados no se pueden eliminar de esta forma.
 
 **¿Cómo le mando un estudio a un paciente?**
 Vaya a **Gestión de archivos** → **Subir Archivo**, elija **"Solo pacientes seleccionados"**, marque al paciente y suba el archivo. El paciente lo verá en "Mi Panel".
