@@ -325,10 +325,25 @@ class AppointmentViewSet(viewsets.ModelViewSet):
                         name = f"{apt.guest_name} (invitado)"
                     else:
                         name = "?"
+                    profile = apt.patient.patient_profile if apt.patient else None
                     event["title"] = f"Reservado — {name}"
                     event["color"] = "#dc3545"
                     event["extendedProps"] = {
+                        "patient_name": name,
                         "patient_email": apt.patient.email if apt.patient else (apt.guest_email or ""),
+                        "patient_phone": (profile.phone if profile else "") or "",
+                        "patient_locality": (profile.locality if profile else "") or "",
+                        "patient_age": (
+                            apt.guest_age
+                            if apt.guest_age
+                            else (
+                                None
+                                if not (profile and profile.date_of_birth)
+                                else (timezone.localdate() - profile.date_of_birth).days // 365
+                            )
+                        ),
+                        "patient_notes": apt.notes,
+                        "is_guest": apt.patient is None,
                         "meet_link": apt.google_meet_link,
                     }
                 elif is_own:

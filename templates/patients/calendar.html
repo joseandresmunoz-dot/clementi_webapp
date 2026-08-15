@@ -268,6 +268,39 @@
         </div>
     </div>
 </div>
+
+<!-- Modal: Detalle del turno para la Dra. (staff) -->
+{% if user.is_staff %}
+<div class="modal fade" id="staffModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background:var(--brand,#7004af); color:#fff;">
+                <h5 class="modal-title"><i class="bi bi-person-lines-fill"></i> Turno Reservado</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Fecha:</strong> <span id="staffDate"></span></p>
+                <p><strong>Horario:</strong> <span id="staffTime"></span></p>
+                <hr>
+                <p><strong>Paciente:</strong> <span id="staffName"></span></p>
+                <p><strong>Email:</strong> <span id="staffEmail"></span></p>
+                <p id="staffPhoneRow"><strong>Teléfono:</strong> <span id="staffPhone"></span></p>
+                <p id="staffAgeRow"><strong>Edad:</strong> <span id="staffAge"></span></p>
+                <p id="staffLocalityRow"><strong>Localidad:</strong> <span id="staffLocality"></span></p>
+                <p id="staffNotesRow"><strong>Notas:</strong> <span id="staffNotes"></span></p>
+                <div id="staffMeetLink" class="mb-3 d-none">
+                    <a href="#" id="staffMeetUrl" target="_blank" class="btn btn-success w-100">
+                        <i class="bi bi-camera-video"></i> Unirse a Google Meet
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
@@ -440,6 +473,62 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Slot propio → ver detalle
+            {% if user.is_staff %}
+            if (props.patient_name) {
+                selectedEventId = event.id;
+                document.getElementById('staffDate').textContent = formatDate(event.start);
+                document.getElementById('staffTime').textContent = formatTime(event.start, event.end);
+                document.getElementById('staffName').textContent = props.patient_name;
+                document.getElementById('staffEmail').textContent = props.patient_email || '—';
+
+                const phoneRow = document.getElementById('staffPhoneRow');
+                const phoneEl = document.getElementById('staffPhone');
+                if (props.patient_phone) {
+                    phoneEl.textContent = props.patient_phone;
+                    phoneRow.classList.remove('d-none');
+                } else {
+                    phoneRow.classList.add('d-none');
+                }
+
+                const ageRow = document.getElementById('staffAgeRow');
+                const ageEl = document.getElementById('staffAge');
+                if (props.patient_age) {
+                    ageEl.textContent = props.patient_age;
+                    ageRow.classList.remove('d-none');
+                } else {
+                    ageRow.classList.add('d-none');
+                }
+
+                const localityRow = document.getElementById('staffLocalityRow');
+                const localityEl = document.getElementById('staffLocality');
+                if (props.patient_locality) {
+                    localityEl.textContent = props.patient_locality;
+                    localityRow.classList.remove('d-none');
+                } else {
+                    localityRow.classList.add('d-none');
+                }
+
+                const notesRow = document.getElementById('staffNotesRow');
+                const notesEl = document.getElementById('staffNotes');
+                if (props.patient_notes) {
+                    notesEl.textContent = props.patient_notes;
+                    notesRow.classList.remove('d-none');
+                } else {
+                    notesRow.classList.add('d-none');
+                }
+
+                const meetDiv = document.getElementById('staffMeetLink');
+                const meetUrl = document.getElementById('staffMeetUrl');
+                if (props.meet_link) {
+                    meetUrl.href = props.meet_link;
+                    meetDiv.classList.remove('d-none');
+                } else {
+                    meetDiv.classList.add('d-none');
+                }
+                new bootstrap.Modal(document.getElementById('staffModal')).show();
+                return;
+            }
+            {% endif %}
             if (props.meet_link !== undefined && props.meet_link !== '') {
                 selectedEventId = event.id;
                 document.getElementById('ownDate').textContent = formatDate(event.start);
