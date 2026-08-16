@@ -255,16 +255,33 @@
         <p class="mp-connected" style="color:#00A650;">
             <i class="bi bi-check-circle"></i> Cuenta conectada
         </p>
-        <a href="{% url 'patients:mp_connect' %}" class="btn-mp">
-            <i class="bi bi-arrow-repeat"></i> Reconectar
-        </a>
+        <form method="post" action="{% url 'patients:mp_disconnect' %}" style="display:inline-block;margin-right:8px;">
+            {% csrf_token %}
+            <button type="submit" class="btn-mp" style="background:#c0392b;">
+                <i class="bi bi-unlink"></i> Desconectar
+            </button>
+        </form>
         {% else %}
         <p style="color:#666;margin-bottom:8px;font-size:0.88rem;">
-            Conectá tu cuenta para cobrar con Checkout Pro.
+            Pegá tu <strong>ACCESS_TOKEN</strong> de Mercado Pago (Credenciales → Producción)
+            para cobrar con Checkout Pro.
         </p>
-        <a href="{% url 'patients:mp_connect' %}" class="btn-mp">
-            <i class="bi bi-link-45deg"></i> Conectar Mercado Pago
-        </a>
+        <form method="post" action="{% url 'patients:mp_save_token' %}" class="row g-2">
+            {% csrf_token %}
+            <div class="col-12 col-md-6">
+                <input type="text" name="mp_access_token" class="form-control"
+                       placeholder="APP_USR-..." value="{{ mp_current_token }}" required>
+            </div>
+            <div class="col-12 col-md-3">
+                <input type="text" name="mp_public_key" class="form-control"
+                       placeholder="Public Key (opcional)" value="{{ mp_public_key }}">
+            </div>
+            <div class="col-12 col-md-3">
+                <button type="submit" class="btn-mp w-100">
+                    <i class="bi bi-check-lg"></i> Guardar
+                </button>
+            </div>
+        </form>
         {% endif %}
     </div>
 </div>

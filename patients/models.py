@@ -381,8 +381,8 @@ class MercadoPagoCredentials(models.Model):
 
     @property
     def is_connected(self):
-        """True si hay token de acceso y refresh token disponibles."""
-        return bool(self.access_token and self.refresh_token)
+        """True si hay un token de acceso disponible (OAuth o pegado a mano)."""
+        return bool(self.access_token)
 
     def update_from_token(self, payload):
         """Persiste el payload devuelto por ``/oauth/token``."""
@@ -413,12 +413,14 @@ class MercadoPagoCredentials(models.Model):
 
     def is_token_expired(self, buffer_seconds=300):
         """
-        Devuelve ``True`` si el token no existe, ya expiró, o va a expirar
-        dentro de ``buffer_seconds`` (margen de seguridad para no usar un
-        token a punto de vencer).
+        Devuelve ``True`` si el token ya expiró o va a expirar dentro de
+        ``buffer_seconds`` (margen de seguridad). Un token pegado a mano
+        (sin ``token_expires_at``) se considera siempre vigente.
         """
-        if not self.access_token or not self.token_expires_at:
+        if not self.access_token:
             return True
+        if not self.token_expires_at:
+            return False
         return timezone.now() >= self.token_expires_at - timedelta(
             seconds=buffer_seconds
         )

@@ -16,6 +16,8 @@ urlpatterns = [
     path("capture-lead/", views.capture_lead, name="capture_lead"),
     path("mp/connect/", views.mp_connect, name="mp_connect"),
     path("mp/callback/", views.mp_callback, name="mp_callback"),
+    path("mp/guardar-token/", views.mp_save_token, name="mp_save_token"),
+    path("mp/desconectar/", views.mp_disconnect, name="mp_disconnect"),
     path(
         "google-calendar/conectar/",
         views.connect_google_calendar,

@@ -186,10 +186,16 @@ def checkout_mp(request):
     reference = f"cart-{request.session.session_key or uuid.uuid4().hex}"
 
     try:
+        shop_url = request.build_absolute_uri(reverse("patients:shop"))
         preference = services.create_checkout_preference(
             seller,
             items,
             external_reference=reference,
+            back_urls={
+                "success": shop_url,
+                "pending": shop_url,
+                "failure": shop_url,
+            },
         )
     except services.MercadoPagoError as exc:
         messages.error(request, f"No se pudo iniciar el pago: {exc}")
@@ -296,6 +302,12 @@ def shop_admin(request):
         "orders_by_status": orders_by_status,
         "mp_is_connected": hasattr(request.user, "mp_credentials")
         and request.user.mp_credentials.is_connected,
+        "mp_current_token": getattr(
+            getattr(request.user, "mp_credentials", None), "access_token", ""
+        ),
+        "mp_public_key": getattr(
+            getattr(request.user, "mp_credentials", None), "public_key", ""
+        ),
     })
 
 
@@ -1144,6 +1156,55 @@ def mp_callback(request):
     messages.success(
         request, "Tu cuenta de Mercado Pago se conectó correctamente."
     )
+    return redirect("patients:shop_admin")
+
+
+@user_passes_test(lambda u: u.is_staff)
+def mp_save_token(request):
+    """
+    Guarda el ACCESS_TOKEN que el vendedor pega a mano en el panel de tienda
+    (sin flujo OAuth). Es la forma más simple de empezar a cobrar: el token
+    sale de las Credenciales de Producción del panel de Mercado Pago.
+    """
+    access_token = (request.POST.get("mp_access_token") or "").strip()
+    public_key = (request.POST.get("mp_public_key") or "").strip()
+
+    if not access_token:
+        messages.error(
+            request,
+            "Pegá tu ACCESS_TOKEN de Mercado Pago para poder cobrar.",
+        )
+        return redirect("patients:shop_admin")
+
+    if not access_token.startswith(("APP_USR-", "TEST-")):
+        messages.error(
+            request,
+            "El token no parece válido. Debe empezar con APP_USR- (producción) "
+            "o TEST- (pruebas).",
+        )
+        return redirect("patients:shop_admin")
+
+    credentials, _ = MercadoPagoCredentials.objects.get_or_create(user=request.user)
+    credentials.access_token = access_token
+    if public_key:
+        credentials.public_key = public_key
+    credentials.token_expires_at = None
+    credentials.refresh_token = credentials.refresh_token or ""
+    credentials.save()
+
+    messages.success(
+        request,
+        "Credenciales de Mercado Pago guardadas. Ya podés cobrar con Checkout Pro.",
+    )
+    return redirect("patients:shop_admin")
+
+
+@require_POST
+@user_passes_test(lambda u: u.is_staff)
+def mp_disconnect(request):
+    """Elimina las credenciales de Mercado Pago guardadas del vendedor."""
+    MercadoPagoCredentials.objects.filter(user=request.user).delete()
+    messages.info(request, "Se desconectó Mercado Pago.")
     return redirect("patients:shop_admin")
 
 
